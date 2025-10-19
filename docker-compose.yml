@@ -1,0 +1,13 @@
+services:
+  arbi-server-bots:
+    build:
+      context: .
+      dockerfile: ./docker/DockerfileBackend
+    container_name: arbi-server-bots
+    ports:
+      - "8111:3000"
+
+volumes:
+  pg_data:
+    name: arbidex_pg_data
+    external: true
