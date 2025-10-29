@@ -1,15 +1,25 @@
-// src/store/ui-config.controller.ts
+// src/store/bots-types-list.controller.ts
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
-import { AppStore } from './app.store';
-import type { IBotType } from './state.types';
-import { selectBotsTypes } from './selectors';
+import { AppStore } from '../store/app.store';
+import type { IBotType } from '../store/state.types';
+import { selectBotsTypes } from '../store/selectors';
+import {take} from 'rxjs';
 
-@Controller('bots-types')
-export class ConfigController {
+@Controller('bots-types-list')
+export class BotsTypesController {
   constructor(private readonly store: AppStore) {}
 
   @Get()
-  getAll() { return this.store.snapshot(); }
+  getAll() {
+    return  this.store.snapshot().botsTypesList;
+    let botsTypes;
+
+    this.store.select$(selectBotsTypes).pipe(take(1)).subscribe((value) => {
+      botsTypes = value;
+    });
+
+    return botsTypes;
+  }
 
   @Post('set-all')
   setAll(@Body() list: IBotType[]) {

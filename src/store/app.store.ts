@@ -1,19 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import {BehaviorSubject, Subject} from 'rxjs';
-import { map, distinctUntilChanged } from 'rxjs/operators';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { BehaviorSubject, Subject, Subscription } from 'rxjs';
+import { map, distinctUntilChanged, scan } from 'rxjs/operators';
 import { Action } from './actions';
 import { AppState } from './state.types';
-import { initialState } from './reducer';
+import { initialState, reducer } from './reducer';
 
 function deepEqual(a: any, b: any) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
 @Injectable()
-export class AppStore {
+export class AppStore implements OnModuleDestroy {
   private actions$ = new Subject<Action>();
-
   private readonly state$ = new BehaviorSubject<AppState>(initialState);
+  private sub: Subscription;
+
+  constructor() {
+    this.sub = this.actions$
+      .pipe(
+        scan((state: AppState, action: Action) => reducer(state, action), initialState)
+      )
+      .subscribe(nextState => this.state$.next(nextState));
+  }
+
+  onModuleDestroy() {
+    this.sub?.unsubscribe();
+    this.state$.complete();
+    this.actions$.complete();
+  }
 
   dispatch(action: Action) {
     this.actions$.next(action);
@@ -27,9 +41,6 @@ export class AppStore {
   }
 
   snapshot(): AppState {
-    let cur!: AppState;
-    const sub = this.state$.subscribe(s => (cur = s));
-    sub.unsubscribe();
-    return cur;
+    return this.state$.getValue();
   }
 }

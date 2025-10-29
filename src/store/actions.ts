@@ -1,5 +1,5 @@
 // src/store/actions.ts
-import { IBotType, IErrorItem } from './state.types';
+import {IBot, IBotType, IErrorItem} from './state.types';
 
 export type Action =
 // botsTypesList
@@ -7,6 +7,8 @@ export type Action =
   | { type: 'BOTS_TYPES/ADD_ONE'; payload: IBotType }
   | { type: 'BOTS_TYPES/UPSERT_ONE'; payload: IBotType }      // по type
   | { type: 'BOTS_TYPES/REMOVE_ONE'; payload: { type: string } }
+
+  | { type: 'BOTS_LIST/SET_ALL'; payload: { botsList: IBot[] } }
 
   // errorList
   | { type: 'ERRORS/PUSH'; payload: IErrorItem }
