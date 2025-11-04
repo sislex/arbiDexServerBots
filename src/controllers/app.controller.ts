@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import {selectAppVersion, selectBotsCount, selectServerStartedAt} from '../store/selectors';
-import { firstValueFrom } from 'rxjs';
+import {selectAppVersion, selectBotsCount, selectBotsTypes, selectServerStartedAt} from '../store/selectors';
+import {firstValueFrom, take} from 'rxjs';
 import { AppStore } from '../store/app.store';
 
 @Controller()
@@ -18,5 +18,17 @@ export class AppController {
       serverStartedAt,
       botsCount,
     };
+  }
+
+  @Get('info/bots-types-list')
+  async getBotsTypesList() {
+    const botsTypes: string = await firstValueFrom(this.store.select$(selectBotsTypes));
+    return botsTypes;
+  }
+
+  @Get('info/bots-types-list')
+  async getActionsTypesList() {
+    const botsTypes: string = await firstValueFrom(this.store.select$(selectBotsTypes));
+    return botsTypes;
   }
 }

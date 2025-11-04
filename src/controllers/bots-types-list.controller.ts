@@ -9,17 +9,6 @@ import {take} from 'rxjs';
 export class BotsTypesController {
   constructor(private readonly store: AppStore) {}
 
-  @Get()
-  getAll() {
-    return  this.store.snapshot().botsTypesList;
-    let botsTypes;
-
-    this.store.select$(selectBotsTypes).pipe(take(1)).subscribe((value) => {
-      botsTypes = value;
-    });
-
-    return botsTypes;
-  }
 
   @Post('set-all')
   setAll(@Body() list: IBotType[]) {
