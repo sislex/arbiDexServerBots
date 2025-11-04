@@ -1,7 +1,10 @@
 // src/store/state.types.ts
 import {TestBot} from '../bots/test/testBot';
 
-export type IBotType = 'TestBot' | 'TestBot2';
+export enum IBotType {
+  TEST_BOT = 'TestBot',
+  TEST_BOT_2 = 'TestBot2',
+}
 
 export enum IActionType {
   GET_ARBITRUM_UNISWAP_V3_QUOTES = 'get_Arbitrum_UniswapV3_Quote',
@@ -24,10 +27,16 @@ export type IActionParams =
   | IActionParams_get_Arbitrum_UniswapV2_Quote;
 
 
+export interface IActionTypeAndDescription {
+  type: IActionType;
+  description: string;
+}
+
+
 
 export interface IBotTypeAndDescription {
-  type: IBotType;          // расширяемо
-  description: string;                  // 'arbitrum Uniswap V3'
+  type: IBotType;
+  description: string;
 }
 
 export interface IErrorItem {
@@ -40,6 +49,7 @@ export interface AppState {
   appVersion: string;                    // версия из package.json
   serverStartedAt: string;
   botsTypesList: IBotTypeAndDescription[];            // feature #1
+  actionsTypesList: IActionTypeAndDescription[];            // feature #1
   botsRulesList: IBotsRule[];            // feature #1
   botsList: IBot[];            // feature #1
   errorList: IErrorItem[];              // feature #2 (cap по размеру)

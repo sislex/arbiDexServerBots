@@ -1,6 +1,6 @@
 // src/store/reducer.ts
 import { Action } from './actions';
-import {AppState, IActionType} from './state.types';
+import {AppState, IActionType, IBotType} from './state.types';
 
 const ERROR_CAP = 1000;
 
@@ -9,13 +9,18 @@ export const initialState: AppState = {
   appVersion: '0.0.2',
   serverStartedAt: new Date().toISOString(), // ✅ Время старта
   botsTypesList: [
-    { type: 'TestBot', description: 'Test bot' },
+    { type: IBotType.TEST_BOT, description: 'Test bot' },
+    { type: IBotType.TEST_BOT_2, description: 'TestBot2' },
+  ],
+  actionsTypesList: [
+    { type: IActionType.GET_ARBITRUM_UNISWAP_V3_QUOTES, description: 'get_Arbitrum_UniswapV3_Quote' },
+    { type: IActionType.GET_ARBITRUM_UNISWAP_V2_QUOTES, description: 'get_Arbitrum_UniswapV2_Quote' },
   ],
   botsRulesList: [
     {
       id: 'botRule1',
       botParams: {
-        botType: 'TestBot',
+        botType: IBotType.TEST_BOT,
         paused: false,
         isRepeat: true,
         delayBetweenRepeat: 1000,
