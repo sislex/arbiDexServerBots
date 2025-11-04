@@ -6,7 +6,7 @@ const ERROR_CAP = 1000;
 
 export const initialState: AppState = {
   stateVersion: 1,
-  appVersion: '0.0.1',
+  appVersion: '0.0.2',
   serverStartedAt: new Date().toISOString(), // ✅ Время старта
   botsTypesList: [
     { type: 'TestBot', description: 'Test bot' },
