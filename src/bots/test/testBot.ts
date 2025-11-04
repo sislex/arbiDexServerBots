@@ -1,5 +1,6 @@
-import {IActionParams, IActionType, IBotParams} from '../../store/state.types';
+import {IActionParams, IBotParams} from '../../store/state.types';
 import { setTimeout as delay } from 'timers/promises';
+import {runAction} from '../../actions/handlers';
 
 export interface ITestBot<Params, Result> {
   createdAt: Date;
@@ -27,7 +28,7 @@ export class TestBot implements ITestBot<IActionParams, any> {
   lastActionTimeStart: Date;
   lastActionTimeFinish: Date;
   lastLatency: number;
-  lastActionResult: number;
+  lastActionResult: any;
 
   running: boolean;
 
@@ -45,7 +46,6 @@ export class TestBot implements ITestBot<IActionParams, any> {
 
   async beforeActionLaunch() {
     this.lastActionTimeStart = new Date();
-    this.actionCount += 1;
   }
 
   async startAction() {
@@ -86,19 +86,16 @@ export class TestBot implements ITestBot<IActionParams, any> {
   async afterActionLaunch() {
     this.lastActionTimeFinish= new Date();
     this.lastLatency = this.lastActionTimeFinish.getTime() - this.lastActionTimeStart.getTime();
+    console.log('-----------------');
+    console.log(this.actionCount, this.lastActionResult)
+    this.actionCount = this.actionCount + 1;
+
+
+    // послать данные this.lastActionResult  на внешний API
   }
 
   async action(actionParams = this.actionParams): Promise<any>{
-    switch (actionParams.actionType) {
-      case IActionType.ARBITRUM_UNISWAP_V3_QUOTES:
-        actionParams.i += 1;
-        this.lastActionResult = actionParams.i;
-        return this.lastActionResult;
-
-      case IActionType.ARBITRUM_UNISWAP_V2_QUOTES:
-        actionParams.k += 1;
-        this.lastActionResult = actionParams.k;
-        return this.lastActionResult;
-    }
+    console.log('actionCount', this.actionCount);
+    this.lastActionResult = await runAction(actionParams);
   }
 }

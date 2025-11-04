@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import {TestBot} from './test/testBot';
 import {selectBotsList, selectBotsRulesList} from '../store/selectors';
 import {AppStore} from '../store/app.store';
 import {withLatestFrom, Observable} from 'rxjs';

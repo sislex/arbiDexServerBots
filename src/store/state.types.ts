@@ -2,25 +2,26 @@
 import {TestBot} from '../bots/test/testBot';
 
 export type IBotType = 'TestBot' | 'TestBot2';
+
 export enum IActionType {
-  ARBITRUM_UNISWAP_V3_QUOTES = 'ARBITRUM_UNISWAP_V3_QUOTES',
-  ARBITRUM_UNISWAP_V2_QUOTES = 'ARBITRUM_UNISWAP_V2_QUOTES',
+  GET_ARBITRUM_UNISWAP_V3_QUOTES = 'get_Arbitrum_UniswapV3_Quote',
+  GET_ARBITRUM_UNISWAP_V2_QUOTES = 'get_Arbitrum_UniswapV2_Quote',
 }
 
 export interface IActionDefaultParams { actionType: IActionType; }
 
-export interface IActionParams_ArbitrumUniswapV3Quotes extends IActionDefaultParams {
-  actionType: IActionType.ARBITRUM_UNISWAP_V3_QUOTES;
+export interface IActionParams_get_Arbitrum_UniswapV3_Quote extends IActionDefaultParams {
+  actionType: IActionType.GET_ARBITRUM_UNISWAP_V3_QUOTES;
   i: number;
 }
-export interface IActionParams_ArbitrumUniswapV2Quotes extends IActionDefaultParams {
-  actionType: IActionType.ARBITRUM_UNISWAP_V2_QUOTES;
+export interface IActionParams_get_Arbitrum_UniswapV2_Quote extends IActionDefaultParams {
+  actionType: IActionType.GET_ARBITRUM_UNISWAP_V2_QUOTES;
   k: number;
 }
 
 export type IActionParams =
-  | IActionParams_ArbitrumUniswapV3Quotes
-  | IActionParams_ArbitrumUniswapV2Quotes;
+  | IActionParams_get_Arbitrum_UniswapV3_Quote
+  | IActionParams_get_Arbitrum_UniswapV2_Quote;
 
 
 
@@ -35,7 +36,9 @@ export interface IErrorItem {
 }
 
 export interface AppState {
-  version: number;                      // увеличиваем при каждом экшене
+  stateVersion: number;                      // увеличиваем при каждом экшене
+  appVersion: string;                    // версия из package.json
+  serverStartedAt: string;
   botsTypesList: IBotTypeAndDescription[];            // feature #1
   botsRulesList: IBotsRule[];            // feature #1
   botsList: IBot[];            // feature #1
@@ -60,3 +63,4 @@ export interface IBot {
   id: string;                           // уникальный ид бота, соответствует id из botsSettingsList
   botInstance: TestBot;
 }
+

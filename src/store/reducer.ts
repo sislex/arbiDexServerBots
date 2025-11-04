@@ -5,7 +5,9 @@ import {AppState, IActionType} from './state.types';
 const ERROR_CAP = 1000;
 
 export const initialState: AppState = {
-  version: 1,
+  stateVersion: 1,
+  appVersion: '0.0.1',
+  serverStartedAt: new Date().toISOString(), // ✅ Время старта
   botsTypesList: [
     { type: 'TestBot', description: 'Test bot' },
   ],
@@ -16,11 +18,11 @@ export const initialState: AppState = {
         botType: 'TestBot',
         paused: false,
         isRepeat: true,
-        delayBetweenRepeat: 1,
-        maxActions: 100000,
+        delayBetweenRepeat: 1000,
+        maxActions: 2,
       },
       actionParams: {
-        actionType: IActionType.ARBITRUM_UNISWAP_V3_QUOTES,
+        actionType: IActionType.GET_ARBITRUM_UNISWAP_V3_QUOTES,
         i: 1
       }
     },
@@ -54,5 +56,5 @@ export function reducer(state: AppState = initialState, action: Action): AppStat
 }
 
 function bump(s: AppState): AppState {
-  return { ...s, version: s.version + 1 };
+  return { ...s, stateVersion: s.stateVersion + 1 };
 }
