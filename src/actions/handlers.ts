@@ -4,7 +4,7 @@ import {get_Arbitrum_UniswapV3_Quote} from './getQuote_Arbitrum_UniswapV3/arbitr
 
 export interface QuoteResult {
   ok: boolean;
-  amountOut?: bigint;
+  amountOut?: string;
   errorMessage?: string;
 }
 

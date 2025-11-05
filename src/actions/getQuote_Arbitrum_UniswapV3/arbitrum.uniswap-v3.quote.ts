@@ -3,5 +3,5 @@ import {IActionParams_get_Arbitrum_UniswapV3_Quote} from '../../store/state.type
 
 export async function get_Arbitrum_UniswapV3_Quote(params: IActionParams_get_Arbitrum_UniswapV3_Quote) {
   // ... логика
-  return { ok: true, amountOut: 123n };
+  return { ok: true, amountOut: '12123123' };
 }

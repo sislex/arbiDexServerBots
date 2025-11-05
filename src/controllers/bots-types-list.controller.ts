@@ -13,7 +13,6 @@ export class BotsTypesController {
   @Get('get-all')
   async getAll() {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
-
     return botsList.map((bot: IBot) =>({
       id: bot.id,
       running: bot.botInstance.running,
@@ -23,7 +22,7 @@ export class BotsTypesController {
       lastActionTimeStart: bot.botInstance.lastActionTimeStart,
       lastActionTimeFinish: bot.botInstance.lastActionTimeFinish,
       lastLatency: bot.botInstance.lastLatency,
-      // lastActionResult: bot.botInstance.lastActionResult,
+      lastActionResult: bot.botInstance.lastActionResult,
     }));
   }
 
