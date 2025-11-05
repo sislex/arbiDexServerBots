@@ -1,19 +1,30 @@
 // src/store/bots-types-list.controller.ts
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AppStore } from '../store/app.store';
-import type { IBotType } from '../store/state.types';
-import { selectBotsTypes } from '../store/selectors';
-import {take} from 'rxjs';
+import {IBot, IBotType} from '../store/state.types';
+import {selectBotsList} from '../store/selectors';
+import {firstValueFrom, take} from 'rxjs';
 
-@Controller('bots-types-list')
+@Controller('bots')
 export class BotsTypesController {
   constructor(private readonly store: AppStore) {}
 
 
-  @Post('set-all')
-  setAll(@Body() list: IBotType[]) {
-    this.store.dispatch({ type: 'BOTS_TYPES/SET_ALL', payload: list });
-    return this.store.select$(selectBotsTypes);
+  @Get('get-all')
+  async getAll() {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+
+    return botsList.map((bot: IBot) =>({
+      id: bot.id,
+      running: bot.botInstance.running,
+      createdAt: bot.botInstance.createdAt,
+      actionCount: bot.botInstance.actionCount,
+      errorCount: bot.botInstance.errorCount,
+      lastActionTimeStart: bot.botInstance.lastActionTimeStart,
+      lastActionTimeFinish: bot.botInstance.lastActionTimeFinish,
+      lastLatency: bot.botInstance.lastLatency,
+      // lastActionResult: bot.botInstance.lastActionResult,
+    }));
   }
 
   @Post()
