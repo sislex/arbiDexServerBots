@@ -36,8 +36,8 @@ export class TestBot implements ITestBot<IActionParams, any> {
   running: boolean;
 
   constructor(
-    private readonly botParams: IBotParams,
-    private readonly actionParams: IActionParams,
+    private botParams: IBotParams,
+    private actionParams: IActionParams,
   ) {
     this.createdAt = new Date();
     this.actionCount = 0;
@@ -115,5 +115,11 @@ export class TestBot implements ITestBot<IActionParams, any> {
       botParams: this.getBotParams(),
       actionParams: this.getActionParams(),
     }
+  }
+
+  setSettings(botParams: IBotParams, actionParams: IActionParams): {botParams: IBotParams, actionParams: IActionParams} {
+    this.botParams = botParams;
+    this.actionParams = actionParams;
+    return this.getSettings();
   }
 }

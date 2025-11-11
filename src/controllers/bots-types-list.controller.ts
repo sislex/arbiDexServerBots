@@ -1,7 +1,9 @@
 // src/store/bots-types-list.controller.ts
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Post, Put} from '@nestjs/common';
 import { AppStore } from '../store/app.store';
-import {IBot, IBotType} from '../store/state.types';
+import type { IActionParams, IBotParams } from '../store/state.types';
+import { IBot, IBotType } from '../store/state.types';
+
 import {selectBotsList} from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
 
@@ -33,10 +35,30 @@ export class BotsTypesController {
     if (!bot) {
       return { error: 'Bot not found' };
     }
+
     return {
       id: botId,
       ...bot.botInstance.getSettings()
     };
+  }
+
+
+  @Put('bot/:botId/settings')
+  async putBotSettings(
+    @Param('botId') botId: string,
+    @Body('botParams') botParams: IBotParams,
+    @Body('actionParams') actionParams: IActionParams,
+    ) {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const bot = botsList.find((b: IBot) => b.id === botId);
+    if (!bot) {
+      return { error: 'Bot not found' };
+    }
+
+    return {
+      id: botId,
+      ...bot.botInstance.setSettings(botParams, actionParams)
+    }
   }
 
   @Post()
