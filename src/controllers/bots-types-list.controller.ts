@@ -33,7 +33,10 @@ export class BotsTypesController {
     if (!bot) {
       return { error: 'Bot not found' };
     }
-    return bot.botInstance.getSettings();
+    return {
+      id: botId,
+      ...bot.botInstance.getSettings()
+    };
   }
 
   @Post()
