@@ -5,12 +5,12 @@ import {IBot, IBotType} from '../store/state.types';
 import {selectBotsList} from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
 
-@Controller('bots')
+@Controller('')
 export class BotsTypesController {
   constructor(private readonly store: AppStore) {}
 
 
-  @Get('get-all')
+  @Get('bots/get-all')
   async getAll() {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
     return botsList.map((bot: IBot) =>({
@@ -24,6 +24,16 @@ export class BotsTypesController {
       lastLatency: bot.botInstance.lastLatency,
       lastActionResult: bot.botInstance.lastActionResult,
     }));
+  }
+
+  @Get('bot/:botId/settings')
+  async getBotSettings(@Param('botId') botId: string) {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const bot = botsList.find((b: IBot) => b.id === botId);
+    if (!bot) {
+      return { error: 'Bot not found' };
+    }
+    return bot.botInstance.getSettings();
   }
 
   @Post()

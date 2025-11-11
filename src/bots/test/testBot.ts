@@ -17,6 +17,9 @@ export interface ITestBot<Params, Result> {
 
 
   action(): Promise<Result>;
+  getSettings(): {botParams: IBotParams, actionParams: IActionParams};
+  getBotParams(): IBotParams;
+  getActionParams(): IActionParams;
 }
 
 export class TestBot implements ITestBot<IActionParams, any> {
@@ -97,5 +100,20 @@ export class TestBot implements ITestBot<IActionParams, any> {
   async action(actionParams = this.actionParams): Promise<any>{
     console.log('actionCount', this.actionCount);
     this.lastActionResult = await runAction(actionParams);
+  }
+
+  getBotParams(): IBotParams {
+    return this.botParams;
+  }
+
+  getActionParams(): IActionParams {
+    return this.actionParams;
+  }
+
+  getSettings(): {botParams: IBotParams, actionParams: IActionParams} {
+    return {
+      botParams: this.getBotParams(),
+      actionParams: this.getActionParams(),
+    }
   }
 }
