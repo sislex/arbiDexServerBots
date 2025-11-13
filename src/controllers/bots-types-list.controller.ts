@@ -47,8 +47,8 @@ export class BotsTypesController {
   @Put('bot/:botId/settings')
   async putBotSettings(
     @Param('botId') botId: string,
-    @Body('botParams') botParams: IBotParams,
-    @Body('actionParams') actionParams: IActionParams,
+    @Body('botParams') botParams: string,
+    @Body('actionParams') actionParams: string,
     ) {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
     const bot = botsList.find((b: IBot) => b.id === botId);
@@ -58,7 +58,7 @@ export class BotsTypesController {
 
     return {
       id: botId,
-      ...bot.botInstance.setSettings(botParams, actionParams)
+      ...bot.botInstance.setSettings(JSON.parse(botParams) as IBotParams, JSON.parse(actionParams) as IActionParams)
     }
   }
 
