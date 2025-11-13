@@ -6,6 +6,7 @@ import { IBot, IBotType } from '../store/state.types';
 
 import {selectBotsList} from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
+import {getParamsFromBotInstance} from '../store/bots.halpers';
 
 @Controller('')
 export class BotsTypesController {
@@ -15,17 +16,18 @@ export class BotsTypesController {
   @Get('bots/get-all')
   async getAll() {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
-    return botsList.map((bot: IBot) =>({
-      id: bot.id,
-      running: bot.botInstance.running,
-      createdAt: bot.botInstance.createdAt,
-      actionCount: bot.botInstance.actionCount,
-      errorCount: bot.botInstance.errorCount,
-      lastActionTimeStart: bot.botInstance.lastActionTimeStart,
-      lastActionTimeFinish: bot.botInstance.lastActionTimeFinish,
-      lastLatency: bot.botInstance.lastLatency,
-      lastActionResult: bot.botInstance.lastActionResult,
-    }));
+    return botsList.map((bot: IBot) => getParamsFromBotInstance(bot));
+  }
+
+  @Get('bot/:botId/params')
+  async getBotParams(@Param('botId') botId: string) {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const bot = botsList.find((b: IBot) => b.id === botId);
+    if (!bot) {
+      return { error: 'Bot not found' };
+    }
+
+    return getParamsFromBotInstance(bot);
   }
 
   @Get('bot/:botId/settings')
@@ -41,7 +43,6 @@ export class BotsTypesController {
       ...bot.botInstance.getSettings()
     };
   }
-
 
   @Put('bot/:botId/settings')
   async putBotSettings(
