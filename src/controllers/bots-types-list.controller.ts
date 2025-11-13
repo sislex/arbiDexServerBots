@@ -63,6 +63,18 @@ export class BotsTypesController {
   }
 
   @Post()
+  async pauseBot(@Param('botId') botId: string, @Body() pause: boolean) {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const bot = botsList.find((b: IBot) => b.id === botId);
+    if (!bot) {
+      return { error: 'Bot not found' };
+    }
+    bot.botInstance.setPaused(pause);
+
+    return { id: botId, paused: pause };
+  }
+
+  @Post()
   addOrUpsert(@Body() item: IBotType) {
     this.store.dispatch({ type: 'BOTS_TYPES/UPSERT_ONE', payload: item });
     return this.store.snapshot().botsTypesList;

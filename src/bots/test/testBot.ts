@@ -122,4 +122,11 @@ export class TestBot implements ITestBot<IActionParams, any> {
     this.actionParams = actionParams;
     return this.getSettings();
   }
+
+  setPaused(paused: boolean) {
+    this.botParams.paused = paused;
+    if (!paused) {
+      void this.startAction();
+    }
+  }
 }
