@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import {
-  selectActionsTypesList,
+  selectActionsTypesList, selectApis,
   selectAppVersion,
   selectBotsCount,
   selectBotsTypes,
@@ -8,6 +8,7 @@ import {
 } from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
 import { AppStore } from '../store/app.store';
+import {ApiEndpointDto} from '../store/dto/api-endpoint.dto';
 
 @Controller()
 export class AppController {
@@ -30,6 +31,12 @@ export class AppController {
   async getBotsTypesList() {
     const botsTypes: string = await firstValueFrom(this.store.select$(selectBotsTypes));
     return botsTypes;
+  }
+
+  @Get('info/apis')
+  async getApis() {
+    const apis: ApiEndpointDto[] = await firstValueFrom(this.store.select$(selectApis));
+    return apis;
   }
 
   @Get('info/bots-actions-list')

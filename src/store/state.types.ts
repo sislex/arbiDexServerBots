@@ -1,5 +1,6 @@
 // src/store/state.types.ts
 import {TestBot} from '../bots/test/testBot';
+import {ApiEndpointDto} from './dto/api-endpoint.dto';
 
 export enum IBotType {
   TEST_BOT = 'TestBot',
@@ -53,6 +54,7 @@ export interface AppState {
   botsRulesList: IBotsRule[];            // feature #1
   botsList: IBot[];            // feature #1
   errorList: IErrorItem[];              // feature #2 (cap по размеру)
+  apis: ApiEndpointDto[];              // feature #2 (cap по размеру)
 }
 
 export interface IBotParams {

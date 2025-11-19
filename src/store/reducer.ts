@@ -1,6 +1,7 @@
 // src/store/reducer.ts
 import { Action } from './actions';
 import {AppState, IActionType, IBotType} from './state.types';
+import {ApiStabs} from './api.stabs';
 
 const ERROR_CAP = 1000;
 
@@ -34,6 +35,7 @@ export const initialState: AppState = {
   ],
   botsList: [],
   errorList: [],
+  apis: ApiStabs,
 };
 
 export function reducer(state: AppState = initialState, action: Action): AppState {
