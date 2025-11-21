@@ -1,17 +1,17 @@
-import { IActionParams, IBotParams } from '../store/state.types';
+import { IJobParams, IBotParams } from '../store/state.types';
 import { TestBot } from './test/testBot';
 
 const botRegistry: Record<
   string,
-  new (botParams: IBotParams, actionParams: IActionParams) => any
+  new (botParams: IBotParams, jobParams: IJobParams) => any
 > = {
   TestBot,
 };
 
-export function getBot(botParams: IBotParams, actionParams: IActionParams) {
+export function getBot(botParams: IBotParams, jobParams: IJobParams) {
   const BotClass = botRegistry[botParams.botType];
   if (!BotClass) {
     throw new Error(`Unknown bot type: ${botParams.botType}`);
   }
-  return new BotClass(botParams, actionParams);
+  return new BotClass(botParams, jobParams);
 }

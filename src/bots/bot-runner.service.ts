@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {selectBotsList, selectBotsRulesList} from '../store/selectors';
 import {AppStore} from '../store/app.store';
 import {withLatestFrom, Observable} from 'rxjs';
-import {IActionParams, IBot, IBotParams, IBotsRule} from '../store/state.types';
+import {IJobParams, IBot, IBotParams, IBotsRule} from '../store/state.types';
 import {distinctUntilChanged} from 'rxjs/operators';
 import {getBot} from './bot-factory';
 
@@ -32,7 +32,7 @@ export class BotRunnerService {
         if (!bot) {
           const newBot: IBot = {
             id: botRule.id,
-            botInstance: getBot(botRule.botParams, botRule.actionParams),
+            botInstance: getBot(botRule.botParams, botRule.jobParams),
           };
           newBotsList.push(newBot);
         } else {

@@ -7,29 +7,29 @@ export enum IBotType {
   TEST_BOT_2 = 'TestBot2',
 }
 
-export enum IActionType {
+export enum IJobType {
   GET_ARBITRUM_UNISWAP_V3_QUOTES = 'get_Arbitrum_UniswapV3_Quote',
   GET_ARBITRUM_UNISWAP_V2_QUOTES = 'get_Arbitrum_UniswapV2_Quote',
 }
 
-export interface IActionDefaultParams { actionType: IActionType; }
+export interface IJobDefaultParams { jobType: IJobType; }
 
-export interface IActionParams_get_Arbitrum_UniswapV3_Quote extends IActionDefaultParams {
-  actionType: IActionType.GET_ARBITRUM_UNISWAP_V3_QUOTES;
+export interface IJobParams_get_Arbitrum_UniswapV3_Quote extends IJobDefaultParams {
+  jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES;
   i: number;
 }
-export interface IActionParams_get_Arbitrum_UniswapV2_Quote extends IActionDefaultParams {
-  actionType: IActionType.GET_ARBITRUM_UNISWAP_V2_QUOTES;
+export interface IJobParams_get_Arbitrum_UniswapV2_Quote extends IJobDefaultParams {
+  jobType: IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES;
   k: number;
 }
 
-export type IActionParams =
-  | IActionParams_get_Arbitrum_UniswapV3_Quote
-  | IActionParams_get_Arbitrum_UniswapV2_Quote;
+export type IJobParams =
+  | IJobParams_get_Arbitrum_UniswapV3_Quote
+  | IJobParams_get_Arbitrum_UniswapV2_Quote;
 
 
-export interface IActionTypeAndDescription {
-  type: IActionType;
+export interface IJobTypeAndDescription {
+  type: IJobType;
   description: string;
 }
 
@@ -50,7 +50,7 @@ export interface AppState {
   appVersion: string;                    // версия из package.json
   serverStartedAt: string;
   botsTypesList: IBotTypeAndDescription[];            // feature #1
-  actionsTypesList: IActionTypeAndDescription[];            // feature #1
+  jobTypesList: IJobTypeAndDescription[];            // feature #1
   botsRulesList: IBotsRule[];            // feature #1
   botsList: IBot[];            // feature #1
   errorList: IErrorItem[];              // feature #2 (cap по размеру)
@@ -62,13 +62,13 @@ export interface IBotParams {
   paused: boolean,
   isRepeat: boolean,
   delayBetweenRepeat?: number,
-  maxActions: number,
+  maxJobs: number,
 }
 
 export interface IBotsRule {
   id: string;                           // уникальный ид настроек бота
   botParams: IBotParams;
-  actionParams: IActionParams;
+  jobParams: IJobParams;
 }
 
 export interface IBot {

@@ -24,9 +24,9 @@ export const ApiStabs: ApiEndpointDto[] = [
   },
   {
     method: 'GET',
-    path: '/info/bots-actions-list',
-    description: 'Bots actions list',
-    tags: ['bot'],
+    path: 'info/job-type-list',
+    description: 'Job types  list',
+    tags: ['job'],
     version: 'v1',
   },
   {

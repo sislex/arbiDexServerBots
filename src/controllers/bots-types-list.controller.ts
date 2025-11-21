@@ -1,7 +1,7 @@
 // src/store/bots-types-list.controller.ts
 import {Body, Controller, Delete, Get, Param, Post, Put} from '@nestjs/common';
 import { AppStore } from '../store/app.store';
-import type { IActionParams, IBotParams } from '../store/state.types';
+import type { IJobParams, IBotParams } from '../store/state.types';
 import { IBot, IBotType } from '../store/state.types';
 
 import {selectBotsList} from '../store/selectors';
@@ -48,7 +48,7 @@ export class BotsTypesController {
   async putBotSettings(
     @Param('botId') botId: string,
     @Body('botParams') botParams: string,
-    @Body('actionParams') actionParams: string,
+    @Body('jobParams') jobParams: string,
     ) {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
     const bot = botsList.find((b: IBot) => b.id === botId);
@@ -58,7 +58,7 @@ export class BotsTypesController {
 
     return {
       id: botId,
-      ...bot.botInstance.setSettings(JSON.parse(botParams) as IBotParams, JSON.parse(actionParams) as IActionParams)
+      ...bot.botInstance.setSettings(JSON.parse(botParams) as IBotParams, JSON.parse(jobParams) as IJobParams)
     }
   }
 

@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import {
-  selectActionsTypesList, selectApis,
+  selectJobTypesList, selectApis,
   selectAppVersion,
   selectBotsCount,
   selectBotsTypes,
@@ -39,9 +39,9 @@ export class AppController {
     return apis;
   }
 
-  @Get('info/bots-actions-list')
+  @Get('info/job-type-list')
   async getActionsTypesList() {
-    const actionsTypes: string = await firstValueFrom(this.store.select$(selectActionsTypesList));
-    return actionsTypes;
+    const jobTypes: string = await firstValueFrom(this.store.select$(selectJobTypesList));
+    return jobTypes;
   }
 }

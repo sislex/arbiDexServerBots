@@ -1,4 +1,4 @@
-// src/store/actions.ts
+// src/store/jobs.ts
 import {IBot, IBotType, IErrorItem} from './state.types';
 
 export type Action =

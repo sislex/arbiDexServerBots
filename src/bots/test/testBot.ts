@@ -1,70 +1,70 @@
-import {IActionParams, IBotParams} from '../../store/state.types';
+import {IJobParams, IBotParams} from '../../store/state.types';
 import { setTimeout as delay } from 'timers/promises';
-import {runAction} from '../../actions/handlers';
+import {runJob} from '../../jobs/handlers';
 
 export interface ITestBot<Params, Result> {
   createdAt: Date;
-  actionCount: number;
+  jobCount: number;
   errorCount: number;
   errorMessages: string[];
 
-  lastActionTimeStart: Date;
-  lastActionTimeFinish: Date;
+  lastJobTimeStart: Date;
+  lastJobTimeFinish: Date;
   lastLatency: number;
-  lastActionResult: number;
+  lastJobResult: number;
 
   running: boolean;
 
 
-  action(): Promise<Result>;
-  getSettings(): {botParams: IBotParams, actionParams: IActionParams};
+  job(): Promise<Result>;
+  getSettings(): {botParams: IBotParams, jobParams: IJobParams};
   getBotParams(): IBotParams;
-  getActionParams(): IActionParams;
+  getJobParams(): IJobParams;
 }
 
-export class TestBot implements ITestBot<IActionParams, any> {
+export class TestBot implements ITestBot<IJobParams, any> {
   createdAt: Date;
-  actionCount: number;
+  jobCount: number;
   errorCount: number;
   errorMessages: string[];
 
-  lastActionTimeStart: Date;
-  lastActionTimeFinish: Date;
+  lastJobTimeStart: Date;
+  lastJobTimeFinish: Date;
   lastLatency: number;
-  lastActionResult: any;
+  lastJobResult: any;
 
   running: boolean;
 
   constructor(
     private botParams: IBotParams,
-    private actionParams: IActionParams,
+    private jobParams: IJobParams,
   ) {
     this.createdAt = new Date();
-    this.actionCount = 0;
+    this.jobCount = 0;
     this.errorCount = 0;
     this.errorMessages = [];
 
-    void this.startAction();
+    void this.startJob();
   }
 
-  async beforeActionLaunch() {
-    this.lastActionTimeStart = new Date();
+  async beforeJobLaunch() {
+    this.lastJobTimeStart = new Date();
   }
 
-  async startAction() {
+  async startJob() {
     if (this.running) return;            // защита от повторного старта
     this.running = true;
 
     try {
       while (!this.botParams.paused) {
-        await this.beforeActionLaunch();
+        await this.beforeJobLaunch();
         try {
-          await this.action(this.actionParams);
+          await this.job(this.jobParams);
         } catch (err: any) {
           this.errorCount += 1;
           this.errorMessages.push(String(err?.message ?? err));
         } finally {
-          await this.afterActionLaunch();
+          await this.afterJobLaunch();
         }
 
         // если не надо повторять — выходим
@@ -79,54 +79,53 @@ export class TestBot implements ITestBot<IActionParams, any> {
         }
 
         // необязательно: лимит на количество действий
-        if (this.botParams.maxActions && this.actionCount >= this.botParams.maxActions) break;
+        if (this.botParams.maxJobs && this.jobCount >= this.botParams.maxJobs) break;
       }
     } finally {
       this.running = false;
     }
   }
 
-  async afterActionLaunch() {
-    this.lastActionTimeFinish= new Date();
-    this.lastLatency = this.lastActionTimeFinish.getTime() - this.lastActionTimeStart.getTime();
+  async afterJobLaunch() {
+    this.lastJobTimeFinish= new Date();
+    this.lastLatency = this.lastJobTimeFinish.getTime() - this.lastJobTimeStart.getTime();
     console.log('-----------------');
-    console.log(this.actionCount, this.lastActionResult)
-    this.actionCount = this.actionCount + 1;
+    console.log(this.jobCount, this.lastJobResult)
+    this.jobCount = this.jobCount + 1;
 
 
-    // послать данные this.lastActionResult  на внешний API
+    // послать данные this.lastJobResult  на внешний API
   }
 
-  async action(actionParams = this.actionParams): Promise<any>{
-    console.log('actionCount', this.actionCount);
-    this.lastActionResult = await runAction(actionParams);
+  async job(jobParams = this.jobParams): Promise<any>{
+    this.lastJobResult = await runJob(jobParams);
   }
 
   getBotParams(): IBotParams {
     return this.botParams;
   }
 
-  getActionParams(): IActionParams {
-    return this.actionParams;
+  getJobParams(): IJobParams {
+    return this.jobParams;
   }
 
-  getSettings(): {botParams: IBotParams, actionParams: IActionParams} {
+  getSettings(): {botParams: IBotParams, jobParams: IJobParams} {
     return {
       botParams: this.getBotParams(),
-      actionParams: this.getActionParams(),
+      jobParams: this.getJobParams(),
     }
   }
 
-  setSettings(botParams: IBotParams, actionParams: IActionParams): {botParams: IBotParams, actionParams: IActionParams} {
+  setSettings(botParams: IBotParams, jobParams: IJobParams): {botParams: IBotParams, jobParams: IJobParams} {
     this.botParams = botParams;
-    this.actionParams = actionParams;
+    this.jobParams = jobParams;
     return this.getSettings();
   }
 
   setPaused(paused: boolean) {
     this.botParams.paused = paused;
     if (!paused) {
-      void this.startAction();
+      void this.startJob();
     }
   }
 }
