@@ -17,7 +17,7 @@ export const ApiStabs: ApiEndpointDto[] = [
   },
   {
     method: 'GET',
-    path: '{/info/bots-types-list',
+    path: '/info/bots-types-list',
     description: 'Bots types list',
     tags: ['bot'],
     version: 'v1',
