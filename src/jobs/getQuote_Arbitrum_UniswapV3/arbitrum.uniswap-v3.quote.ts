@@ -132,47 +132,6 @@ export async function get_Arbitrum_UniswapV3_Quote(params: IJobParams_get_Arbitr
   return result;
 }
 
-async function quoteV3Parallel(quoter, qParamsIn, qParamsOut?: any): Promise<QuoteResult> {
-  const startTime = Date.now();
-  try {
-    const promises: Promise<any>[] = [
-      quoter.getFunction("quoteExactInputSingle").staticCall(qParamsIn)
-    ];
-
-    if (qParamsOut) {
-      promises.push(
-        quoter.getFunction("quoteExactOutputSingle").staticCall(qParamsOut)
-      );
-    }
-
-    const result = await Promise.all(promises);
-
-    const latencyMs = Date.now() - startTime;
-
-    const exactInDecoded = result[0];
-    const exactOutDecoded = qParamsOut ? result[1] : undefined;
-
-    return {
-      ok: true,
-      latencyMs,
-      result: {
-        quoteExactInputSingle: mapExactIn(exactInDecoded),
-        quoteExactOutputSingle: exactOutDecoded ? mapExactOut(exactOutDecoded) : undefined,
-      }
-    };
-
-  } catch (e: any) {
-    const latencyMs = Date.now() - startTime;
-
-    return {
-      ok: false,
-      latencyMs,
-      error: "QUOTER_REVERT",
-      message: e?.shortMessage || e?.message || String(e),
-    };
-  }
-}
-
 async function quoteV3Multicall(
   provider: ethers.JsonRpcProvider,
   quoter: ethers.Contract,
@@ -243,6 +202,48 @@ async function quoteV3Multicall(
       ok: false,
       latencyMs,
       error: "MULTICALL_OR_QUOTER_REVERT",
+      message: e?.shortMessage || e?.message || String(e),
+    };
+  }
+}
+
+// Альтернативный вариант: параллельные вызовы без multicall
+async function quoteV3Parallel(quoter, qParamsIn, qParamsOut?: any): Promise<QuoteResult> {
+  const startTime = Date.now();
+  try {
+    const promises: Promise<any>[] = [
+      quoter.getFunction("quoteExactInputSingle").staticCall(qParamsIn)
+    ];
+
+    if (qParamsOut) {
+      promises.push(
+        quoter.getFunction("quoteExactOutputSingle").staticCall(qParamsOut)
+      );
+    }
+
+    const result = await Promise.all(promises);
+
+    const latencyMs = Date.now() - startTime;
+
+    const exactInDecoded = result[0];
+    const exactOutDecoded = qParamsOut ? result[1] : undefined;
+
+    return {
+      ok: true,
+      latencyMs,
+      result: {
+        quoteExactInputSingle: mapExactIn(exactInDecoded),
+        quoteExactOutputSingle: exactOutDecoded ? mapExactOut(exactOutDecoded) : undefined,
+      }
+    };
+
+  } catch (e: any) {
+    const latencyMs = Date.now() - startTime;
+
+    return {
+      ok: false,
+      latencyMs,
+      error: "QUOTER_REVERT",
       message: e?.shortMessage || e?.message || String(e),
     };
   }
