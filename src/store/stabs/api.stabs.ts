@@ -1,4 +1,4 @@
-import {ApiEndpointDto} from './dto/api-endpoint.dto';
+import {ApiEndpointDto} from '../dto/api-endpoint.dto';
 
 export const ApiStabs: ApiEndpointDto[] = [
   {

@@ -1,11 +1,22 @@
 import {IJobParams, IJobParams_get_Arbitrum_UniswapV3_Quote, IJobType} from '../store/state.types';
-import {get_Arbitrum_UniswapV3_Quote} from './getQuote_Arbitrum_UniswapV3/arbitrum.uniswap-v3.quote';
+import {
+  get_Arbitrum_UniswapV3_Quote,
+  QuoteExactInputSingleRaw, QuoteExactOutputSingleRaw
+} from './getQuote_Arbitrum_UniswapV3/arbitrum.uniswap-v3.quote';
 
 
 export interface QuoteResult {
   ok: boolean;
-  amountOut?: string;
-  errorMessage?: string;
+  latencyMs?: number;
+
+  result?: {
+    quoteExactInputSingle: QuoteExactInputSingleRaw;
+    quoteExactOutputSingle?: QuoteExactOutputSingleRaw;
+  };
+  blockNumber?: number;
+
+  error?: string;
+  message?: string;
 }
 
 // Регистрируем хендлеры: каждый принимает *ровно те же params*, что пришли в раннер

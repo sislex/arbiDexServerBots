@@ -5,8 +5,14 @@ import { Action } from './actions';
 import { AppState } from './state.types';
 import { initialState, reducer } from './reducer';
 
+function jsonSafeStringify(x: any) {
+  return JSON.stringify(x, (_k, v) =>
+    typeof v === "bigint" ? v.toString() : v
+  );
+}
+
 function deepEqual(a: any, b: any) {
-  return JSON.stringify(a) === JSON.stringify(b);
+  return jsonSafeStringify(a) === jsonSafeStringify(b);
 }
 
 @Injectable()

@@ -14,10 +14,29 @@ export enum IJobType {
 
 export interface IJobDefaultParams { jobType: IJobType; }
 
+export interface ITokenInfo {
+  address: `0x${string}`;
+  decimals: number;
+}
+
 export interface IJobParams_get_Arbitrum_UniswapV3_Quote extends IJobDefaultParams {
   jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES;
-  i: number;
+
+  rpcUrl: string;
+
+  tokenIn:  ITokenInfo;
+  tokenOut: ITokenInfo;
+
+  amountIn?: bigint | string;                // 1000 USDC → "1000000000"
+  amountOut?: bigint | string;                // 1000 USDC → "1000000000"
+  feePpm: number;                           // 500, 3000...
+
+  poolAddress?: `0x${string}`;
+
+  roundUp?: boolean;
+  ignoreFee?: boolean;
 }
+
 export interface IJobParams_get_Arbitrum_UniswapV2_Quote extends IJobDefaultParams {
   jobType: IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES;
   k: number;
