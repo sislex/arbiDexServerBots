@@ -8,6 +8,7 @@ export enum IBotType {
 }
 
 export enum IJobType {
+  GET_POOL_STATE = 'get_Pool_State',
   GET_ARBITRUM_UNISWAP_V3_QUOTES = 'get_Arbitrum_UniswapV3_Quote',
   GET_ARBITRUM_UNISWAP_V2_QUOTES = 'get_Arbitrum_UniswapV2_Quote',
 }
@@ -17,6 +18,15 @@ export interface IJobDefaultParams { jobType: IJobType; }
 export interface ITokenInfo {
   address: `0x${string}`;
   decimals: number;
+}
+
+export interface IJobParams_get_Pool_State extends IJobDefaultParams {
+  jobType: IJobType.GET_POOL_STATE;
+
+  rpcUrl: string;
+  poolAddress: `0x${string}`;
+  wordsAround: number;
+  maxTicks: number;
 }
 
 export interface IJobParams_get_Arbitrum_UniswapV3_Quote extends IJobDefaultParams {
@@ -43,6 +53,7 @@ export interface IJobParams_get_Arbitrum_UniswapV2_Quote extends IJobDefaultPara
 }
 
 export type IJobParams =
+  | IJobParams_get_Pool_State
   | IJobParams_get_Arbitrum_UniswapV3_Quote
   | IJobParams_get_Arbitrum_UniswapV2_Quote;
 

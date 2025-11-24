@@ -1,8 +1,15 @@
-import {IJobParams, IJobParams_get_Arbitrum_UniswapV3_Quote, IJobType} from '../store/state.types';
+import {
+  IJobParams,
+  IJobParams_get_Arbitrum_UniswapV3_Quote,
+  IJobParams_get_Pool_State,
+  IJobType
+} from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
   QuoteExactInputSingleRaw, QuoteExactOutputSingleRaw
 } from './getQuote_Arbitrum_UniswapV3/arbitrum.uniswap-v3.quote';
+import {getPoolState} from './getPoolState/getPoolState';
+import {PoolState} from './getPoolState/getPoolState.types';
 
 
 export interface QuoteResult {
@@ -21,9 +28,10 @@ export interface QuoteResult {
 
 // Регистрируем хендлеры: каждый принимает *ровно те же params*, что пришли в раннер
 const handlers = {
+  [IJobType.GET_POOL_STATE]:
+    async (params: IJobParams_get_Pool_State): Promise<PoolState> => getPoolState(params),
   [IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES]:
-    async (params: IJobParams_get_Arbitrum_UniswapV3_Quote): Promise<QuoteResult> =>
-      get_Arbitrum_UniswapV3_Quote(params),
+    async (params: IJobParams_get_Arbitrum_UniswapV3_Quote): Promise<QuoteResult> => get_Arbitrum_UniswapV3_Quote(params),
 
   // [IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES]:
   //   async (params: IJobParams_ArbitrumUniswapV2Quotes): Promise<QuoteResult> =>
