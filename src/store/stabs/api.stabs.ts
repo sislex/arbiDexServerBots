@@ -78,4 +78,11 @@ export const ApiStabs: ApiEndpointDto[] = [
     tags: ['bot', 'pause'],
     version: 'v1',
   },
+  {
+    method: 'POST',
+    path: '/bot/${botId}/restart',
+    description: 'Restart bot execution. Immediately schedules a restart: the current job cycle finishes its iteration, state resets, and a new execution loop starts automatically. Response: { id: botId, restarted: true }',
+    tags: ['bot', 'restart'],
+    version: 'v1',
+  }
 ];

@@ -70,8 +70,20 @@ export class BotsTypesController {
     if (!bot) {
       return { error: 'Bot not found' };
     }
-    bot.botInstance.setPaused(pause);
+    const paused = bot.botInstance.setPaused(pause);
 
-    return { id: botId, paused: pause };
+    return { id: botId, paused };
+  }
+
+  @Post('bot/:botId/restart')
+  async restartBot(@Param('botId') botId: string) {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const bot = botsList.find((b: IBot) => b.id === botId);
+    if (!bot) {
+      return { error: 'Bot not found' };
+    }
+    bot.botInstance.restart();
+
+    return { id: botId, restarted: true };
   }
 }
