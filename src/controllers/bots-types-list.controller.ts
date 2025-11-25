@@ -63,7 +63,7 @@ export class BotsTypesController {
   }
 
   @Post('bot/:botId/pause')
-  async pauseBot(@Param('botId') botId: string, @Body() pause: boolean) {
+  async pauseBot(@Param('botId') botId: string, @Body('pause') pause: boolean) {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
     const bot = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {

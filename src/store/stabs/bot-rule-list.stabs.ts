@@ -30,7 +30,7 @@ export const BotRuleListStab: IBotsRule[] = [
       paused: false,
       isRepeat: true,
       delayBetweenRepeat: 1000,
-      maxJobs: 100000,
+      maxJobs: 1000000,
     },
     jobParams: {
       jobType: IJobType.GET_POOL_STATE,
