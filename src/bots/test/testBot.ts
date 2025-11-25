@@ -113,7 +113,7 @@ export class TestBot implements ITestBot<IJobParams, any> {
     return {
       botParams: this.getBotParams(),
       jobParams: this.getJobParams(),
-    }
+    } as any
   }
 
   setSettings(botParams: IBotParams, jobParams: IJobParams): {botParams: IBotParams, jobParams: IJobParams} {

@@ -7,6 +7,7 @@ import { IBot, IBotType } from '../store/state.types';
 import {selectBotsList} from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
 import {getParamsFromBotInstance} from '../store/bots.halpers';
+import {convertBigIntToString} from '../halpers/convertBigIntToString';
 
 @Controller('')
 export class BotsTypesController {
@@ -40,7 +41,7 @@ export class BotsTypesController {
 
     return {
       id: botId,
-      ...bot.botInstance.getSettings()
+      ...convertBigIntToString(bot.botInstance.getSettings())
     };
   }
 
