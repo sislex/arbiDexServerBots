@@ -48,20 +48,28 @@ export const BotRuleListStab: IBotsRule[] = [
           amountOut: 1000n * 1_000_000n,
           feePpm: 500,
         },
-        {
-          tokenIn: { address: USDC, decimals: 6 },
-          tokenOut: { address: ARB, decimals: 18 },
-          amountIn: 1000n * 1_000_000n,
-          amountOut: 1000n * 1_000_000n,
-          feePpm: 500,
-        },
-        {
-          tokenIn: { address: USDC, decimals: 6 },
-          tokenOut: { address: USDT, decimals: 6 },
-          amountIn: 1000n * 1_000_000n,
-          amountOut: 1000n * 1_000_000n,
-          feePpm: 500,
-        },
+        // {
+        //   tokenIn: { address: USDC, decimals: 6 },
+        //   tokenOut: { address: ARB, decimals: 18 },
+        //   amountIn: 1000n * 1_000_000n,
+        //   amountOut: 1000n * 1_000_000n,
+        //   feePpm: 500,
+        // },
+        // {
+        //   tokenIn: { address: USDC, decimals: 6 },
+        //   tokenOut: { address: USDT, decimals: 6 },
+        //   amountIn: 1000n * 1_000_000n,
+        //   amountOut: 1000n * 1_000_000n,
+        //   feePpm: 500,
+        // },
+        // {
+        //   tokenIn: { address: USDC, decimals: 6 },
+        //   tokenOut: { address: WBTC, decimals: 18 },
+        //   amountIn: 1000n * 1_000_000n,
+        //   amountOut: 1000n * 1_000_000n,
+        //   feePpm: 500,
+        // },
+
         // {
         //   tokenIn: { address: USDC, decimals: 6 },
         //   tokenOut: { address: DAI, decimals: 18 },
@@ -69,13 +77,6 @@ export const BotRuleListStab: IBotsRule[] = [
         //   amountOut: 1000n * 1_000_000n,
         //   feePpm: 500,
         // },
-        {
-          tokenIn: { address: USDC, decimals: 6 },
-          tokenOut: { address: WBTC, decimals: 18 },
-          amountIn: 1000n * 1_000_000n,
-          amountOut: 1000n * 1_000_000n,
-          feePpm: 500,
-        },
       ],
 
     }
