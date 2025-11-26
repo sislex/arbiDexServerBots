@@ -34,7 +34,7 @@ export const BotRuleListStab: IBotsRule[] = [
       paused: false,
       isRepeat: true,
       delayBetweenRepeat: 500,
-      maxJobs: 1000000,
+      maxJobs: 1,
     },
     jobParams: {
       jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,

@@ -1,4 +1,5 @@
 import {IBot} from './state.types';
+import {convertBigIntToString} from '../halpers/convertBigIntToString';
 
 export const getParamsFromBotInstance = (bot: IBot)=> ({
   id: bot.id,
@@ -9,5 +10,5 @@ export const getParamsFromBotInstance = (bot: IBot)=> ({
   lastJobTimeStart: bot.botInstance.botState.lastJobTimeStart,
   lastJobTimeFinish: bot.botInstance.botState.lastJobTimeFinish,
   lastLatency: bot.botInstance.botState.lastLatency,
-  lastJobResult: bot.botInstance.botState.lastJobResult,
+  lastJobResult: convertBigIntToString(bot.botInstance.botState.lastJobResult),
 })
