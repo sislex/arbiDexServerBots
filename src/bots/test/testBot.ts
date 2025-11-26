@@ -1,4 +1,4 @@
-import {IJobParams, IBotParams} from '../../store/state.types';
+import {IJobParams, IBotParams, IJobType} from '../../store/state.types';
 import { setTimeout as delay } from 'timers/promises';
 import {runJob} from '../../jobs/handlers';
 
@@ -110,8 +110,19 @@ export class TestBot implements ITestBot<IJobParams, any> {
       this.botState.lastLatency = null;
     }
 
+
     console.log('-----------------');
-    console.log(this.botState.jobCount, this.botState.lastJobResult)
+    console.log('jobCount', this.botState.jobCount);
+    if (this.jobParams.jobType === IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI) {
+      console.log('latencyMs', this.botState.lastJobResult.latencyMs);
+      console.log('blockNumber', this.botState.lastJobResult.blockNumber);
+      console.log('lastJobResult.result', this.botState.lastJobResult.result);
+    } else {
+      console.log('lastJobResult', this.botState.lastJobResult);
+    }
+
+
+    // console.log('lastJobResult.pair', this.botState.lastJobResult.result);
     this.botState.jobCount++;
   }
 

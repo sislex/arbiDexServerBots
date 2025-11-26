@@ -10,6 +10,7 @@ export enum IBotType {
 export enum IJobType {
   GET_POOL_STATE = 'get_Pool_State',
   GET_ARBITRUM_UNISWAP_V3_QUOTES = 'get_Arbitrum_UniswapV3_Quote',
+  GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI = 'get_Arbitrum_UniswapV3_Quote_Multi',
   GET_ARBITRUM_UNISWAP_V2_QUOTES = 'get_Arbitrum_UniswapV2_Quote',
 }
 
@@ -27,6 +28,26 @@ export interface IJobParams_get_Pool_State extends IJobDefaultParams {
   poolAddress: `0x${string}`;
   wordsAround: number;
   maxTicks: number;
+}
+
+export interface IPairToQuote {
+  tokenIn:  ITokenInfo;
+  tokenOut: ITokenInfo;
+
+  amountIn?: bigint | string;                // 1000 USDC → "1000000000"
+  amountOut?: bigint | string;                // 1000 USDC → "1000000000"
+  feePpm: number;                           // 500, 3000...
+}
+
+export interface IJobParams_get_Arbitrum_UniswapV3_Quote_Multi extends IJobDefaultParams {
+  jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI;
+
+  rpcUrl: string;
+
+  pairsToQuote: IPairToQuote[];
+
+  roundUp?: boolean;
+  ignoreFee?: boolean;
 }
 
 export interface IJobParams_get_Arbitrum_UniswapV3_Quote extends IJobDefaultParams {
@@ -55,6 +76,7 @@ export interface IJobParams_get_Arbitrum_UniswapV2_Quote extends IJobDefaultPara
 export type IJobParams =
   | IJobParams_get_Pool_State
   | IJobParams_get_Arbitrum_UniswapV3_Quote
+  | IJobParams_get_Arbitrum_UniswapV3_Quote_Multi
   | IJobParams_get_Arbitrum_UniswapV2_Quote;
 
 

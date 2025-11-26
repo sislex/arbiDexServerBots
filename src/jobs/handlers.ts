@@ -1,6 +1,6 @@
 import {
   IJobParams,
-  IJobParams_get_Arbitrum_UniswapV3_Quote,
+  IJobParams_get_Arbitrum_UniswapV3_Quote, IJobParams_get_Arbitrum_UniswapV3_Quote_Multi,
   IJobParams_get_Pool_State,
   IJobType
 } from '../store/state.types';
@@ -10,20 +10,29 @@ import {
 } from './getQuote_Arbitrum_UniswapV3/arbitrum.uniswap-v3.quote';
 import {getPoolState} from './getPoolState/getPoolState';
 import {PoolState} from './getPoolState/getPoolState.types';
+import {get_Arbitrum_UniswapV3_Quote_Multi} from './getQuote_Arbitrum_UniswapV3_Multi/arbitrum.uniswap-v3-multi.quote';
 
 
-export interface QuoteResult {
+// базовый результат для всех квот
+export interface BaseQuoteResult {
   ok: boolean;
   latencyMs?: number;
+  error?: string;
+  message?: string;
+  blockNumber?: number;
+}
 
+// Single-quote (старый вариант) – оставляем как есть, но на базе BaseQuoteResult
+export interface QuoteResult extends BaseQuoteResult {
   result?: {
     quoteExactInputSingle: QuoteExactInputSingleRaw;
     quoteExactOutputSingle?: QuoteExactOutputSingleRaw;
   };
-  blockNumber?: number;
+}
 
-  error?: string;
-  message?: string;
+// Generic-мультирезультат
+export interface QuoteResultMulti<T = any> extends BaseQuoteResult {
+  result?: T;
 }
 
 // Регистрируем хендлеры: каждый принимает *ровно те же params*, что пришли в раннер
@@ -32,6 +41,8 @@ const handlers = {
     async (params: IJobParams_get_Pool_State): Promise<PoolState> => getPoolState(params),
   [IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES]:
     async (params: IJobParams_get_Arbitrum_UniswapV3_Quote): Promise<QuoteResult> => get_Arbitrum_UniswapV3_Quote(params),
+  [IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI]:
+    async (params: IJobParams_get_Arbitrum_UniswapV3_Quote_Multi): Promise<QuoteResult> => get_Arbitrum_UniswapV3_Quote_Multi(params),
 
   // [IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES]:
   //   async (params: IJobParams_ArbitrumUniswapV2Quotes): Promise<QuoteResult> =>
