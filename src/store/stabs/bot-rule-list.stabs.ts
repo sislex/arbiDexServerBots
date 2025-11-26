@@ -8,26 +8,6 @@ const WBTC = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f';
 
 export const BotRuleListStab: IBotsRule[] = [
   {
-    id: 'botRule1',
-    botParams: {
-      botType: IBotType.TEST_BOT,
-      paused: false,
-      isRepeat: true,
-      delayBetweenRepeat: 500,
-      maxJobs: 1000000,
-    },
-    jobParams: {
-      jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES,
-      rpcUrl: 'https://arb1.arbitrum.io/rpc',
-      // poolAddress: '0xC6962004f452bE9203591991D15f6b388e09E8D0', // лучше не передавать, чтобы работало быстрее из-за разогрева api
-      tokenIn: { address: USDC, decimals: 6 },
-      tokenOut: { address: WETH, decimals: 18 },
-      amountIn: 1000n * 1_000_000n,
-      amountOut: 1000n * 1_000_000n,
-      feePpm: 500,
-    }
-  },
-  {
     id: 'botRule2',
     botParams: {
       botType: IBotType.TEST_BOT,
@@ -81,6 +61,27 @@ export const BotRuleListStab: IBotsRule[] = [
 
     }
   },
+  {
+    id: 'botRule1',
+    botParams: {
+      botType: IBotType.TEST_BOT,
+      paused: false,
+      isRepeat: true,
+      delayBetweenRepeat: 500,
+      maxJobs: 1000000,
+    },
+    jobParams: {
+      jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES,
+      rpcUrl: 'https://arb1.arbitrum.io/rpc',
+      // poolAddress: '0xC6962004f452bE9203591991D15f6b388e09E8D0', // лучше не передавать, чтобы работало быстрее из-за разогрева api
+      tokenIn: { address: USDC, decimals: 6 },
+      tokenOut: { address: WETH, decimals: 18 },
+      amountIn: 1000n * 1_000_000n,
+      amountOut: 1000n * 1_000_000n,
+      feePpm: 500,
+    }
+  },
+
   // {
   //   id: 'botRule3',
   //   botParams: {
