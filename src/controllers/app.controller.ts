@@ -4,11 +4,14 @@ import {
   selectAppVersion,
   selectBotsCount,
   selectBotsTypes,
-  selectServerStartedAt
+  selectServerStartedAt, selectBotsList, selectBotsRulesList
 } from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
 import { AppStore } from '../store/app.store';
 import {ApiEndpointDto} from '../store/dto/api-endpoint.dto';
+import {IBot, IBotsRule} from '../store/state.types';
+import {getParamsFromBotInstance} from '../store/bots.halpers';
+import {convertBigIntToString} from '../halpers/convertBigIntToString';
 
 @Controller()
 export class AppController {
@@ -43,5 +46,11 @@ export class AppController {
   async getActionsTypesList() {
     const jobTypes: string = await firstValueFrom(this.store.select$(selectJobTypesList));
     return jobTypes;
+  }
+
+  @Get('rules/get-all')
+  async getAll() {
+    const rulesList: IBotsRule[] = await firstValueFrom(this.store.select$(selectBotsRulesList));
+    return convertBigIntToString(rulesList);
   }
 }

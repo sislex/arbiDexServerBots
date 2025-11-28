@@ -84,5 +84,12 @@ export const ApiStabs: ApiEndpointDto[] = [
     description: 'Restart bot execution. Immediately schedules a restart: the current job cycle finishes its iteration, state resets, and a new execution loop starts automatically. Response: { id: botId, restarted: true }',
     tags: ['bot', 'restart'],
     version: 'v1',
+  },
+  {
+    method: 'GET',
+    path: '/rules/get-all',
+    description: 'Get all bot rules. Response: [{ id: string; botParams: any;  jobParams: any}]',
+    tags: ['rule'],
+    version: 'v1',
   }
 ];
