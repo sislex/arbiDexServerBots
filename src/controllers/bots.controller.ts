@@ -1,8 +1,8 @@
-// src/store/bots-types-list.controller.ts
-import {Body, Controller, Delete, Get, Param, Post, Put} from '@nestjs/common';
+// src/store/bots.controller.ts
+import {Body, Controller, Get, Param, Post, Put} from '@nestjs/common';
 import { AppStore } from '../store/app.store';
 import type { IJobParams, IBotParams } from '../store/state.types';
-import { IBot, IBotType } from '../store/state.types';
+import { IBot } from '../store/state.types';
 
 import {selectBotsList} from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
@@ -10,7 +10,7 @@ import {getParamsFromBotInstance} from '../store/bots.halpers';
 import {convertBigIntToString} from '../halpers/convertBigIntToString';
 
 @Controller('')
-export class BotsTypesController {
+export class BotsController {
   constructor(private readonly store: AppStore) {}
 
 

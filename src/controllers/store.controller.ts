@@ -1,4 +1,4 @@
-// src/store/bots-types-list.controller.ts
+// src/store/bots.controller.ts
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AppStore } from '../store/app.store';
 import type { IBotType } from '../store/state.types';
