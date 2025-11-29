@@ -1,6 +1,6 @@
 import {IBotsRule, IBotType, IJobType} from '../state.types';
 const USDC = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
-const WETH = '0x82af49447d8a07e3bd95bd0d56f35241523fbab2';
+const WETH = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1';
 const ARB = '0x912CE59144191C1204E64559FE8253a0e49E6548';
 const DAI = '0x7CF803e8d82A50504180f417B8bC7a493C0a0503';
 const USDT = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
