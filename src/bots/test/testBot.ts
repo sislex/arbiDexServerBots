@@ -118,6 +118,10 @@ export class TestBot implements ITestBot<IJobParams, any> {
       console.log('blockNumber', this.botState.lastJobResult.blockNumber);
       console.log('lastJobResult.result', this.botState.lastJobResult.result);
     } else {
+      if (this.botState.lastJobResult?.error) {
+        this.botState.errorCount++;
+        this.botState.errorMessages.push(this.botState.lastJobResult?.message ?? 'Unknown error');
+      }
       console.log('lastJobResult', this.botState.lastJobResult);
     }
 
