@@ -70,9 +70,6 @@ export async function get_Arbitrum_UniswapV3_Quote(params: IJobParams_get_Arbitr
 
   const tokenInAddr  = ethers.getAddress(tokenIn.address);
   const tokenOutAddr = ethers.getAddress(tokenOut.address);
-  console.log(11111)
-  console.log(tokenOut.address)
-  console.log(tokenOutAddr)
 
   const provider = new ethers.JsonRpcProvider(rpcUrl);
 
