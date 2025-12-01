@@ -26,8 +26,6 @@ const WBTC: ITokenInfo = { address: '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
 
 const ARB: ITokenInfo = { address: '0x912CE59144191C1204E64559FE8253a0e49E6548', decimals: 18 };
 const DAI: ITokenInfo = { address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1', decimals: 18 };
-// const UPD: ITokenInfo = { address: '0x329730DDa41c079e684A18C47800572aAFe2c1DF', decimals: 18 };
-// const WISE: ITokenInfo = { address: '0x66a0f676479Cee1d7373f3DC2e2952778BfF5bd6', decimals: 18 };
 const GMX: ITokenInfo = { address: '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a', decimals: 18 };
 const LINK: ITokenInfo = { address: '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4', decimals: 18 };
 
@@ -72,6 +70,13 @@ const POOLS_WETH_USDC = {
   feePpmList: [100, 500, 3000, 10000],
 };
 
+const POOLS_WETH_USDT = {
+  tokenIn: WETH,
+  tokenOut: USDT,
+  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  feePpmList: [100, 500, 3000, 10000],
+};
+
 const POOLS_WETH_WBTC = {
   tokenIn: WETH,
   tokenOut: WBTC,
@@ -89,12 +94,28 @@ const POOLS_WETH_ARB = {
 const POOLS_WETH_DAI = {
   tokenIn: WETH,
   tokenOut: DAI,
-  amountList: [parseUnits("1000", USDC.decimals).toString()],
+  amountList: [parseUnits("0.3", WETH.decimals).toString()],
   feePpmList: [
-    100,
     500,
     3000,
     10000
+  ],
+};
+
+const POOLS_WETH_GMX = {
+  tokenIn: WETH,
+  tokenOut: GMX,
+  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  feePpmList: [3000, 10000],
+};
+
+const POOLS_WETH_LINK = {
+  tokenIn: WETH,
+  tokenOut: LINK,
+  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  feePpmList: [
+    500,
+    3000,
   ],
 };
 
@@ -105,9 +126,12 @@ const pairsToQuoteUsdcWbtc = getPairsToQuote(POOLS_USDC_WBTC);
 const pairsToQuoteUsdcArb = getPairsToQuote(POOLS_USDC_ARB);
 
 const pairsToQuoteWethUsdc = getPairsToQuote(POOLS_WETH_USDC);
+const pairsToQuoteWethUsdt = getPairsToQuote(POOLS_WETH_USDT);
 const pairsToQuoteWethWbtc = getPairsToQuote(POOLS_WETH_WBTC);
 const pairsToQuoteWethArb = getPairsToQuote(POOLS_WETH_ARB);
 const pairsToQuoteWethDai = getPairsToQuote(POOLS_WETH_DAI);
+const pairsToQuoteWethGmx = getPairsToQuote(POOLS_WETH_GMX);
+const pairsToQuoteWethLink = getPairsToQuote(POOLS_WETH_LINK);
 
 
 const pairsToQuote: IPairToQuote[] = [
@@ -116,9 +140,12 @@ const pairsToQuote: IPairToQuote[] = [
   ...pairsToQuoteUsdcArb,
 
   ...pairsToQuoteWethUsdc,
+  ...pairsToQuoteWethUsdt,
   ...pairsToQuoteWethWbtc,
   ...pairsToQuoteWethArb,
   ...pairsToQuoteWethDai,
+  ...pairsToQuoteWethGmx,
+  ...pairsToQuoteWethLink,
 ];
 console.log('pairsToQuote count:', pairsToQuote.length);
 console.log(pairsToQuote);
