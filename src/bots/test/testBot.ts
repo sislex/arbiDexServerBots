@@ -42,6 +42,7 @@ export interface ITestBot<Params, Result> {
   getJobParams(): IJobParams;
   setPaused(paused: boolean): boolean;
   restart(): boolean;
+  getErrors(): string[];
 }
 
 export class TestBot implements ITestBot<IJobParams, any> {
@@ -116,7 +117,8 @@ export class TestBot implements ITestBot<IJobParams, any> {
     if (this.jobParams.jobType === IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI) {
       console.log('latencyMs', this.botState.lastJobResult.latencyMs);
       console.log('blockNumber', this.botState.lastJobResult.blockNumber);
-      console.log('lastJobResult.result', this.botState.lastJobResult.result);
+      // console.log('lastJobResult.result', this.botState.lastJobResult.result);
+      console.log('lastJobResult.result', this.botState.lastJobResult.result[0]);
     } else {
       if (this.botState.lastJobResult?.error) {
         this.botState.errorCount += 1;
@@ -177,5 +179,13 @@ export class TestBot implements ITestBot<IJobParams, any> {
     }
 
     return true;
+  }
+
+  getErrors(): any[] {
+    return this.botState.errorMessages.map(error => ({
+      time: new Date().getTime(),
+      status: 'error',
+      message: error,
+    }));
   }
 }

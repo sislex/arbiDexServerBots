@@ -31,6 +31,17 @@ export class BotsController {
     return getParamsFromBotInstance(bot);
   }
 
+  @Get('bot/:botId/errors')
+  async getBotErrors(@Param('botId') botId: string) {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const bot: IBot | undefined = botsList.find((b: IBot) => b.id === botId);
+    if (!bot) {
+      return { error: 'Bot not found' };
+    }
+
+    return bot.botInstance.getErrors();
+  }
+
   @Get('bot/:botId/settings')
   async getBotSettings(@Param('botId') botId: string) {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
