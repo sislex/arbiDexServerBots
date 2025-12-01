@@ -117,8 +117,8 @@ export async function get_Arbitrum_UniswapV3_Quote(params: IJobParams_get_Arbitr
   };
 
   const qParamsOut = amountOut !== undefined ? {
-    tokenIn: tokenOutAddr,
-    tokenOut: tokenInAddr,
+    tokenIn: tokenInAddr,
+    tokenOut: tokenOutAddr,
     amountOut, // сколько хотим получить исходного tokenIn (exact-out в обратном направлении)
     fee: feePpm,
     sqrtPriceLimitX96: 0n
