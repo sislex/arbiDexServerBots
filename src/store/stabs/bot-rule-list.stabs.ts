@@ -28,7 +28,7 @@ export const BotRuleListStab: IBotsRule[] = [
       rpcUrl: 'https://arb1.arbitrum.io/rpc',
       // poolAddress: '0xC6962004f452bE9203591991D15f6b388e09E8D0', // лучше не передавать, чтобы работало быстрее из-за разогрева api
       tokenIn: WETH,
-      tokenOut: LINK,
+      tokenOut: GMX,
       amountIn: parseUnits("0.3", WETH.decimals).toString(),
       amountOut: parseUnits("0.3", WETH.decimals).toString(),
       feePpm: 10000,
@@ -36,74 +36,74 @@ export const BotRuleListStab: IBotsRule[] = [
   },
 
 
-  // {
-  //   id: 'botRule2',
-  //   botParams: {
-  //     botType: IBotType.TEST_BOT,
-  //     paused: false,
-  //     isRepeat: true,
-  //     delayBetweenRepeat: 1000,
-  //     maxJobs: 1000000,
-  //   },
-  //   jobParams: {
-  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
-  //
-  //     pairsToQuote: [
-  //       {
-  //         tokenIn: USDC,
-  //         tokenOut: WETH,
-  //         amountIn: parseUnits("1000", USDC.decimals).toString(),
-  //         amountOut: parseUnits("1000", USDC.decimals).toString(),
-  //         feePpm: 500,
-  //       },
-  //       {
-  //         tokenIn: USDC,
-  //         tokenOut: ARB,
-  //         amountIn: parseUnits("1000", USDC.decimals).toString(),
-  //         amountOut: parseUnits("1000", USDC.decimals).toString(),
-  //         feePpm: 500,
-  //       },
-  //       {
-  //         tokenIn: USDC,
-  //         tokenOut: USDT,
-  //         amountIn: parseUnits("1000", USDC.decimals).toString(),
-  //         amountOut: parseUnits("1000", USDC.decimals).toString(),
-  //         feePpm: 500,
-  //       },
-  //       {
-  //         tokenIn: USDC,
-  //         tokenOut: WBTC,
-  //         amountIn: parseUnits("1000", USDC.decimals).toString(),
-  //         amountOut: parseUnits("1000", USDC.decimals).toString(),
-  //         feePpm: 500,
-  //       },
-  //
-  //       {
-  //         tokenIn: WETH,
-  //         tokenOut: WBTC,
-  //         amountIn: parseUnits("0.3", WETH.decimals).toString(),
-  //         amountOut: parseUnits("0.3", WETH.decimals).toString(),
-  //         feePpm: 3000,
-  //       },
-  //       {
-  //         tokenIn: WETH,
-  //         tokenOut: GMX,
-  //         amountIn: parseUnits("0.3", WETH.decimals).toString(),
-  //         amountOut: parseUnits("0.3", WETH.decimals).toString(),
-  //         feePpm: 10000,
-  //       },
-  //       {
-  //         tokenIn: WETH,
-  //         tokenOut: LINK,
-  //         amountIn: parseUnits("0.3", WETH.decimals).toString(),
-  //         amountOut: parseUnits("0.3", WETH.decimals).toString(),
-  //         feePpm: 3000,
-  //       },
-  //     ],
-  //
-  //   }
-  // },
+  {
+    id: 'botRule2',
+    botParams: {
+      botType: IBotType.TEST_BOT,
+      paused: false,
+      isRepeat: true,
+      delayBetweenRepeat: 1000,
+      maxJobs: 1000000,
+    },
+    jobParams: {
+      jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
+      rpcUrl: 'https://arb1.arbitrum.io/rpc',
+
+      pairsToQuote: [
+        {
+          tokenIn: USDC,
+          tokenOut: WETH,
+          amountIn: parseUnits("1000", USDC.decimals).toString(),
+          amountOut: parseUnits("1000", USDC.decimals).toString(),
+          feePpm: 500,
+        },
+        {
+          tokenIn: USDC,
+          tokenOut: ARB,
+          amountIn: parseUnits("1000", USDC.decimals).toString(),
+          amountOut: parseUnits("1000", USDC.decimals).toString(),
+          feePpm: 500,
+        },
+        {
+          tokenIn: USDC,
+          tokenOut: USDT,
+          amountIn: parseUnits("1000", USDC.decimals).toString(),
+          amountOut: parseUnits("1000", USDC.decimals).toString(),
+          feePpm: 500,
+        },
+        {
+          tokenIn: USDC,
+          tokenOut: WBTC,
+          amountIn: parseUnits("1000", USDC.decimals).toString(),
+          amountOut: parseUnits("1000", USDC.decimals).toString(),
+          feePpm: 500,
+        },
+
+        {
+          tokenIn: WETH,
+          tokenOut: WBTC,
+          amountIn: parseUnits("0.3", WETH.decimals).toString(),
+          amountOut: parseUnits("0.3", WETH.decimals).toString(),
+          feePpm: 3000,
+        },
+        {
+          tokenIn: WETH,
+          tokenOut: GMX,
+          amountIn: parseUnits("0.3", WETH.decimals).toString(),
+          amountOut: parseUnits("0.3", WETH.decimals).toString(),
+          feePpm: 10000,
+        },
+        {
+          tokenIn: WETH,
+          tokenOut: LINK,
+          amountIn: parseUnits("0.3", WETH.decimals).toString(),
+          amountOut: parseUnits("0.3", WETH.decimals).toString(),
+          feePpm: 3000,
+        },
+      ],
+
+    }
+  },
 
 
 
