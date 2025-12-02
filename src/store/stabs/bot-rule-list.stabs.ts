@@ -40,7 +40,7 @@ export interface IPoolsSettings {
 const POOLS_USDC_WETH = {
   tokenIn: USDC,
   tokenOut: WETH,
-  amountList: [parseUnits("1000", USDC.decimals).toString()],
+  amountList: [parseUnits("100", USDC.decimals).toString()],
   feePpmList: [
     100,
     500,
@@ -136,16 +136,16 @@ const pairsToQuoteWethLink = getPairsToQuote(POOLS_WETH_LINK);
 
 const pairsToQuote: IPairToQuote[] = [
   ...pairsToQuoteUsdcWeth,
-  ...pairsToQuoteUsdcWbtc,
-  ...pairsToQuoteUsdcArb,
-
-  ...pairsToQuoteWethUsdc,
-  ...pairsToQuoteWethUsdt,
-  ...pairsToQuoteWethWbtc,
-  ...pairsToQuoteWethArb,
-  ...pairsToQuoteWethDai,
-  ...pairsToQuoteWethGmx,
-  ...pairsToQuoteWethLink,
+  // ...pairsToQuoteUsdcWbtc,
+  // ...pairsToQuoteUsdcArb,
+  //
+  // ...pairsToQuoteWethUsdc,
+  // ...pairsToQuoteWethUsdt,
+  // ...pairsToQuoteWethWbtc,
+  // ...pairsToQuoteWethArb,
+  // ...pairsToQuoteWethDai,
+  // ...pairsToQuoteWethGmx,
+  // ...pairsToQuoteWethLink,
 ];
 console.log('pairsToQuote count:', pairsToQuote.length);
 console.log(pairsToQuote);
