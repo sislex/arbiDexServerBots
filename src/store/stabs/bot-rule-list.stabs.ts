@@ -136,16 +136,16 @@ const pairsToQuoteWethLink = getPairsToQuote(POOLS_WETH_LINK);
 
 const pairsToQuote: IPairToQuote[] = [
   ...pairsToQuoteUsdcWeth,
-  // ...pairsToQuoteUsdcWbtc,
-  // ...pairsToQuoteUsdcArb,
-  //
-  // ...pairsToQuoteWethUsdc,
-  // ...pairsToQuoteWethUsdt,
-  // ...pairsToQuoteWethWbtc,
-  // ...pairsToQuoteWethArb,
-  // ...pairsToQuoteWethDai,
-  // ...pairsToQuoteWethGmx,
-  // ...pairsToQuoteWethLink,
+  ...pairsToQuoteUsdcWbtc,
+  ...pairsToQuoteUsdcArb,
+
+  ...pairsToQuoteWethUsdc,
+  ...pairsToQuoteWethUsdt,
+  ...pairsToQuoteWethWbtc,
+  ...pairsToQuoteWethArb,
+  ...pairsToQuoteWethDai,
+  ...pairsToQuoteWethGmx,
+  ...pairsToQuoteWethLink,
 ];
 console.log('pairsToQuote count:', pairsToQuote.length);
 console.log(pairsToQuote);
