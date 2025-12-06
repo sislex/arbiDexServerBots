@@ -1,15 +1,16 @@
 import {IJobParams, IBotParams, IJobType} from '../../store/state.types';
 import { setTimeout as delay } from 'timers/promises';
 import {runJob} from '../../jobs/handlers';
+import {createBotError, IBotError} from '../../halpers/createError';
 
 interface ITestBotState {
   createdAt: Date;
   jobCount: number;
-  errorCount: number;
-  errorMessages: string[];
+  errors: IBotError[];
 
   lastJobTimeStart: Date | null;
   lastJobTimeFinish: Date | null;
+  latency: number;
   lastLatency: number | null;
   lastJobResult: any;
 
@@ -21,10 +22,10 @@ function createInitialState(): ITestBotState {
   return {
     createdAt: new Date(),
     jobCount: 0,
-    errorCount: 0,
-    errorMessages: [],
+    errors: [],
     lastJobTimeStart: null,
     lastJobTimeFinish: null,
+    latency: 0,
     lastLatency: null,
     lastJobResult: null,
     running: false,
@@ -32,20 +33,20 @@ function createInitialState(): ITestBotState {
   };
 }
 
-export interface ITestBot<Params, Result> {
+export interface ITestBot {
   botState: ITestBotState;
 
-  job(): Promise<Result>;
+  job(jobParams?: IJobParams): Promise<any>;
   getSettings(): {botParams: IBotParams, jobParams: IJobParams};
   setSettings(botParams: IBotParams, jobParams: IJobParams): {botParams: IBotParams, jobParams: IJobParams};
   getBotParams(): IBotParams;
   getJobParams(): IJobParams;
   setPaused(paused: boolean): boolean;
   restart(): boolean;
-  getErrors(): string[];
+  getErrors(): IBotError[];
 }
 
-export class TestBot implements ITestBot<IJobParams, any> {
+export class TestBot implements ITestBot {
   botState: ITestBotState;
 
   constructor(
@@ -68,10 +69,31 @@ export class TestBot implements ITestBot<IJobParams, any> {
       while (!this.botParams.paused && !this.botState.restartRequested) {
         await this.beforeJobLaunch();
         try {
-          this.botState.lastJobResult = await this.job(this.jobParams);
+          const jobResult = await this.job(this.jobParams);
+          this.setJobLatency();
+
+          if (!jobResult.error) {
+            this.botState.lastJobResult = jobResult;
+          } else {
+            const error = createBotError({
+              errorCode: `JOB: ${jobResult.error}`,
+              message: String(jobResult?.message),
+              source: this.jobParams.jobType,
+              details: this.jobParams,
+              durationMs: this.botState.lastLatency,
+            });
+            this.pushError(error);
+          }
         } catch (err: any) {
-          this.botState.errorCount += 1;
-          this.botState.errorMessages.push(String(err?.message ?? err));
+          this.setJobLatency();
+          const error = createBotError({
+            errorCode: 'JOB',
+            message: String(err?.message ?? err),
+            source: this.jobParams.jobType,
+            details: this.jobParams,
+            durationMs: this.botState.lastLatency,
+          });
+          this.pushError(error);
         } finally {
           await this.afterJobLaunch();
         }
@@ -100,8 +122,17 @@ export class TestBot implements ITestBot<IJobParams, any> {
     }
   }
 
-  async afterJobLaunch() {
-    this.botState.lastJobTimeFinish= new Date();
+  private pushError(error: IBotError) {
+    this.botState.errors.push(error);
+
+    const maxErrors = this.botParams.maxErrors ?? 100; // дефолт 100
+    if (this.botState.errors.length > maxErrors) {
+      this.botState.errors.shift();
+    }
+  }
+
+  setJobLatency() {
+    this.botState.lastJobTimeFinish = new Date();
 
     if (this.botState.lastJobTimeStart) {
       this.botState.lastLatency =
@@ -110,29 +141,35 @@ export class TestBot implements ITestBot<IJobParams, any> {
     } else {
       this.botState.lastLatency = null;
     }
+  }
 
-
-    console.log('-----------------');
+  async afterJobLaunch() {
+    console.log('---------------------------------------------------');
     console.log('jobCount', this.botState.jobCount);
+    console.log('blockNumber', this.botState.lastJobResult?.blockNumber);
+    console.log('latencyMs', this.botState.lastJobResult?.latencyMs);
     if (this.jobParams.jobType === IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI) {
-      console.log('latencyMs', this.botState.lastJobResult.latencyMs);
-      console.log('blockNumber', this.botState.lastJobResult.blockNumber);
+      // console.log('blockNumber', this.botState);
       // console.log('lastJobResult.result', this.botState.lastJobResult.result);
-      console.log('lastJobResult.result', this.botState.lastJobResult.result[0]);
+      console.log('lastJobResult.result', this.botState.lastJobResult?.result?.[0]);
     } else {
-      if (this.botState.lastJobResult?.error) {
-        this.botState.errorCount += 1;
-        this.botState.errorMessages.push(String(this.botState.lastJobResult?.message ?? this.botState.lastJobResult?.error));
-      }
       console.log('lastJobResult', this.botState.lastJobResult);
     }
 
-
-    // console.log('lastJobResult.pair', this.botState.lastJobResult.result);
+    // --- обновление счётчика
     this.botState.jobCount++;
+
+    // --- обновление средней latency
+    if (this.botState.lastLatency != null) {
+      const n = this.botState.jobCount;
+      const avg = this.botState.latency;
+
+      // новая средняя
+      this.botState.latency = avg + (this.botState.lastLatency - avg) / n;
+    }
   }
 
-  async job(jobParams = this.jobParams): Promise<any>{
+  async job(jobParams: IJobParams = this.jobParams): Promise<any>{
     return await runJob(jobParams);
   }
 
@@ -144,11 +181,11 @@ export class TestBot implements ITestBot<IJobParams, any> {
     return this.jobParams;
   }
 
-  getSettings(): {botParams: IBotParams, jobParams: IJobParams} {
+  getSettings(): { botParams: IBotParams, jobParams: IJobParams } {
     return {
       botParams: this.getBotParams(),
       jobParams: this.getJobParams(),
-    } as any
+    }
   }
 
   setSettings(botParams: IBotParams, jobParams: IJobParams): {botParams: IBotParams, jobParams: IJobParams} {
@@ -157,7 +194,7 @@ export class TestBot implements ITestBot<IJobParams, any> {
     return this.getSettings();
   }
 
-  setPaused(paused: boolean) {
+  setPaused(paused: boolean): boolean {
     this.botParams.paused = paused;
     if (!paused) {
       void this.startJob();
@@ -181,11 +218,7 @@ export class TestBot implements ITestBot<IJobParams, any> {
     return true;
   }
 
-  getErrors(): any[] {
-    return this.botState.errorMessages.map(error => ({
-      time: new Date().getTime(),
-      status: 'error',
-      message: error,
-    }));
+  getErrors(): IBotError[] {
+    return this.botState.errors;
   }
 }

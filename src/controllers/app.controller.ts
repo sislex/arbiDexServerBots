@@ -12,6 +12,7 @@ import {ApiEndpointDto} from '../store/dto/api-endpoint.dto';
 import {IBot, IBotsRule} from '../store/state.types';
 import {getParamsFromBotInstance} from '../store/bots.halpers';
 import {convertBigIntToString} from '../halpers/convertBigIntToString';
+import {uniswapResponseStub} from '../jobs/stabs/uniswap';
 
 @Controller()
 export class AppController {
@@ -53,4 +54,26 @@ export class AppController {
     const rulesList: IBotsRule[] = await firstValueFrom(this.store.select$(selectBotsRulesList));
     return convertBigIntToString(rulesList);
   }
+
+  // @Get('test')
+  // async test() {
+  //   const uniswapResponseStubObj = uniswapResponseStub;
+  //
+  //   const quoteList = uniswapResponseStubObj.result.map(item => ({
+  //     feePpm: item.pair.feePpm,
+  //     amountOut: Number(item.quote.quoteExactInputSingle.amountOut),
+  //     amountIn: Number(item.quote.quoteExactOutputSingle.amountIn),
+  //   }));
+  //   quoteList.sort((a, b) => a.amountOut - b.amountOut);
+  //
+  //   const quoteListCloned = structuredClone(quoteList);
+  //   quoteListCloned.sort((a, b) => a.amountIn- b.amountIn);
+  //
+  //
+  //   const result: any = quoteList[0].amountOut - quoteListCloned[3].amountOut;
+  //
+  //
+  //
+  //   return quoteList;
+  // }
 }

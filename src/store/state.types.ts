@@ -115,6 +115,7 @@ export interface IBotParams {
   isRepeat: boolean,
   delayBetweenRepeat?: number,
   maxJobs: number,
+  maxErrors?: number,
 }
 
 export interface IBotsRule {

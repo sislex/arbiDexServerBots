@@ -43,9 +43,9 @@ const POOLS_USDC_WETH = {
   amountList: [parseUnits("100", USDC.decimals).toString()],
   feePpmList: [
     100,
-    500,
-    3000,
-    10000
+    // 500,
+    // 3000,
+    // 10000
   ],
 };
 
@@ -269,8 +269,9 @@ export const BotRuleListStab: IBotsRule[] = [
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 1000,
+      delayBetweenRepeat: 100,
       maxJobs: 1000000,
+      maxErrors: 1000,
     },
     jobParams: {
       jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,

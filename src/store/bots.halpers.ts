@@ -6,7 +6,7 @@ export const getParamsFromBotInstance = (bot: IBot)=> ({
   running: bot.botInstance.botState.running,
   createdAt: bot.botInstance.botState.createdAt,
   jobCount: bot.botInstance.botState.jobCount,
-  errorCount: bot.botInstance.botState.errorCount,
+  errorCount: bot.botInstance.botState.errors.length,
   lastJobTimeStart: bot.botInstance.botState.lastJobTimeStart,
   lastJobTimeFinish: bot.botInstance.botState.lastJobTimeFinish,
   lastLatency: bot.botInstance.botState.lastLatency,
