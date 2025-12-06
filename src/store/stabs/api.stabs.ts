@@ -91,5 +91,12 @@ export const ApiStabs: ApiEndpointDto[] = [
     description: 'Get all bot rules. Response: [{ id: string; botParams: any;  jobParams: any}]',
     tags: ['rule'],
     version: 'v1',
-  }
+  },
+  {
+    method: 'GET',
+    path: '/bot/:botId/errors',
+    description: 'Get bot errors by botId. Response: [{createdAt: string; errorCode: string; message: string; details?: any; durationMs?: number | null; source?: string;}]',
+    tags: ['bot', 'error'],
+    version: 'v1',
+  },
 ];

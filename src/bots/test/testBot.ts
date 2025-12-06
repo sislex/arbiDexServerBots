@@ -87,7 +87,7 @@ export class TestBot implements ITestBot {
         } catch (err: any) {
           this.setJobLatency();
           const error = createBotError({
-            errorCode: `JOB: ${err?.status ?? 'UNKNOWN'}`,
+            errorCode: `JOB: ${err?.code ?? 'UNKNOWN'}`,
             message: String(err?.message ?? err),
             source: this.jobParams.jobType,
             details: this.jobParams,
@@ -177,7 +177,7 @@ export class TestBot implements ITestBot {
     const timeoutPromise = (async () => {
       await delay(timeoutMs);
       const err: any = new Error(`Job execution exceeded ${timeoutMs} ms`);
-      err.status = 'TIMEOUT';
+      err.code = 'TIMEOUT';
       throw err;
     })();
 
