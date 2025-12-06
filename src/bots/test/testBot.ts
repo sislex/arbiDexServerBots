@@ -165,7 +165,7 @@ export class TestBot implements ITestBot {
       const avg = this.botState.latency;
 
       // новая средняя
-      this.botState.latency = avg + (this.botState.lastLatency - avg) / n;
+      this.botState.latency = Math.ceil(avg + (this.botState.lastLatency - avg) / n);
     }
   }
 

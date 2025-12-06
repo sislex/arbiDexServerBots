@@ -264,7 +264,7 @@ export const BotRuleListStab: IBotsRule[] = [
   // },
 
   {
-    id: 'botRule3',
+    id: 'botRuleRpc',
     botParams: {
       botType: IBotType.TEST_BOT,
       paused: false,
