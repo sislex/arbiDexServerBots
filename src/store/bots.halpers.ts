@@ -9,6 +9,7 @@ export const getParamsFromBotInstance = (bot: IBot)=> ({
   errorCount: bot.botInstance.botState.errors.length,
   lastJobTimeStart: bot.botInstance.botState.lastJobTimeStart,
   lastJobTimeFinish: bot.botInstance.botState.lastJobTimeFinish,
+  latency: bot.botInstance.botState.latency,
   lastLatency: bot.botInstance.botState.lastLatency,
   lastJobResult: convertBigIntToString(bot.botInstance.botState.lastJobResult),
 })
