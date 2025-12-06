@@ -116,6 +116,7 @@ export interface IBotParams {
   delayBetweenRepeat?: number,
   maxJobs: number,
   maxErrors?: number,
+  timeoutMs?: number,
 }
 
 export interface IBotsRule {

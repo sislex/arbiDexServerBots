@@ -169,12 +169,8 @@ export class TestBot implements ITestBot {
     }
   }
 
-  // async job(jobParams: IJobParams = this.jobParams): Promise<any>{
-  //   return await runJob(jobParams);
-  // }
-
   async job(jobParams: IJobParams = this.jobParams): Promise<any> {
-    const timeoutMs = 100;
+    const timeoutMs = this.botParams.timeoutMs ?? 1000; // дефолт 100
 
     const jobPromise = runJob(jobParams);
 
