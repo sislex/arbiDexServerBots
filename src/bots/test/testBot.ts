@@ -87,7 +87,7 @@ export class TestBot implements ITestBot {
         } catch (err: any) {
           this.setJobLatency();
           const error = createBotError({
-            errorCode: 'JOB',
+            errorCode: `JOB: ${err?.status ?? 'UNKNOWN'}`,
             message: String(err?.message ?? err),
             source: this.jobParams.jobType,
             details: this.jobParams,
@@ -169,8 +169,23 @@ export class TestBot implements ITestBot {
     }
   }
 
-  async job(jobParams: IJobParams = this.jobParams): Promise<any>{
-    return await runJob(jobParams);
+  // async job(jobParams: IJobParams = this.jobParams): Promise<any>{
+  //   return await runJob(jobParams);
+  // }
+
+  async job(jobParams: IJobParams = this.jobParams): Promise<any> {
+    const timeoutMs = 100;
+
+    const jobPromise = runJob(jobParams);
+
+    const timeoutPromise = (async () => {
+      await delay(timeoutMs);
+      const err: any = new Error(`Job execution exceeded ${timeoutMs} ms`);
+      err.status = 'TIMEOUT';
+      throw err;
+    })();
+
+    return Promise.race([jobPromise, timeoutPromise]);
   }
 
   getBotParams(): IBotParams {
