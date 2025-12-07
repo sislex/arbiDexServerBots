@@ -283,83 +283,83 @@ export const BotRuleListStab: IBotsRule[] = [
     }
   },
 
-  {
-    id: 'botRuleRpc1',
-    botParams: {
-      botType: IBotType.TEST_BOT,
-      paused: false,
-      isRepeat: true,
-      delayBetweenRepeat: 100,
-      maxJobs: 1000000,
-      maxErrors: 1000,
-      timeoutMs: 500,
-    },
-    jobParams: {
-      jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-      rpcUrl: 'https://arb1.arbitrum.io/rpc',
-
-      pairsToQuote: pairsToQuote,
-
-    }
-  },
-
-  {
-    id: 'botRuleRpc2',
-    botParams: {
-      botType: IBotType.TEST_BOT,
-      paused: false,
-      isRepeat: true,
-      delayBetweenRepeat: 100,
-      maxJobs: 1000000,
-      maxErrors: 1000,
-      timeoutMs: 500,
-    },
-    jobParams: {
-      jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-      rpcUrl: 'https://arb1.arbitrum.io/rpc',
-
-      pairsToQuote: pairsToQuote,
-
-    }
-  },
-
-  {
-    id: 'botRuleRpc3',
-    botParams: {
-      botType: IBotType.TEST_BOT,
-      paused: false,
-      isRepeat: true,
-      delayBetweenRepeat: 100,
-      maxJobs: 1000000,
-      maxErrors: 1000,
-      timeoutMs: 500,
-    },
-    jobParams: {
-      jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-      rpcUrl: 'https://arb1.arbitrum.io/rpc',
-
-      pairsToQuote: pairsToQuote,
-
-    }
-  },
-
-  {
-    id: 'botRuleRpc4',
-    botParams: {
-      botType: IBotType.TEST_BOT,
-      paused: false,
-      isRepeat: true,
-      delayBetweenRepeat: 100,
-      maxJobs: 1000000,
-      maxErrors: 1000,
-      timeoutMs: 500,
-    },
-    jobParams: {
-      jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-      rpcUrl: 'https://arb1.arbitrum.io/rpc',
-
-      pairsToQuote: pairsToQuote,
-
-    }
-  },
+  // {
+  //   id: 'botRuleRpc1',
+  //   botParams: {
+  //     botType: IBotType.TEST_BOT,
+  //     paused: false,
+  //     isRepeat: true,
+  //     delayBetweenRepeat: 100,
+  //     maxJobs: 1000000,
+  //     maxErrors: 1000,
+  //     timeoutMs: 500,
+  //   },
+  //   jobParams: {
+  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
+  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
+  //
+  //     pairsToQuote: pairsToQuote,
+  //
+  //   }
+  // },
+  //
+  // {
+  //   id: 'botRuleRpc2',
+  //   botParams: {
+  //     botType: IBotType.TEST_BOT,
+  //     paused: false,
+  //     isRepeat: true,
+  //     delayBetweenRepeat: 100,
+  //     maxJobs: 1000000,
+  //     maxErrors: 1000,
+  //     timeoutMs: 500,
+  //   },
+  //   jobParams: {
+  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
+  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
+  //
+  //     pairsToQuote: pairsToQuote,
+  //
+  //   }
+  // },
+  //
+  // {
+  //   id: 'botRuleRpc3',
+  //   botParams: {
+  //     botType: IBotType.TEST_BOT,
+  //     paused: false,
+  //     isRepeat: true,
+  //     delayBetweenRepeat: 100,
+  //     maxJobs: 1000000,
+  //     maxErrors: 1000,
+  //     timeoutMs: 500,
+  //   },
+  //   jobParams: {
+  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
+  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
+  //
+  //     pairsToQuote: pairsToQuote,
+  //
+  //   }
+  // },
+  //
+  // {
+  //   id: 'botRuleRpc4',
+  //   botParams: {
+  //     botType: IBotType.TEST_BOT,
+  //     paused: false,
+  //     isRepeat: true,
+  //     delayBetweenRepeat: 100,
+  //     maxJobs: 1000000,
+  //     maxErrors: 1000,
+  //     timeoutMs: 500,
+  //   },
+  //   jobParams: {
+  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
+  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
+  //
+  //     pairsToQuote: pairsToQuote,
+  //
+  //   }
+  // },
 ];
