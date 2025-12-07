@@ -52,49 +52,49 @@ const POOLS_USDC_WETH = {
 const POOLS_USDC_WBTC = {
   tokenIn: USDC,
   tokenOut: WBTC,
-  amountList: [parseUnits("1000", USDC.decimals).toString()],
+  amountList: [parseUnits("100", USDC.decimals).toString()],
   feePpmList: [500, 3000, 10000],
 };
 
 const POOLS_USDC_ARB = {
   tokenIn: USDC,
   tokenOut: ARB,
-  amountList: [parseUnits("1000", USDC.decimals).toString()],
+  amountList: [parseUnits("100", USDC.decimals).toString()],
   feePpmList: [500, 3000],
 };
 
 const POOLS_WETH_USDC = {
   tokenIn: WETH,
   tokenOut: USDC,
-  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  amountList: [parseUnits("0.03", WETH.decimals).toString()],
   feePpmList: [100, 500, 3000, 10000],
 };
 
 const POOLS_WETH_USDT = {
   tokenIn: WETH,
   tokenOut: USDT,
-  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  amountList: [parseUnits("0.03", WETH.decimals).toString()],
   feePpmList: [100, 500, 3000, 10000],
 };
 
 const POOLS_WETH_WBTC = {
   tokenIn: WETH,
   tokenOut: WBTC,
-  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  amountList: [parseUnits("0.03", WETH.decimals).toString()],
   feePpmList: [100, 500, 3000, 10000],
 };
 
 const POOLS_WETH_ARB = {
   tokenIn: WETH,
   tokenOut: ARB,
-  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  amountList: [parseUnits("0.03", WETH.decimals).toString()],
   feePpmList: [500, 3000, 10000],
 };
 
 const POOLS_WETH_DAI = {
   tokenIn: WETH,
   tokenOut: DAI,
-  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  amountList: [parseUnits("0.03", WETH.decimals).toString()],
   feePpmList: [
     500,
     3000,
@@ -105,14 +105,14 @@ const POOLS_WETH_DAI = {
 const POOLS_WETH_GMX = {
   tokenIn: WETH,
   tokenOut: GMX,
-  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  amountList: [parseUnits("0.03", WETH.decimals).toString()],
   feePpmList: [3000, 10000],
 };
 
 const POOLS_WETH_LINK = {
   tokenIn: WETH,
   tokenOut: LINK,
-  amountList: [parseUnits("0.3", WETH.decimals).toString()],
+  amountList: [parseUnits("0.03", WETH.decimals).toString()],
   feePpmList: [
     500,
     3000,
@@ -269,8 +269,8 @@ export const BotRuleListStab: IBotsRule[] = [
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 100,
-      maxJobs: 1000000,
+      delayBetweenRepeat: 1000,
+      maxJobs: 1,
       maxErrors: 1000,
       timeoutMs: 500,
     },
@@ -283,83 +283,4 @@ export const BotRuleListStab: IBotsRule[] = [
     }
   },
 
-  // {
-  //   id: 'botRuleRpc1',
-  //   botParams: {
-  //     botType: IBotType.TEST_BOT,
-  //     paused: false,
-  //     isRepeat: true,
-  //     delayBetweenRepeat: 100,
-  //     maxJobs: 1000000,
-  //     maxErrors: 1000,
-  //     timeoutMs: 500,
-  //   },
-  //   jobParams: {
-  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
-  //
-  //     pairsToQuote: pairsToQuote,
-  //
-  //   }
-  // },
-  //
-  // {
-  //   id: 'botRuleRpc2',
-  //   botParams: {
-  //     botType: IBotType.TEST_BOT,
-  //     paused: false,
-  //     isRepeat: true,
-  //     delayBetweenRepeat: 100,
-  //     maxJobs: 1000000,
-  //     maxErrors: 1000,
-  //     timeoutMs: 500,
-  //   },
-  //   jobParams: {
-  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
-  //
-  //     pairsToQuote: pairsToQuote,
-  //
-  //   }
-  // },
-  //
-  // {
-  //   id: 'botRuleRpc3',
-  //   botParams: {
-  //     botType: IBotType.TEST_BOT,
-  //     paused: false,
-  //     isRepeat: true,
-  //     delayBetweenRepeat: 100,
-  //     maxJobs: 1000000,
-  //     maxErrors: 1000,
-  //     timeoutMs: 500,
-  //   },
-  //   jobParams: {
-  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
-  //
-  //     pairsToQuote: pairsToQuote,
-  //
-  //   }
-  // },
-  //
-  // {
-  //   id: 'botRuleRpc4',
-  //   botParams: {
-  //     botType: IBotType.TEST_BOT,
-  //     paused: false,
-  //     isRepeat: true,
-  //     delayBetweenRepeat: 100,
-  //     maxJobs: 1000000,
-  //     maxErrors: 1000,
-  //     timeoutMs: 500,
-  //   },
-  //   jobParams: {
-  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
-  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
-  //
-  //     pairsToQuote: pairsToQuote,
-  //
-  //   }
-  // },
 ];

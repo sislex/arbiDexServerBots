@@ -12,7 +12,10 @@ import {ApiEndpointDto} from '../store/dto/api-endpoint.dto';
 import {IBot, IBotsRule} from '../store/state.types';
 import {getParamsFromBotInstance} from '../store/bots.halpers';
 import {convertBigIntToString} from '../halpers/convertBigIntToString';
-import {uniswapResponseStub} from '../jobs/stabs/uniswap';
+import {uniswapResponseStub} from '../jobs/stabs/uniswap.stabs';
+import {bestSellBuyArbitrage} from '../arbitrage/bestSellBuy.arbitrage';
+import {QuoteResultMulti} from '../jobs/handlers';
+import {groupPairQuotes} from '../arbitrage/groupPairQuotes.helper';
 
 @Controller()
 export class AppController {
@@ -55,25 +58,37 @@ export class AppController {
     return convertBigIntToString(rulesList);
   }
 
-  // @Get('test')
-  // async test() {
-  //   const uniswapResponseStubObj = uniswapResponseStub;
-  //
-  //   const quoteList = uniswapResponseStubObj.result.map(item => ({
-  //     feePpm: item.pair.feePpm,
-  //     amountOut: Number(item.quote.quoteExactInputSingle.amountOut),
-  //     amountIn: Number(item.quote.quoteExactOutputSingle.amountIn),
-  //   }));
-  //   quoteList.sort((a, b) => a.amountOut - b.amountOut);
-  //
-  //   const quoteListCloned = structuredClone(quoteList);
-  //   quoteListCloned.sort((a, b) => a.amountIn- b.amountIn);
-  //
-  //
-  //   const result: any = quoteList[0].amountOut - quoteListCloned[3].amountOut;
-  //
-  //
-  //
-  //   return quoteList;
-  // }
+  @Get('test')
+  async test() {
+    const uniswapResponseStubObj: QuoteResultMulti = uniswapResponseStub;
+
+    const groupedQuotes = groupPairQuotes(uniswapResponseStubObj.result);
+
+    const results = {
+      hasArbitrage: false,
+      groups: {} as Record<string, any>,
+    };
+
+    for (const key in groupedQuotes) {
+      const items = groupedQuotes[key];
+
+      const best = bestSellBuyArbitrage(items);
+
+      // spread может быть undefined → учитываем
+      const hasArb = best.spread_pct !== undefined && best.spread_pct > 0;
+
+      if (hasArb) {
+        results.hasArbitrage = true;
+      }
+
+      results.groups[key] = {
+        key,
+        num: items.length,
+        hasArbitrage: hasArb,
+        result: best,
+      };
+    }
+
+    return results;
+  }
 }
