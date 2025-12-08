@@ -269,10 +269,10 @@ export const BotRuleListStab: IBotsRule[] = [
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 1000,
-      maxJobs: 1,
+      delayBetweenRepeat: 100,
+      maxJobs: 100,
       maxErrors: 1000,
-      timeoutMs: 500,
+      timeoutMs: 1000,
     },
     jobParams: {
       jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,

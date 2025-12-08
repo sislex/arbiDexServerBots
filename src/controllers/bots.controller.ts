@@ -97,4 +97,15 @@ export class BotsController {
 
     return { id: botId, restarted: true };
   }
+
+  @Get('bot/:botId/arbitrage')
+  async getBotArbitrage(@Param('botId') botId: string) {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const bot: IBot | undefined = botsList.find((b: IBot) => b.id === botId);
+    if (!bot) {
+      return { error: 'Bot not found' };
+    }
+
+    return bot.botInstance.getArbitrage();
+  }
 }
