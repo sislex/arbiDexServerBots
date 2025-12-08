@@ -23,7 +23,7 @@ interface ITestBotState {
   analyticsLatency: number;
   lastAnalyticsResult: any;
 
-  arbitrageList: any[],
+  arbitrageList: IArbitrage[],
 
   running: boolean;
   restartRequested: boolean;
@@ -333,7 +333,7 @@ export class TestBot implements ITestBot {
     return this.botState.errors;
   }
 
-  getArbitrage(): IBotError[] {
+  getArbitrage(): IArbitrage[] {
     return this.botState.arbitrageList;
   }
 }

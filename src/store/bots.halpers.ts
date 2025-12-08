@@ -12,4 +12,5 @@ export const getParamsFromBotInstance = (bot: IBot)=> ({
   latency: bot.botInstance.botState.latency,
   lastLatency: bot.botInstance.botState.lastLatency,
   lastJobResult: convertBigIntToString(bot.botInstance.botState.lastJobResult),
+  arbitrageCount: bot.botInstance.botState.arbitrageList.length,
 })
