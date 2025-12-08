@@ -99,4 +99,11 @@ export const ApiStabs: ApiEndpointDto[] = [
     tags: ['bot', 'error'],
     version: 'v1',
   },
+  {
+    method: 'GET',
+    path: '/bot/:botId/arbitrage',
+    description: 'Get bot arbitrage by botId. Response: { createdAt: string; details: any}[]',
+    tags: ['bot', 'arbitrage'],
+    version: 'v1',
+  },
 ];
