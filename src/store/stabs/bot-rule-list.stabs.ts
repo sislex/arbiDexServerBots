@@ -7,6 +7,8 @@ function getPairsToQuote(poolsSettings: IPoolsSettings): IPairToQuote[] {
   for (const amount of poolsSettings.amountList) {
     for (const feePpm of poolsSettings.feePpmList) {
       pairList.push({
+        dex: 'uniswap',
+        version: 'v3',
         tokenIn: poolsSettings.tokenIn,
         tokenOut: poolsSettings.tokenOut,
         amountIn: amount,

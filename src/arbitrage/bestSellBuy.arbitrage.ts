@@ -1,6 +1,18 @@
 import {IPairQuoteResult} from '../jobs/getQuote_Arbitrum_UniswapV3_Multi/arbitrum.uniswap-v3-multi.quote';
 
-export function bestSellBuyArbitrage(pairQuote: IPairQuoteResult[]) {
+export interface IBestSellBuyResult {
+  amountOut?: string;
+  amountIn?: string;
+  spread_pct?: number;
+
+  bestSellFeePpm?: number; // опционально — для v2 просто не будет
+  bestBuyFeePpm?: number;
+
+  bestSell?: IPairQuoteResult | null;
+  bestBuy?: IPairQuoteResult | null;
+}
+
+export function bestSellBuyArbitrage(pairQuote: IPairQuoteResult[]): IBestSellBuyResult {
   let bestSell: IPairQuoteResult | null = null;
   let bestBuy: IPairQuoteResult | null = null;
 

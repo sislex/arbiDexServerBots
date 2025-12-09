@@ -124,7 +124,7 @@ export class TestBot implements ITestBot {
     }
 
     if (results.hasArbitrage) {
-      results.quotes = this.botState.lastJobResult;
+      // results.quotes = this.botState.lastJobResult;
     }
 
     this.botState.lastAnalyticsResult = results;

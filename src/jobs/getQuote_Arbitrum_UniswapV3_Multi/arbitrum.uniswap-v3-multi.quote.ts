@@ -1,6 +1,6 @@
 // arbitrum.uniswap-v3-multi.quote.ts
 import {
-  IJobParams_get_Arbitrum_UniswapV3_Quote_Multi, IPairToQuote
+  IJobParams_get_Arbitrum_UniswapV3_Quote_Multi, IPairToQuote, IUniV3PairToQuote
 } from '../../store/state.types';
 
 import { ethers } from "ethers";
@@ -87,7 +87,6 @@ export async function get_Arbitrum_UniswapV3_Quote_Multi(
   } = params;
 
   const provider  = new ethers.JsonRpcProvider(rpcUrl);
-  const factory   = new ethers.Contract(UNISWAP_V3_FACTORY, FACTORY_ABI, provider);
   const quoter    = new ethers.Contract(UNISWAP_V3_QUOTER_V2, QUOTER_V2_ABI, provider);
   const multicall = new ethers.Contract(MULTICALL3, MULTICALL_ABI, provider);
 
@@ -97,38 +96,11 @@ export async function get_Arbitrum_UniswapV3_Quote_Multi(
   const pairResults: IPairQuoteResult[] = pairsToQuote.map(pair => ({ pair }));
   const decodePlan: IDecodePlan[] = pairsToQuote.map(() => ({}));
 
-  // // ---------- 1. Получаем пулы (параллельно, но НЕ через multicall) ----------
-  // const poolAddresses = await Promise.all(
-  //   pairsToQuote.map(async (pair, i) => {
-  //     const tokenInAddr  = ethers.getAddress(pair.tokenIn.address);
-  //     const tokenOutAddr = ethers.getAddress(pair.tokenOut.address);
-  //
-  //     try {
-  //       const pool = await factory.getPool(tokenInAddr, tokenOutAddr, pair.feePpm);
-  //       pairResults[i].poolAddress = pool;
-  //       return pool;
-  //     } catch (err: any) {
-  //       pairResults[i].error   = "FACTORY_CALL_FAILED";
-  //       pairResults[i].message = err?.message ?? String(err);
-  //       return ethers.ZeroAddress; // чтобы ниже мы эту пару просто пропустили
-  //     }
-  //   })
-  // );
 
-  // ---------- 2. Готовим ОДИН большой multicall к Quoter’у ----------
+  // ----------  Готовим ОДИН большой multicall к Quoter’у ----------
   const calls: Array<{ target: string; callData: string }> = [];
 
-  pairsToQuote.forEach((pair, i) => {
-    // const pool = poolAddresses[i];
-    //
-    // // если уже есть ошибка или пул не найден — эту пару не квотируем
-    // if (pool === ethers.ZeroAddress || pairResults[i].error) {
-    //   if (!pairResults[i].error) {
-    //     pairResults[i].error   = "POOL_NOT_FOUND";
-    //     pairResults[i].message = "Uniswap V3 pool does not exist for this pair & fee tier";
-    //   }
-    //   return;
-    // }
+  pairsToQuote.forEach((pair: IUniV3PairToQuote, i) => {
 
     const tokenInAddr  = ethers.getAddress(pair.tokenIn.address);
     const tokenOutAddr = ethers.getAddress(pair.tokenOut.address);

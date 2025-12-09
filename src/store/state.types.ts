@@ -16,9 +16,14 @@ export enum IJobType {
 
 export interface IJobDefaultParams { jobType: IJobType; }
 
+export type DexId = 'uniswap' | 'sushi';
+export type PoolVersion = 'v2' | 'v3';
+
 export interface ITokenInfo {
   address: `0x${string}`;
   decimals: number;
+  symbol?: string;
+  name?: string;
 }
 
 export interface IJobParams_get_Pool_State extends IJobDefaultParams {
@@ -30,14 +35,48 @@ export interface IJobParams_get_Pool_State extends IJobDefaultParams {
   maxTicks: number;
 }
 
-export interface IPairToQuote {
+interface IBasePairToQuote {
+  dex: DexId;               // 'uniswap' | 'sushi'
+  version: PoolVersion;     // 'v2' | 'v3'
+
   tokenIn:  ITokenInfo;
   tokenOut: ITokenInfo;
 
-  amountIn?: bigint | string;                // 1000 USDC → "1000000000"
-  amountOut?: bigint | string;                // 1000 USDC → "1000000000"
-  feePpm: number;                           // 500, 3000...
+  amountIn?:  bigint | string;
+  amountOut?: bigint | string;
+
+  feePpm?: number;
 }
+
+export interface IUniV3PairToQuote extends IBasePairToQuote {
+  dex: 'uniswap';
+  version: 'v3';
+  feePpm: number;       // ОБЯЗАТЕЛЬНО для v3
+}
+
+export interface ISushiV3PairToQuote extends IBasePairToQuote {
+  dex: 'sushi';
+  version: 'v3';
+  feePpm: number;
+}
+
+export interface IUniV2PairToQuote extends IBasePairToQuote {
+  dex: 'uniswap';
+  version: 'v2';
+  path?: ITokenInfo[];  // [tokenIn, ..., tokenOut]
+}
+
+export interface ISushiV2PairToQuote extends IBasePairToQuote {
+  dex: 'sushi';
+  version: 'v2';
+  path?: ITokenInfo[];
+}
+
+export type IPairToQuote =
+  | IUniV2PairToQuote
+  | IUniV3PairToQuote
+  | ISushiV2PairToQuote
+  | ISushiV3PairToQuote;
 
 export interface IJobParams_get_Arbitrum_UniswapV3_Quote_Multi extends IJobDefaultParams {
   jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI;
