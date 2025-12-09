@@ -1,14 +1,42 @@
-import {IBotsRule, IBotType, IJobType, IPairToQuote, ITokenInfo} from '../state.types';
+import {DexId, IBotsRule, IBotType, IJobType, IPairToQuote, ITokenInfo, PoolVersion} from '../state.types';
 import {parseUnits} from 'ethers';
 
 
-function getPairsToQuote(poolsSettings: IPoolsSettings): IPairToQuote[] {
+function getPairsToQuote(poolsSettings: IPoolsSettings, dex: DexId = 'uniswap', version: PoolVersion = 'v3'): IPairToQuote[] {
+  let pairList: IPairToQuote[] = [];
+  if (version === 'v2') {
+    pairList = getPairsToQuoteV2(poolsSettings, dex, version);
+  } else if (version === 'v3') {
+    pairList = getPairsToQuoteV3(poolsSettings, dex, version);
+  }
+
+  return pairList;
+}
+
+function getPairsToQuoteV2(poolsSettings: IPoolsSettings, dex: DexId = 'uniswap', version: PoolVersion = 'v2'): IPairToQuote[] {
+  const pairList: IPairToQuote[] = [];
+  for (const amount of poolsSettings.amountList) {
+    pairList.push({
+      dex,
+      version,
+      tokenIn: poolsSettings.tokenIn,
+      tokenOut: poolsSettings.tokenOut,
+      amountIn: amount,
+      amountOut: amount,
+      feePpm: 3000, // не используется в v2
+      path: [poolsSettings.tokenIn, poolsSettings.tokenOut,]
+    });
+  }
+  return pairList;
+}
+
+function getPairsToQuoteV3(poolsSettings: IPoolsSettings, dex: DexId = 'uniswap', version: PoolVersion = 'v3'): IPairToQuote[] {
   const pairList: IPairToQuote[] = [];
   for (const amount of poolsSettings.amountList) {
     for (const feePpm of poolsSettings.feePpmList) {
       pairList.push({
-        dex: 'uniswap',
-        version: 'v3',
+        dex,
+        version,
         tokenIn: poolsSettings.tokenIn,
         tokenOut: poolsSettings.tokenOut,
         amountIn: amount,
@@ -45,9 +73,9 @@ const POOLS_USDC_WETH = {
   amountList: [parseUnits("100", USDC.decimals).toString()],
   feePpmList: [
     100,
-    // 500,
-    // 3000,
-    // 10000
+    500,
+    3000,
+    10000
   ],
 };
 
@@ -135,8 +163,12 @@ const pairsToQuoteWethDai = getPairsToQuote(POOLS_WETH_DAI);
 const pairsToQuoteWethGmx = getPairsToQuote(POOLS_WETH_GMX);
 const pairsToQuoteWethLink = getPairsToQuote(POOLS_WETH_LINK);
 
+const pairsToQuoteUsdcWethV2 = getPairsToQuote(POOLS_USDC_WETH, 'uniswap', 'v2');
 
-const pairsToQuote: IPairToQuote[] = [
+
+const pairsToQuoteBot1: IPairToQuote[] = [
+  ...pairsToQuoteUsdcWethV2,
+
   ...pairsToQuoteUsdcWeth,
   ...pairsToQuoteUsdcWbtc,
   ...pairsToQuoteUsdcArb,
@@ -149,8 +181,15 @@ const pairsToQuote: IPairToQuote[] = [
   ...pairsToQuoteWethGmx,
   ...pairsToQuoteWethLink,
 ];
-console.log('pairsToQuote count:', pairsToQuote.length);
-console.log(pairsToQuote);
+const pairsToQuoteBot2: IPairToQuote[] = [
+  ...pairsToQuoteUsdcWeth,
+  ...pairsToQuoteUsdcWethV2,
+];
+
+
+
+console.log('pairsToQuote count:', pairsToQuoteBot2.length);
+console.log(pairsToQuoteBot2);
 
 
 export const BotRuleListStab: IBotsRule[] = [
@@ -273,14 +312,14 @@ export const BotRuleListStab: IBotsRule[] = [
       isRepeat: true,
       delayBetweenRepeat: 100,
       maxJobs: 1000000,
-      maxErrors: 1000,
+      maxErrors: 100,
       timeoutMs: 1000,
     },
     jobParams: {
       jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI,
       rpcUrl: 'https://arb1.arbitrum.io/rpc',
 
-      pairsToQuote: pairsToQuote,
+      pairsToQuote: pairsToQuoteBot1,
 
     }
   },

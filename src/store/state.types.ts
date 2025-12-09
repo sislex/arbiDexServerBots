@@ -48,18 +48,6 @@ interface IBasePairToQuote {
   feePpm?: number;
 }
 
-export interface IUniV3PairToQuote extends IBasePairToQuote {
-  dex: 'uniswap';
-  version: 'v3';
-  feePpm: number;       // ОБЯЗАТЕЛЬНО для v3
-}
-
-export interface ISushiV3PairToQuote extends IBasePairToQuote {
-  dex: 'sushi';
-  version: 'v3';
-  feePpm: number;
-}
-
 export interface IUniV2PairToQuote extends IBasePairToQuote {
   dex: 'uniswap';
   version: 'v2';
@@ -70,6 +58,18 @@ export interface ISushiV2PairToQuote extends IBasePairToQuote {
   dex: 'sushi';
   version: 'v2';
   path?: ITokenInfo[];
+}
+
+export interface IUniV3PairToQuote extends IBasePairToQuote {
+  dex: 'uniswap';
+  version: 'v3';
+  feePpm: number;       // ОБЯЗАТЕЛЬНО для v3
+}
+
+export interface ISushiV3PairToQuote extends IBasePairToQuote {
+  dex: 'sushi';
+  version: 'v3';
+  feePpm: number;
 }
 
 export type IPairToQuote =

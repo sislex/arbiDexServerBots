@@ -149,7 +149,7 @@ export class TestBot implements ITestBot {
       const n = this.botState.jobCount;
       const avg = this.botState.analyticsLatency;
 
-      this.botState.analyticsLatency = Math.ceil(avg + (this.botState.lastAnalyticsLatency - avg) / n);
+      this.botState.analyticsLatency = Math.round(avg + (this.botState.lastAnalyticsLatency - avg) / n);
     }
 
     if (this.botState.lastAnalyticsResult.hasArbitrage) {
@@ -263,7 +263,7 @@ export class TestBot implements ITestBot {
       const avg = this.botState.latency;
 
       // новая средняя
-      this.botState.latency = Math.ceil(avg + (this.botState.lastLatency - avg) / n);
+      this.botState.latency = Math.round(avg + (this.botState.lastLatency - avg) / n);
     }
 
     this.startAnalytics();

@@ -10,7 +10,7 @@ import {
 } from './getQuote_Arbitrum_UniswapV3/arbitrum.uniswap-v3.quote';
 import {getPoolState} from './getPoolState/getPoolState';
 import {PoolState} from './getPoolState/getPoolState.types';
-import {get_Arbitrum_UniswapV3_Quote_Multi} from './getQuote_Arbitrum_UniswapV3_Multi/arbitrum.uniswap-v3-multi.quote';
+import {get_Arbitrum_Quote_Multi} from './getQuote_Arbitrum_UniswapV3_Multi/arbitrum.uniswap-v3-multi.quote';
 
 
 // базовый результат для всех квот
@@ -42,7 +42,7 @@ const handlers = {
   [IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES]:
     async (params: IJobParams_get_Arbitrum_UniswapV3_Quote): Promise<QuoteResult> => get_Arbitrum_UniswapV3_Quote(params),
   [IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI]:
-    async (params: IJobParams_get_Arbitrum_UniswapV3_Quote_Multi): Promise<QuoteResult> => get_Arbitrum_UniswapV3_Quote_Multi(params),
+    async (params: IJobParams_get_Arbitrum_UniswapV3_Quote_Multi): Promise<QuoteResult> => get_Arbitrum_Quote_Multi(params),
 
   // [IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES]:
   //   async (params: IJobParams_ArbitrumUniswapV2Quotes): Promise<QuoteResult> =>
