@@ -10,7 +10,7 @@ export enum IBotType {
 export enum IJobType {
   GET_POOL_STATE = 'get_Pool_State',
   GET_ARBITRUM_UNISWAP_V3_QUOTES = 'get_Arbitrum_UniswapV3_Quote',
-  GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI = 'get_Arbitrum_UniswapV3_Quote_Multi',
+  GET_ARBITRUM_QUOTES_MULTI = 'get_Arbitrum_Quote_Multi',
   GET_ARBITRUM_UNISWAP_V2_QUOTES = 'get_Arbitrum_UniswapV2_Quote',
 }
 
@@ -78,8 +78,8 @@ export type IPairToQuote =
   | ISushiV2PairToQuote
   | ISushiV3PairToQuote;
 
-export interface IJobParams_get_Arbitrum_UniswapV3_Quote_Multi extends IJobDefaultParams {
-  jobType: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES_MULTI;
+export interface IJobParams_get_Arbitrum_Quote_Multi extends IJobDefaultParams {
+  jobType: IJobType.GET_ARBITRUM_QUOTES_MULTI;
 
   rpcUrl: string;
 
@@ -109,13 +109,19 @@ export interface IJobParams_get_Arbitrum_UniswapV3_Quote extends IJobDefaultPara
 
 export interface IJobParams_get_Arbitrum_UniswapV2_Quote extends IJobDefaultParams {
   jobType: IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES;
-  k: number;
+
+  rpcUrl: string;
+
+  pairsToQuote: IPairToQuote[];
+
+  roundUp?: boolean;
+  ignoreFee?: boolean;
 }
 
 export type IJobParams =
   | IJobParams_get_Pool_State
   | IJobParams_get_Arbitrum_UniswapV3_Quote
-  | IJobParams_get_Arbitrum_UniswapV3_Quote_Multi
+  | IJobParams_get_Arbitrum_Quote_Multi
   | IJobParams_get_Arbitrum_UniswapV2_Quote;
 
 

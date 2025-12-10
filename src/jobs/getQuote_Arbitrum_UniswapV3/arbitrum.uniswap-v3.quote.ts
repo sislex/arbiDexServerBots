@@ -1,4 +1,4 @@
-// arbitrum.uniswap-v3-multi.quote.ts
+// arbitrum-multi.quote.ts
 import {IJobParams_get_Arbitrum_UniswapV3_Quote} from '../../store/state.types';
 
 import { ethers } from "ethers";

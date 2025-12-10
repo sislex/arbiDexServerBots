@@ -1,4 +1,4 @@
-import {IPairQuoteResult} from '../jobs/getQuote_Arbitrum_UniswapV3_Multi/arbitrum.uniswap-v3-multi.quote';
+import {IPairQuoteResult} from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
 
 export interface IBestSellBuyResult {
   amountOut?: string;

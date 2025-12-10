@@ -152,10 +152,10 @@ export class TestBot implements ITestBot {
       this.botState.analyticsLatency = Math.round(avg + (this.botState.lastAnalyticsLatency - avg) / n);
     }
 
-    if (this.botState.lastAnalyticsResult.hasArbitrage) {
-      const arbitrage: IArbitrage = createArbitrage({details: this.botState.lastAnalyticsResult});
-      this.pushArbitrage(arbitrage);
-    }
+    // if (this.botState.lastAnalyticsResult.hasArbitrage) {
+    //   const arbitrage: IArbitrage = createArbitrage({details: this.botState.lastAnalyticsResult});
+    //   this.pushArbitrage(arbitrage);
+    // }
   }
 
   private pushArbitrage(arbitrage: IArbitrage) {
