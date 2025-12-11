@@ -369,7 +369,7 @@ export const BotRuleListStab: IBotsRule[] = [
       paused: false,
       isRepeat: true,
       delayBetweenRepeat: 100,
-      maxJobs: 1,
+      maxJobs: 1000000,
       maxErrors: 100,
       timeoutMs: 1000,
     },
