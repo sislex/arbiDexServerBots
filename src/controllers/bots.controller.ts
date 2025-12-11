@@ -8,6 +8,8 @@ import {selectBotsList} from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
 import {getParamsFromBotInstance} from '../store/bots.halpers';
 import {convertBigIntToString} from '../halpers/convertBigIntToString';
+import {IArbitrage} from '../halpers/createArbitrage';
+import {IBotError} from '../halpers/createError';
 
 @Controller('')
 export class BotsController {
@@ -39,7 +41,9 @@ export class BotsController {
       return { error: 'Bot not found' };
     }
 
-    return bot.botInstance.getErrors();
+    const errorList: IBotError[] = bot.botInstance.getErrors().slice().reverse();
+
+    return errorList;
   }
 
   @Get('bot/:botId/settings')
@@ -106,6 +110,8 @@ export class BotsController {
       return { error: 'Bot not found' };
     }
 
-    return bot.botInstance.getArbitrage();
+    const arbitrageList: IArbitrage[] = bot.botInstance.getArbitrage().slice().reverse();
+
+    return arbitrageList;
   }
 }
