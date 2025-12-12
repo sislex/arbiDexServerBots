@@ -7,9 +7,9 @@ import { ethers } from "ethers";
 import {QuoteResultMulti} from '../handlers';
 import {toBigIntSafe} from '../../halpers/toBigIntSafe';
 import {
+  getV2RouterAbiByDex,
   MULTICALL3, MULTICALL_ABI,
   UNISWAP_QUOTER_V2_ABI,
-  UNISWAP_V2_ROUTER,
   UNISWAP_V2_ROUTER_ABI,
   UNISWAP_V3_QUOTER_V2
 } from '../../halpers/dex.constants';
@@ -73,9 +73,10 @@ export async function get_Arbitrum_Quote_Multi(
   } = params;
 
   const provider  = new ethers.JsonRpcProvider(rpcUrl);
-  const quoterV3    = new ethers.Contract(UNISWAP_V3_QUOTER_V2, UNISWAP_QUOTER_V2_ABI, provider);
-  const v2Router    = new ethers.Contract(UNISWAP_V2_ROUTER, UNISWAP_V2_ROUTER_ABI, provider);
   const multicall = new ethers.Contract(MULTICALL3, MULTICALL_ABI, provider);
+
+
+  const quoterV3    = new ethers.Contract(UNISWAP_V3_QUOTER_V2, UNISWAP_QUOTER_V2_ABI, provider);
 
   const startedAt = Date.now();
 
@@ -99,39 +100,43 @@ export async function get_Arbitrum_Quote_Multi(
       pairResults[i].message = "amountIn must be provided for exact-input quoting";
       return;
     }
+    if (pair.version === 'v2') {
+      const {router, abi} = getV2RouterAbiByDex(pair.dex);
+      const v2Router = new ethers.Contract(router, abi, provider);
 
-    // --- ветка UNISWAP V2 ---
-    if (pair.dex === 'uniswap' && pair.version === 'v2') {
-      const pathInOut = (pair.path?.length ?? 0) > 1
-        ? pair.path!.map(t => ethers.getAddress(t.address))
-        : [tokenInAddr, tokenOutAddr];
+      // --- ветка UNISWAP V2 ---
+      if (pair.dex === 'uniswap') {
+        const pathInOut = (pair.path?.length ?? 0) > 1
+          ? pair.path!.map(t => ethers.getAddress(t.address))
+          : [tokenInAddr, tokenOutAddr];
 
-      // exact-in: getAmountsOut(amountIn, path)
-      const v2ExactInIndex = calls.length;
-      calls.push({
-        target: UNISWAP_V2_ROUTER,
-        callData: v2Router.interface.encodeFunctionData(
-          "getAmountsOut",
-          [amountIn, pathInOut]
-        )
-      });
-      decodePlan[i].v2ExactInIndex = v2ExactInIndex;
-
-      // exact-out (если задан amountOut): getAmountsIn(amountOut, reversedPath)
-      if (amountOut !== undefined) {
-        const pathOutIn = [...pathInOut].reverse();
-        const v2ExactOutIndex = calls.length;
+        // exact-in: getAmountsOut(amountIn, path)
+        const v2ExactInIndex = calls.length;
         calls.push({
-          target: UNISWAP_V2_ROUTER,
+          target: router,
           callData: v2Router.interface.encodeFunctionData(
-            "getAmountsIn",
-            [amountOut, pathOutIn]
+            "getAmountsOut",
+            [amountIn, pathInOut]
           )
         });
-        decodePlan[i].v2ExactOutIndex = v2ExactOutIndex;
-      }
+        decodePlan[i].v2ExactInIndex = v2ExactInIndex;
 
-      return; // V2 обработали, дальше для этой пары не идём
+        // exact-out (если задан amountOut): getAmountsIn(amountOut, reversedPath)
+        if (amountOut !== undefined) {
+          const pathOutIn = [...pathInOut].reverse();
+          const v2ExactOutIndex = calls.length;
+          calls.push({
+            target: router,
+            callData: v2Router.interface.encodeFunctionData(
+              "getAmountsIn",
+              [amountOut, pathOutIn]
+            )
+          });
+          decodePlan[i].v2ExactOutIndex = v2ExactOutIndex;
+        }
+
+        return; // V2 обработали, дальше для этой пары не идём
+      }
     }
 
     // --- ветка UNISWAP V3 ---
@@ -245,68 +250,72 @@ export async function get_Arbitrum_Quote_Multi(
         continue;
       }
 
-      // --- UNISWAP V2 decode ---
-      if (pair.dex === 'uniswap' && pair.version === 'v2') {
+      if (pair.version === 'v2') {
+        const {router, abi} = getV2RouterAbiByDex(pair.dex);
+        const v2Router = new ethers.Contract(router, abi, provider);
+
+        // --- UNISWAP V2 decode ---
+        if (pair.dex === 'uniswap') {
+          let v2AmountOutExactIn: string | undefined;
+          let v2AmountInExactOut: string | undefined;
+
+          if (plan.v2ExactInIndex !== undefined) {
+            try {
+              const decoded = v2Router.interface.decodeFunctionResult(
+                "getAmountsOut",
+                returnData[plan.v2ExactInIndex]
+              );
 
 
+              const amounts = decoded[0] as bigint[];
+              if (amounts && amounts.length > 0) {
+                v2AmountOutExactIn = amounts[amounts.length - 1].toString();
+              }
 
-        let v2AmountOutExactIn: string | undefined;
-        let v2AmountInExactOut: string | undefined;
-
-        if (plan.v2ExactInIndex !== undefined) {
-          try {
-            const decoded = v2Router.interface.decodeFunctionResult(
-              "getAmountsOut",
-              returnData[plan.v2ExactInIndex]
-            );
-
-
-            const amounts = decoded[0] as bigint[];
-            if (amounts && amounts.length > 0) {
-              v2AmountOutExactIn = amounts[amounts.length - 1].toString();
+            } catch(e: any) {
+              console.log('Error decoding V2 getAmountsOut:', e);
             }
-
-          } catch(e: any) {
-            console.log('Error decoding V2 getAmountsOut:', e);
           }
-        }
 
-        if (plan.v2ExactOutIndex !== undefined) {
-          try {
-            const decoded = v2Router.interface.decodeFunctionResult(
-              "getAmountsIn",
-              returnData[plan.v2ExactOutIndex]
-            );
-            const amounts = decoded[0] as bigint[];
-            if (amounts && amounts.length > 0) {
-              v2AmountInExactOut = amounts[0].toString();
-            }
-          } catch {/* ignore */}
-        }
+          if (plan.v2ExactOutIndex !== undefined) {
+            try {
+              const decoded = v2Router.interface.decodeFunctionResult(
+                "getAmountsIn",
+                returnData[plan.v2ExactOutIndex]
+              );
+              const amounts = decoded[0] as bigint[];
+              if (amounts && amounts.length > 0) {
+                v2AmountInExactOut = amounts[0].toString();
+              }
+            } catch {/* ignore */}
+          }
 
-        // чтобы bestSellBuyArbitrage мог с этим работать,
-        // можно адаптировать структуру под "как будто V3":
-        if (v2AmountOutExactIn) {
-          pairResults[i].quote = {
-            quoteExactInputSingle: {
-              amountOut: v2AmountOutExactIn,
-              sqrtPriceX96After: "0",
-              initializedTicksCrossed: "0",
-              gasEstimate: "0",
-            },
-            quoteExactOutputSingle: v2AmountInExactOut
-              ? {
-                amountIn: v2AmountInExactOut,
+          // чтобы bestSellBuyArbitrage мог с этим работать,
+          // можно адаптировать структуру под "как будто V3":
+          if (v2AmountOutExactIn) {
+            pairResults[i].quote = {
+              quoteExactInputSingle: {
+                amountOut: v2AmountOutExactIn,
                 sqrtPriceX96After: "0",
                 initializedTicksCrossed: "0",
                 gasEstimate: "0",
-              }
-              : undefined,
-          };
-        }
+              },
+              quoteExactOutputSingle: v2AmountInExactOut
+                ? {
+                  amountIn: v2AmountInExactOut,
+                  sqrtPriceX96After: "0",
+                  initializedTicksCrossed: "0",
+                  gasEstimate: "0",
+                }
+                : undefined,
+            };
+          }
 
-        continue;
+          continue;
+        }
       }
+
+
 
       // сюда же потом добавишь sushi v2 / v3
     }
