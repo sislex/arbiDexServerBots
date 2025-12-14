@@ -136,51 +136,94 @@ export async function get_Arbitrum_Quote_Multi(
 
       return;
     } else if (pair.version === 'v3') {
-      const dexCfg = V3_QUOTERS[pair.dex];
-      if (!dexCfg) {
-        pairResults[i].error = "DEX_NOT_CONFIGURED";
-        pairResults[i].message = `No V3 quoter config for dex=${pair.dex}`;
+      if (pair.poolId) {
+        // poolId quoting: через твой контракт
+        const poolIdQuoter = getV3Quoter('poolId' as any); // или расширь тип DexId
+
+        const exactInIndex = calls.length;
+        calls.push({
+          target: V3_QUOTERS.poolId.quoter,
+          callData: poolIdQuoter.interface.encodeFunctionData(
+            "quoteByPoolId",
+            [{
+              baseToken: tokenInAddr,
+              quoteToken: tokenOutAddr,
+              pool: ethers.getAddress(pair.poolId),
+              amountBase: amountIn,
+              sqrtPriceLimitX96: 0n, // твой контракт сам выставит no-limit
+            }]
+          ),
+        });
+        decodePlan[i].exactInIndex = exactInIndex;
+
+        // ExactOut: чтобы “структура” была как раньше — вызываем второй раз,
+        // но base=tokenOut, quote=tokenIn, amountBase=amountOut.
+        if (amountOut !== undefined) {
+          const exactOutIndex = calls.length;
+          calls.push({
+            target: V3_QUOTERS.poolId.quoter,
+            callData: poolIdQuoter.interface.encodeFunctionData(
+              "quoteByPoolId",
+              [{
+                baseToken: tokenOutAddr,
+                quoteToken: tokenInAddr,
+                pool: ethers.getAddress(pair.poolId),
+                amountBase: amountOut,
+                sqrtPriceLimitX96: 0n,
+              }]
+            ),
+          });
+          decodePlan[i].exactOutIndex = exactOutIndex;
+        }
+
         return;
-      }
+      } else {
+        const dexCfg = V3_QUOTERS[pair.dex];
+        if (!dexCfg) {
+          pairResults[i].error = "DEX_NOT_CONFIGURED";
+          pairResults[i].message = `No V3 quoter config for dex=${pair.dex}`;
+          return;
+        }
 
-      if (pair.feePpm === undefined) {
-        pairResults[i].error = "FEE_PPM_REQUIRED";
-        pairResults[i].message = "feePpm must be provided for v3 pools";
-        return;
-      }
+        if (pair.feePpm === undefined) {
+          pairResults[i].error = "FEE_PPM_REQUIRED";
+          pairResults[i].message = "feePpm must be provided for v3 pools";
+          return;
+        }
 
-      const quoterV3 = getV3Quoter(pair.dex);
+        const quoterV3 = getV3Quoter(pair.dex);
 
-      const qParamsIn = {
-        tokenIn: tokenInAddr,
-        tokenOut: tokenOutAddr,
-        amountIn,
-        fee: pair.feePpm,
-        sqrtPriceLimitX96: 0n,
-      };
+        const qParamsIn = {
+          tokenIn: tokenInAddr,
+          tokenOut: tokenOutAddr,
+          amountIn,
+          fee: pair.feePpm,
+          sqrtPriceLimitX96: 0n,
+        };
 
-      const qParamsOut = amountOut !== undefined ? {
-        tokenIn: tokenOutAddr,
-        tokenOut: tokenInAddr,
-        amountOut,
-        fee: pair.feePpm,
-        sqrtPriceLimitX96: 0n,
-      } : undefined;
+        const qParamsOut = amountOut !== undefined ? {
+          tokenIn: tokenOutAddr,
+          tokenOut: tokenInAddr,
+          amountOut,
+          fee: pair.feePpm,
+          sqrtPriceLimitX96: 0n,
+        } : undefined;
 
-      const exactInIndex = calls.length;
-      calls.push({
-        target: dexCfg.quoter,
-        callData: quoterV3.interface.encodeFunctionData("quoteExactInputSingle", [qParamsIn]),
-      });
-      decodePlan[i].exactInIndex = exactInIndex;
-
-      if (qParamsOut) {
-        const exactOutIndex = calls.length;
+        const exactInIndex = calls.length;
         calls.push({
           target: dexCfg.quoter,
-          callData: quoterV3.interface.encodeFunctionData("quoteExactOutputSingle", [qParamsOut]),
+          callData: quoterV3.interface.encodeFunctionData("quoteExactInputSingle", [qParamsIn]),
         });
-        decodePlan[i].exactOutIndex = exactOutIndex;
+        decodePlan[i].exactInIndex = exactInIndex;
+
+        if (qParamsOut) {
+          const exactOutIndex = calls.length;
+          calls.push({
+            target: dexCfg.quoter,
+            callData: quoterV3.interface.encodeFunctionData("quoteExactOutputSingle", [qParamsOut]),
+          });
+          decodePlan[i].exactOutIndex = exactOutIndex;
+        }
       }
 
       return;
@@ -273,37 +316,100 @@ export async function get_Arbitrum_Quote_Multi(
           continue;
         }
       } else if (pair.version === 'v3') {
-        const quoterV3 = getV3Quoter(pair.dex);
+        if (pair.poolId) {
+          const poolIdQuoter = getV3Quoter('poolId' as any);
 
-        let quoteExactInputSingle: QuoteExactInputSingleRaw | undefined;
-        let quoteExactOutputSingle: QuoteExactOutputSingleRaw | undefined;
+          // decode exactIn (quoteByPoolId)
+          let exactInOut: string | undefined;
+          let exactOutIn: string | undefined;
 
-        if (plan.exactInIndex !== undefined) {
-          const decodedIn = quoterV3.interface.decodeFunctionResult(
-            "quoteExactInputSingle",
-            returnData[plan.exactInIndex]
-          );
-          quoteExactInputSingle = mapExactIn(decodedIn);
-        }
+          if (plan.exactInIndex !== undefined) {
+            const decoded = poolIdQuoter.interface.decodeFunctionResult(
+              "quoteByPoolId",
+              returnData[plan.exactInIndex]
+            );
 
-        if (plan.exactOutIndex !== undefined) {
-          const decodedOut = quoterV3.interface.decodeFunctionResult(
-            "quoteExactOutputSingle",
-            returnData[plan.exactOutIndex]
-          );
-          quoteExactOutputSingle = mapExactOut(decodedOut);
-        }
+            // decoded[0] — это tuple QuoteResponse
+            const resp = decoded[0];
+            // resp.amountOutQuote — сколько quoteToken получаем за amountBase
+            exactInOut = (resp.amountOutQuote as bigint).toString();
 
-        if (!quoteExactInputSingle) {
-          pairResults[i].error   = "NO_QUOTE_IN_RESULT";
-          pairResults[i].message = "Multicall result missing quoteExactInputSingle for this pair";
+            // полезное — можно сохранить poolAddress
+            pairResults[i].poolAddress = resp.pool as string;
+          }
+
+          if (plan.exactOutIndex !== undefined) {
+            const decoded = poolIdQuoter.interface.decodeFunctionResult(
+              "quoteByPoolId",
+              returnData[plan.exactOutIndex]
+            );
+            const resp = decoded[0];
+
+            // Тут мы котировали base=tokenOut, quote=tokenIn.
+            // resp.amountOutQuote = сколько tokenIn получим за amountBase(tokenOut)
+            // Но нам нужно “amountIn” tokenOut, чтобы получить amountBase(tokenIn).
+            // Для этого в твоём контракте есть amountInQuoteForBase.
+            exactOutIn = (resp.amountInQuoteForBase as bigint).toString();
+          }
+
+          if (!exactInOut) {
+            pairResults[i].error = "NO_QUOTE_IN_RESULT";
+            pairResults[i].message = "Multicall result missing quoteByPoolId exactIn for this pair";
+            continue;
+          }
+
+          // адаптируем под твою прежнюю структуру V3
+          pairResults[i].quote = {
+            quoteExactInputSingle: {
+              amountOut: exactInOut,
+              sqrtPriceX96After: "0",
+              initializedTicksCrossed: "0",
+              gasEstimate: "0",
+            },
+            quoteExactOutputSingle: exactOutIn
+              ? {
+                amountIn: exactOutIn,
+                sqrtPriceX96After: "0",
+                initializedTicksCrossed: "0",
+                gasEstimate: "0",
+              }
+              : undefined,
+          };
+
           continue;
-        }
+        } else {
+          const quoterV3 = getV3Quoter(pair.dex);
 
-        pairResults[i].quote = {
-          quoteExactInputSingle,
-          quoteExactOutputSingle,
-        };
+          let quoteExactInputSingle: QuoteExactInputSingleRaw | undefined;
+          let quoteExactOutputSingle: QuoteExactOutputSingleRaw | undefined;
+
+          if (plan.exactInIndex !== undefined) {
+            const decodedIn = quoterV3.interface.decodeFunctionResult(
+              "quoteExactInputSingle",
+              returnData[plan.exactInIndex]
+            );
+            quoteExactInputSingle = mapExactIn(decodedIn);
+          }
+
+          if (plan.exactOutIndex !== undefined) {
+            const decodedOut = quoterV3.interface.decodeFunctionResult(
+              "quoteExactOutputSingle",
+              returnData[plan.exactOutIndex]
+            );
+            quoteExactOutputSingle = mapExactOut(decodedOut);
+          }
+
+          if (!quoteExactInputSingle) {
+            pairResults[i].error   = "NO_QUOTE_IN_RESULT";
+            pairResults[i].message = "Multicall result missing quoteExactInputSingle for this pair";
+            continue;
+          }
+
+          pairResults[i].quote = {
+            quoteExactInputSingle,
+            quoteExactOutputSingle,
+          };
+        }
 
         continue;
       }

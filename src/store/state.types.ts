@@ -46,6 +46,7 @@ interface IBasePairToQuote {
   amountOut?: bigint | string;
 
   feePpm?: number;
+  poolId?: string;
 }
 
 export interface IUniV2PairToQuote extends IBasePairToQuote {

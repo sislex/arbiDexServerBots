@@ -81,6 +81,7 @@ function getPairsToQuoteV3(params: IPairsToQuoteParams): IPairToQuote[] {
           amountIn: amount,
           amountOut: amount,
           feePpm: feePpm,
+          poolId: poolsSettings.poolId,
         });
       }
     }
@@ -92,157 +93,171 @@ export interface IPoolsSettings {
   tokenIn: ITokenInfo;
   tokenOut: ITokenInfo;
   amountList: string[];
+  poolId?: string;
 }
 
-const POOLS_USDC_WETH = {
+const POOLS_USDC_WETH: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: WETH,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_WBTC = {
+const POOLS_USDC_WBTC: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: WBTC,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_ARB = {
+const POOLS_USDC_ARB: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: ARB,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_TMX = {
+const POOLS_USDC_TMX: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: TMX,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_SECH = {
+const POOLS_USDC_SECH: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: SECH,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_DAI = {
+const POOLS_USDC_DAI : IPoolsSettings= {
   tokenIn: USDC,
   tokenOut: DAI,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_YEP = {
+const POOLS_USDC_YEP: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: YEP,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_QODA = {
+const POOLS_USDC_QODA: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: QODA,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_OPUL = {
+const POOLS_USDC_OPUL: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: OPUL,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
-const POOLS_USDC_FARE = {
+const POOLS_USDC_FARE: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: FARE,
   amountList: [parseUnits("100", USDC.decimals).toString()],
 };
 
 
-const POOLS_WETH_USDC = {
+const POOLS_WETH_USDC: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDC,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_USDT = {
+const POOLS_WETH_USDT: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDT,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_WBTC = {
+const POOLS_WETH_WBTC: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WBTC,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_ARB = {
+const POOLS_WETH_ARB: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ARB,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_DAI = {
+const POOLS_WETH_DAI: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: DAI,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_GMX = {
+const POOLS_WETH_GMX: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: GMX,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_LINK = {
+const POOLS_WETH_LINK: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: LINK,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_WISE = {
+const POOLS_WETH_WISE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WISE,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_RAIN = {
+const POOLS_WETH_RAIN: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: RAIN,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_USDCE = {
+const POOLS_WETH_USDCE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDCE,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_PENDLE = {
+const POOLS_WETH_PENDLE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: PENDLE,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_WSTETH = {
+const POOLS_WETH_WSTETH: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WSTETH,
   amountList: [parseUnits("0.03", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_USDPLUS = {
+const POOLS_WETH_USDPLUS: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDPLUS,
   amountList: [parseUnits("0.003", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_MOR = {
+const POOLS_WETH_MOR: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: MOR,
   amountList: [parseUnits("0.003", WETH.decimals).toString()],
 };
 
-const POOLS_WETH_CRYPTO = {
+const POOLS_WETH_CRYPTO: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: CRYPTO,
   amountList: [parseUnits("0.003", WETH.decimals).toString()],
+};
+
+const POOLS_USDC_WETH_test: IPoolsSettings = {
+  tokenIn: USDC,
+  tokenOut: WETH,
+  amountList: [parseUnits("100", USDC.decimals).toString()],
+};
+
+const POOLS_USDC_WETH_test_poolId: IPoolsSettings = {
+  tokenIn: USDC,
+  tokenOut: WETH,
+  amountList: [parseUnits("100", USDC.decimals).toString()],
+  poolId: '0xC6962004f452bE9203591991D15f6b388e09E8D0',
 };
 
 
@@ -276,6 +291,11 @@ const pairsToQuoteV3WethCrypto = getPairsToQuote({poolsSettings: POOLS_WETH_CRYP
 const pairsToQuoteV3UsdcWeth = getPairsToQuote({poolsSettings: POOLS_USDC_WETH, dex: 'uniswap', version: 'v3',   feePpmList: [100, 500, 3000, 10000]});
 const pairsToQuoteV3UsdcWbtc = getPairsToQuote({poolsSettings: POOLS_USDC_WBTC, dex: 'uniswap', version: 'v3', feePpmList: [500, 3000, 10000]});
 const pairsToQuoteV3UsdcArb = getPairsToQuote({poolsSettings: POOLS_USDC_ARB, dex: 'uniswap', version: 'v3', feePpmList: [500, 3000]});
+
+
+
+const pairsToQuoteV3UsdcWethTest = getPairsToQuote({poolsSettings: POOLS_USDC_WETH_test, dex: 'uniswap', version: 'v3', feePpmList: [500]});
+const pairsToQuoteV3UsdcWethTestPoolId = getPairsToQuote({poolsSettings: POOLS_USDC_WETH_test_poolId, dex: 'uniswap', version: 'v3', feePpmList: [500]});
 
 
 
@@ -317,7 +337,8 @@ const pairsToQuoteBot1: IPairToQuote[] = [
 
 ];
 const pairsToQuoteBot2: IPairToQuote[] = [
-  ...pairsToQuoteV3WethCrypto,
+  ...pairsToQuoteV3UsdcWethTest,
+  ...pairsToQuoteV3UsdcWethTestPoolId,
 ];
 
 
@@ -333,7 +354,7 @@ export const BotRuleListStab: IBotsRule[] = [
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 3000,
+      delayBetweenRepeat: 100,
       maxJobs: 1000000,
       maxErrors: 100,
       timeoutMs: 1000,
