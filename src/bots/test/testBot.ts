@@ -112,11 +112,10 @@ export class TestBot implements ITestBot {
       const hasArb = best.spread_pct !== undefined && best.spread_pct > 0;
 
       if (hasArb) {
-        // results.hasArbitrage = true;
+        results.hasArbitrage = true;
         results.groups[key] = {
           key,
           num: items.length,
-          // hasArbitrage: hasArb,
           // result: best,
           spread_pct: best.spread_pct,
         };

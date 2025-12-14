@@ -333,7 +333,7 @@ export const BotRuleListStab: IBotsRule[] = [
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 100,
+      delayBetweenRepeat: 3000,
       maxJobs: 1000000,
       maxErrors: 100,
       timeoutMs: 1000,

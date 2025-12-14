@@ -4,7 +4,7 @@ import { IJobParams_get_Arbitrum_Quote_Multi } from '../../store/state.types';
 import { QuoteResultMulti } from '../handlers';
 import { IPairQuoteResult } from '../getQuote_Arbitrum_Multi/arbitrum-multi.quote';
 import { toBigIntSafe } from '../../halpers/toBigIntSafe';
-import { UNISWAP_V2_ROUTER, UNISWAP_V2_ROUTER_ABI } from '../../halpers/dex.constants';
+import {V2_DEXES} from '../../halpers/dex.constants';
 
 export async function get_Arbitrum_UniswapV2_Quote_NoMulticall(
   params: IJobParams_get_Arbitrum_Quote_Multi
@@ -15,7 +15,7 @@ export async function get_Arbitrum_UniswapV2_Quote_NoMulticall(
   } = params;
 
   const provider = new ethers.JsonRpcProvider(rpcUrl);
-  const v2Router = new ethers.Contract(UNISWAP_V2_ROUTER, UNISWAP_V2_ROUTER_ABI, provider);
+  const v2Router = new ethers.Contract(V2_DEXES.uniswap.router, V2_DEXES.uniswap.abi, provider);
 
   const startedAt = Date.now();
 

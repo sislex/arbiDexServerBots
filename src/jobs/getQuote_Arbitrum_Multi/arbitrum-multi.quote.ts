@@ -1,5 +1,6 @@
 // arbitrum-multi.quote.ts
 import {
+  DexId,
   IJobParams_get_Arbitrum_Quote_Multi, IPairToQuote
 } from '../../store/state.types';
 
@@ -7,11 +8,7 @@ import { ethers } from "ethers";
 import {QuoteResultMulti} from '../handlers';
 import {toBigIntSafe} from '../../halpers/toBigIntSafe';
 import {
-  getV2RouterAbiByDex,
-  MULTICALL3, MULTICALL_ABI,
-  UNISWAP_QUOTER_V2_ABI,
-  UNISWAP_V2_ROUTER_ABI,
-  UNISWAP_V3_QUOTER_V2
+  MULTICALL3, MULTICALL_ABI, V2_DEXES, V3_QUOTERS
 } from '../../halpers/dex.constants';
 
 export interface QuoteExactInputSingleRaw {
@@ -73,10 +70,16 @@ export async function get_Arbitrum_Quote_Multi(
   } = params;
 
   const provider  = new ethers.JsonRpcProvider(rpcUrl);
+  const v2Routers: Partial<Record<DexId, ethers.Contract>> = {};
+  const v3Quoters: Partial<Record<DexId, ethers.Contract>> = {};
+  function getV2Router(dex: DexId) {
+    return v2Routers[dex] ??= new ethers.Contract(V2_DEXES[dex].router, V2_DEXES[dex].abi, provider);
+  }
+  function getV3Quoter(dex: DexId) {
+    return v3Quoters[dex] ??= new ethers.Contract(V3_QUOTERS[dex].quoter, V3_QUOTERS[dex].abi, provider);
+  }
+
   const multicall = new ethers.Contract(MULTICALL3, MULTICALL_ABI, provider);
-
-
-  const quoterV3    = new ethers.Contract(UNISWAP_V3_QUOTER_V2, UNISWAP_QUOTER_V2_ABI, provider);
 
   const startedAt = Date.now();
 
@@ -101,51 +104,52 @@ export async function get_Arbitrum_Quote_Multi(
       return;
     }
     if (pair.version === 'v2') {
-      const {router, abi} = getV2RouterAbiByDex(pair.dex);
-      const v2Router = new ethers.Contract(router, abi, provider);
-
-      // --- ветка UNISWAP V2 ---
-      if (pair.dex === 'uniswap') {
-        const pathInOut = (pair.path?.length ?? 0) > 1
-          ? pair.path!.map(t => ethers.getAddress(t.address))
-          : [tokenInAddr, tokenOutAddr];
-
-        // exact-in: getAmountsOut(amountIn, path)
-        const v2ExactInIndex = calls.length;
-        calls.push({
-          target: router,
-          callData: v2Router.interface.encodeFunctionData(
-            "getAmountsOut",
-            [amountIn, pathInOut]
-          )
-        });
-        decodePlan[i].v2ExactInIndex = v2ExactInIndex;
-
-        // exact-out (если задан amountOut): getAmountsIn(amountOut, reversedPath)
-        if (amountOut !== undefined) {
-          const pathOutIn = [...pathInOut].reverse();
-          const v2ExactOutIndex = calls.length;
-          calls.push({
-            target: router,
-            callData: v2Router.interface.encodeFunctionData(
-              "getAmountsIn",
-              [amountOut, pathOutIn]
-            )
-          });
-          decodePlan[i].v2ExactOutIndex = v2ExactOutIndex;
-        }
-
-        return; // V2 обработали, дальше для этой пары не идём
+      const dexCfg = V2_DEXES[pair.dex];
+      if (!dexCfg) {
+        pairResults[i].error = "DEX_NOT_CONFIGURED";
+        pairResults[i].message = `No V2 config for dex=${pair.dex}`;
+        return;
       }
-    }
 
-    // --- ветка UNISWAP V3 ---
-    if (pair.dex === 'uniswap' && pair.version === 'v3') {
+      const v2Router = getV2Router(pair.dex);
+
+      const pathInOut = (pair.path?.length ?? 0) > 1
+        ? pair.path!.map(t => ethers.getAddress(t.address))
+        : [tokenInAddr, tokenOutAddr];
+
+      const v2ExactInIndex = calls.length;
+      calls.push({
+        target: dexCfg.router,
+        callData: v2Router.interface.encodeFunctionData("getAmountsOut", [amountIn, pathInOut]),
+      });
+      decodePlan[i].v2ExactInIndex = v2ExactInIndex;
+
+      if (amountOut !== undefined) {
+        const pathOutIn = [...pathInOut].reverse();
+        const v2ExactOutIndex = calls.length;
+        calls.push({
+          target: dexCfg.router,
+          callData: v2Router.interface.encodeFunctionData("getAmountsIn", [amountOut, pathOutIn]),
+        });
+        decodePlan[i].v2ExactOutIndex = v2ExactOutIndex;
+      }
+
+      return;
+    } else if (pair.version === 'v3') {
+      const dexCfg = V3_QUOTERS[pair.dex];
+      if (!dexCfg) {
+        pairResults[i].error = "DEX_NOT_CONFIGURED";
+        pairResults[i].message = `No V3 quoter config for dex=${pair.dex}`;
+        return;
+      }
+
       if (pair.feePpm === undefined) {
-        pairResults[i].error   = "FEE_PPM_REQUIRED";
+        pairResults[i].error = "FEE_PPM_REQUIRED";
         pairResults[i].message = "feePpm must be provided for v3 pools";
         return;
       }
+
+      const quoterV3 = getV3Quoter(pair.dex);
 
       const qParamsIn = {
         tokenIn: tokenInAddr,
@@ -165,32 +169,22 @@ export async function get_Arbitrum_Quote_Multi(
 
       const exactInIndex = calls.length;
       calls.push({
-        target: UNISWAP_V3_QUOTER_V2,
-        callData: quoterV3.interface.encodeFunctionData(
-          "quoteExactInputSingle",
-          [qParamsIn]
-        ),
+        target: dexCfg.quoter,
+        callData: quoterV3.interface.encodeFunctionData("quoteExactInputSingle", [qParamsIn]),
       });
       decodePlan[i].exactInIndex = exactInIndex;
 
       if (qParamsOut) {
         const exactOutIndex = calls.length;
         calls.push({
-          target: UNISWAP_V3_QUOTER_V2,
-          callData: quoterV3.interface.encodeFunctionData(
-            "quoteExactOutputSingle",
-            [qParamsOut]
-          ),
+          target: dexCfg.quoter,
+          callData: quoterV3.interface.encodeFunctionData("quoteExactOutputSingle", [qParamsOut]),
         });
         decodePlan[i].exactOutIndex = exactOutIndex;
       }
 
       return;
     }
-
-    // --- сюда же можно потом добавить sushi v2 / v3 ---
-    // if (pair.dex === 'sushi' && pair.version === 'v2') { ... }
-    // if (pair.dex === 'sushi' && pair.version === 'v3') { ... }
   });
 
   // если не осталось ни одного вызова к quoter’у — просто возвращаем то, что собрали
@@ -215,44 +209,9 @@ export async function get_Arbitrum_Quote_Multi(
       const plan = decodePlan[i];
       const pair = pairsToQuote[i];
 
-      let quoteExactInputSingle: QuoteExactInputSingleRaw | undefined;
-      let quoteExactOutputSingle: QuoteExactOutputSingleRaw | undefined;
-
-      // --- UNISWAP V3 decode ---
-      if (pair.dex === 'uniswap' && pair.version === 'v3') {
-        if (plan.exactInIndex !== undefined) {
-          const decodedIn = quoterV3.interface.decodeFunctionResult(
-            "quoteExactInputSingle",
-            returnData[plan.exactInIndex]
-          );
-          quoteExactInputSingle = mapExactIn(decodedIn);
-        }
-
-        if (plan.exactOutIndex !== undefined) {
-          const decodedOut = quoterV3.interface.decodeFunctionResult(
-            "quoteExactOutputSingle",
-            returnData[plan.exactOutIndex]
-          );
-          quoteExactOutputSingle = mapExactOut(decodedOut);
-        }
-
-        if (!quoteExactInputSingle) {
-          pairResults[i].error   = "NO_QUOTE_IN_RESULT";
-          pairResults[i].message = "Multicall result missing quoteExactInputSingle for this pair";
-          continue;
-        }
-
-        pairResults[i].quote = {
-          quoteExactInputSingle,
-          quoteExactOutputSingle,
-        };
-
-        continue;
-      }
-
       if (pair.version === 'v2') {
-        const {router, abi} = getV2RouterAbiByDex(pair.dex);
-        const v2Router = new ethers.Contract(router, abi, provider);
+        const dexCfg = V2_DEXES[pair.dex];
+        const v2Router = getV2Router(pair.dex);
 
         // --- UNISWAP V2 decode ---
         if (pair.dex === 'uniswap') {
@@ -313,11 +272,41 @@ export async function get_Arbitrum_Quote_Multi(
 
           continue;
         }
+      } else if (pair.version === 'v3') {
+        const quoterV3 = getV3Quoter(pair.dex);
+
+        let quoteExactInputSingle: QuoteExactInputSingleRaw | undefined;
+        let quoteExactOutputSingle: QuoteExactOutputSingleRaw | undefined;
+
+        if (plan.exactInIndex !== undefined) {
+          const decodedIn = quoterV3.interface.decodeFunctionResult(
+            "quoteExactInputSingle",
+            returnData[plan.exactInIndex]
+          );
+          quoteExactInputSingle = mapExactIn(decodedIn);
+        }
+
+        if (plan.exactOutIndex !== undefined) {
+          const decodedOut = quoterV3.interface.decodeFunctionResult(
+            "quoteExactOutputSingle",
+            returnData[plan.exactOutIndex]
+          );
+          quoteExactOutputSingle = mapExactOut(decodedOut);
+        }
+
+        if (!quoteExactInputSingle) {
+          pairResults[i].error   = "NO_QUOTE_IN_RESULT";
+          pairResults[i].message = "Multicall result missing quoteExactInputSingle for this pair";
+          continue;
+        }
+
+        pairResults[i].quote = {
+          quoteExactInputSingle,
+          quoteExactOutputSingle,
+        };
+
+        continue;
       }
-
-
-
-      // сюда же потом добавишь sushi v2 / v3
     }
 
     const latencyMs = Date.now() - startedAt;
