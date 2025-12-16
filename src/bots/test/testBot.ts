@@ -94,28 +94,38 @@ export class TestBot implements ITestBot {
     }
   }
 
-  async analytics() {
+  async analytics(): Promise<void> {
     const groupedQuotes = groupPairQuotes(this.botState.lastJobResult.result);
 
-    const results = {
+    const results= {
       hasArbitrage: false,
-      quotes: null as any,
+      arbNumber: 0,
       groups: {} as Record<string, any>,
     };
 
+    let arbNumber = 0;
     for (const key in groupedQuotes) {
       const items = groupedQuotes[key];
 
+
       const best = bestSellBuyArbitrage(items);
+
+      const tokenIn =  items[0].pair.tokenIn.address.toLowerCase();
+      const tokenOut =  items[0].pair.tokenOut.address.toLowerCase();
 
       // spread может быть undefined → учитываем
       const hasArb = best.spread_pct !== undefined && best.spread_pct > 0;
 
       if (hasArb) {
+        arbNumber++;
+
         results.hasArbitrage = true;
+        results.arbNumber = arbNumber;
         results.groups[key] = {
           key,
           num: items.length,
+          tokenIn: tokenIn,
+          tokenOut: tokenOut,
           // result: best,
           spread_pct: best.spread_pct,
         };

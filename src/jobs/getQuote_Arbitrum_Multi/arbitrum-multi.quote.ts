@@ -57,8 +57,10 @@ interface IDecodePlan {
   exactInIndex?: number;
   exactOutIndex?: number;
 
-  v2ExactInIndex?: number;   // getAmountsOut
-  v2ExactOutIndex?: number;  // getAmountsIn
+  poolIdIndex?: number;      // <-- NEW (one call quoteBothBase)
+
+  v2ExactInIndex?: number;
+  v2ExactOutIndex?: number;
 }
 
 export async function get_Arbitrum_Quote_Multi(
@@ -72,11 +74,18 @@ export async function get_Arbitrum_Quote_Multi(
   const provider  = new ethers.JsonRpcProvider(rpcUrl);
   const v2Routers: Partial<Record<DexId, ethers.Contract>> = {};
   const v3Quoters: Partial<Record<DexId, ethers.Contract>> = {};
+  let poolIdQuoter: ethers.Contract | null = null;
+
   function getV2Router(dex: DexId) {
     return v2Routers[dex] ??= new ethers.Contract(V2_DEXES[dex].router, V2_DEXES[dex].abi, provider);
   }
+
   function getV3Quoter(dex: DexId) {
     return v3Quoters[dex] ??= new ethers.Contract(V3_QUOTERS[dex].quoter, V3_QUOTERS[dex].abi, provider);
+  }
+
+  function getPoolIdQuoter() {
+    return poolIdQuoter ??= new ethers.Contract(V3_QUOTERS.poolId.quoter, V3_QUOTERS.poolId.abi, provider);
   }
 
   const multicall = new ethers.Contract(MULTICALL3, MULTICALL_ABI, provider);
@@ -136,46 +145,25 @@ export async function get_Arbitrum_Quote_Multi(
 
       return;
     } else if (pair.version === 'v3') {
-      if (pair.poolId) {
-        // poolId quoting: через твой контракт
-        const poolIdQuoter = getV3Quoter('poolId' as any); // или расширь тип DexId
+      if (pair.poolAddress) {
+        const q = getPoolIdQuoter();
 
-        const exactInIndex = calls.length;
+        // poolId = адрес пула (pool address)
+        const pool = ethers.getAddress(pair.poolAddress);
+
+        const poolIdIndex = calls.length;
         calls.push({
           target: V3_QUOTERS.poolId.quoter,
-          callData: poolIdQuoter.interface.encodeFunctionData(
-            "quoteByPoolId",
-            [{
-              baseToken: tokenInAddr,
-              quoteToken: tokenOutAddr,
-              pool: ethers.getAddress(pair.poolId),
-              amountBase: amountIn,
-              sqrtPriceLimitX96: 0n, // твой контракт сам выставит no-limit
-            }]
-          ),
+          callData: q.interface.encodeFunctionData("quoteBothBase", [{
+            pool,
+            baseToken: tokenInAddr,
+            quoteToken: tokenOutAddr,
+            amountBase: amountIn,      // вход всегда amountIn (base)
+            sqrtPriceLimitX96: 0n,
+          }]),
         });
-        decodePlan[i].exactInIndex = exactInIndex;
 
-        // ExactOut: чтобы “структура” была как раньше — вызываем второй раз,
-        // но base=tokenOut, quote=tokenIn, amountBase=amountOut.
-        if (amountOut !== undefined) {
-          const exactOutIndex = calls.length;
-          calls.push({
-            target: V3_QUOTERS.poolId.quoter,
-            callData: poolIdQuoter.interface.encodeFunctionData(
-              "quoteByPoolId",
-              [{
-                baseToken: tokenOutAddr,
-                quoteToken: tokenInAddr,
-                pool: ethers.getAddress(pair.poolId),
-                amountBase: amountOut,
-                sqrtPriceLimitX96: 0n,
-              }]
-            ),
-          });
-          decodePlan[i].exactOutIndex = exactOutIndex;
-        }
-
+        decodePlan[i].poolIdIndex = poolIdIndex;
         return;
       } else {
         const dexCfg = V3_QUOTERS[pair.dex];
@@ -256,124 +244,98 @@ export async function get_Arbitrum_Quote_Multi(
         const dexCfg = V2_DEXES[pair.dex];
         const v2Router = getV2Router(pair.dex);
 
-        // --- UNISWAP V2 decode ---
-        if (pair.dex === 'uniswap') {
-          let v2AmountOutExactIn: string | undefined;
-          let v2AmountInExactOut: string | undefined;
+        // --- V2 decode ---
+        let v2AmountOutExactIn: string | undefined;
+        let v2AmountInExactOut: string | undefined;
 
-          if (plan.v2ExactInIndex !== undefined) {
-            try {
-              const decoded = v2Router.interface.decodeFunctionResult(
-                "getAmountsOut",
-                returnData[plan.v2ExactInIndex]
-              );
+        if (plan.v2ExactInIndex !== undefined) {
+          try {
+            const decoded = v2Router.interface.decodeFunctionResult(
+              "getAmountsOut",
+              returnData[plan.v2ExactInIndex]
+            );
 
 
-              const amounts = decoded[0] as bigint[];
-              if (amounts && amounts.length > 0) {
-                v2AmountOutExactIn = amounts[amounts.length - 1].toString();
-              }
-
-            } catch(e: any) {
-              console.log('Error decoding V2 getAmountsOut:', e);
+            const amounts = decoded[0] as bigint[];
+            if (amounts && amounts.length > 0) {
+              v2AmountOutExactIn = amounts[amounts.length - 1].toString();
             }
-          }
 
-          if (plan.v2ExactOutIndex !== undefined) {
-            try {
-              const decoded = v2Router.interface.decodeFunctionResult(
-                "getAmountsIn",
-                returnData[plan.v2ExactOutIndex]
-              );
-              const amounts = decoded[0] as bigint[];
-              if (amounts && amounts.length > 0) {
-                v2AmountInExactOut = amounts[0].toString();
-              }
-            } catch {/* ignore */}
+          } catch(e: any) {
+            console.log('Error decoding V2 getAmountsOut:', e);
           }
-
-          // чтобы bestSellBuyArbitrage мог с этим работать,
-          // можно адаптировать структуру под "как будто V3":
-          if (v2AmountOutExactIn) {
-            pairResults[i].quote = {
-              quoteExactInputSingle: {
-                amountOut: v2AmountOutExactIn,
-                sqrtPriceX96After: "0",
-                initializedTicksCrossed: "0",
-                gasEstimate: "0",
-              },
-              quoteExactOutputSingle: v2AmountInExactOut
-                ? {
-                  amountIn: v2AmountInExactOut,
-                  sqrtPriceX96After: "0",
-                  initializedTicksCrossed: "0",
-                  gasEstimate: "0",
-                }
-                : undefined,
-            };
-          }
-
-          continue;
         }
-      } else if (pair.version === 'v3') {
-        if (pair.poolId) {
-          const poolIdQuoter = getV3Quoter('poolId' as any);
 
-          // decode exactIn (quoteByPoolId)
-          let exactInOut: string | undefined;
-          let exactOutIn: string | undefined;
-
-          if (plan.exactInIndex !== undefined) {
-            const decoded = poolIdQuoter.interface.decodeFunctionResult(
-              "quoteByPoolId",
-              returnData[plan.exactInIndex]
+        if (plan.v2ExactOutIndex !== undefined) {
+          try {
+            const decoded = v2Router.interface.decodeFunctionResult(
+              "getAmountsIn",
+              returnData[plan.v2ExactOutIndex]
             );
+            const amounts = decoded[0] as bigint[];
+            if (amounts && amounts.length > 0) {
+              v2AmountInExactOut = amounts[0].toString();
+            }
+          } catch {/* ignore */}
+        }
 
-            // decoded[0] — это tuple QuoteResponse
-            const resp = decoded[0];
-            // resp.amountOutQuote — сколько quoteToken получаем за amountBase
-            exactInOut = (resp.amountOutQuote as bigint).toString();
-
-            // полезное — можно сохранить poolAddress
-            pairResults[i].poolAddress = resp.pool as string;
-          }
-
-          if (plan.exactOutIndex !== undefined) {
-            const decoded = poolIdQuoter.interface.decodeFunctionResult(
-              "quoteByPoolId",
-              returnData[plan.exactOutIndex]
-            );
-            const resp = decoded[0];
-
-            // Тут мы котировали base=tokenOut, quote=tokenIn.
-            // resp.amountOutQuote = сколько tokenIn получим за amountBase(tokenOut)
-            // Но нам нужно “amountIn” tokenOut, чтобы получить amountBase(tokenIn).
-            // Для этого в твоём контракте есть amountInQuoteForBase.
-            exactOutIn = (resp.amountInQuoteForBase as bigint).toString();
-          }
-
-          if (!exactInOut) {
-            pairResults[i].error = "NO_QUOTE_IN_RESULT";
-            pairResults[i].message = "Multicall result missing quoteByPoolId exactIn for this pair";
-            continue;
-          }
-
-          // адаптируем под твою прежнюю структуру V3
+        // чтобы bestSellBuyArbitrage мог с этим работать,
+        // можно адаптировать структуру под "как будто V3":
+        if (v2AmountOutExactIn) {
           pairResults[i].quote = {
             quoteExactInputSingle: {
-              amountOut: exactInOut,
+              amountOut: v2AmountOutExactIn,
               sqrtPriceX96After: "0",
               initializedTicksCrossed: "0",
               gasEstimate: "0",
             },
-            quoteExactOutputSingle: exactOutIn
+            quoteExactOutputSingle: v2AmountInExactOut
               ? {
-                amountIn: exactOutIn,
+                amountIn: v2AmountInExactOut,
                 sqrtPriceX96After: "0",
                 initializedTicksCrossed: "0",
                 gasEstimate: "0",
               }
               : undefined,
+          };
+        }
+
+        continue;
+      } else if (pair.version === 'v3') {
+        if (pair.poolAddress) {
+          const q = getPoolIdQuoter();
+
+          if (plan.poolIdIndex === undefined) {
+            pairResults[i].error = "NO_CALL_PLANNED";
+            pairResults[i].message = "poolIdIndex missing in decodePlan";
+            continue;
+          }
+
+          const decoded = q.interface.decodeFunctionResult(
+            "quoteBothBase",
+            returnData[plan.poolIdIndex]
+          );
+
+          // decoded[0] = QuoteBothResponse tuple
+          const resp = decoded[0];
+
+          // сохраним poolAddress
+          pairResults[i].poolAddress = (resp.pool as string);
+
+          // Мапим в твою старую структуру "как будто UniswapQuoterV2"
+          pairResults[i].quote = {
+            quoteExactInputSingle: {
+              amountOut: (resp.exactIn.amountOut as bigint).toString(),
+              sqrtPriceX96After: (resp.exactIn.sqrtPriceX96After as bigint).toString(),
+              initializedTicksCrossed: (resp.exactIn.initializedTicksCrossed as bigint).toString(),
+              gasEstimate: (resp.exactIn.gasEstimate as bigint).toString(),
+            },
+            quoteExactOutputSingle: {
+              amountIn: (resp.exactOut.amountIn as bigint).toString(),
+              sqrtPriceX96After: (resp.exactOut.sqrtPriceX96After as bigint).toString(),
+              initializedTicksCrossed: (resp.exactOut.initializedTicksCrossed as bigint).toString(),
+              gasEstimate: (resp.exactOut.gasEstimate as bigint).toString(),
+            },
           };
 
           continue;

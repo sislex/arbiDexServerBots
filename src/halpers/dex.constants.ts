@@ -13,8 +13,20 @@ export const UNISWAP_FACTORY_ABI = [
 ];
 
 const POOLID_QUOTER_ABI = [
-  "function quoteByPoolId((address baseToken,address quoteToken,address pool,uint256 amountBase,uint160 sqrtPriceLimitX96)) external returns (tuple(uint256 blockNumber,address pool,address token0,address token1,uint24 fee,uint160 sqrtPriceX96,int24 tick,uint256 amountOutQuote,uint256 gasUsedExactIn,uint256 amountInQuoteForBase,uint256 gasUsedExactOut))",
-  // на всякий — чтобы декодить ошибки твоего контракта:
+  // ---- main method ----
+  "function quoteBothBase((address pool,address baseToken,address quoteToken,uint256 amountBase,uint160 sqrtPriceLimitX96)) external returns (tuple(" +
+  "uint256 blockNumber," +
+  "address pool," +
+  "address token0," +
+  "address token1," +
+  "uint24 fee," +
+  "uint160 sqrtPriceX96Before," +
+  "int24 tickBefore," +
+  "tuple(uint256 amountOut,uint160 sqrtPriceX96After,uint32 initializedTicksCrossed,uint256 gasEstimate) exactIn," +
+  "tuple(uint256 amountIn,uint160 sqrtPriceX96After,uint32 initializedTicksCrossed,uint256 gasEstimate) exactOut" +
+  "))",
+
+  // ---- custom errors ----
   "error NotFromPool()",
   "error TokenNotInPool()",
   "error InvalidAmount()",
@@ -52,7 +64,7 @@ export const V2_DEXES = {
 export const V3_QUOTERS = {
   poolId: {
     name: 'PoolId Quoter (V3-like)',
-    quoter: '0x07f91ED27Bf8804262bc020D0F214aD519f59dDE',
+    quoter: '0x5F61BD957276B28Be96571C2F9876E2ECD85C648',
     abi: POOLID_QUOTER_ABI,
   },
 
