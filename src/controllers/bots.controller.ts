@@ -94,9 +94,9 @@ export class BotsController {
   @Post('bot/:botId/restart')
   async restartBot(@Param('botId') botId: string) {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
-    const bot = botsList.find((b: IBot) => b.id === botId);
+    const bot: IBot | undefined = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {
-      return { error: 'Bot not found' };
+      return { error: 'Bot not found' } as any;
     }
     bot.botInstance.restart();
 
