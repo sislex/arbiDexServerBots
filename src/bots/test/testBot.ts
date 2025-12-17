@@ -96,7 +96,7 @@ export class TestBot implements ITestBot {
   }
 
   async analytics(): Promise<void> {
-    this.botState.lastAnalyticsResult = bestBuySellArbitrage(this.botState.lastJobResult.result, true);
+    this.botState.lastAnalyticsResult = bestBuySellArbitrage(this.botState.lastJobResult.result, false);
   }
 
   setAnalyticsLatency() {
