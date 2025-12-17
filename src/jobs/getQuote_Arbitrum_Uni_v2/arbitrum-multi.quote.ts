@@ -3,8 +3,8 @@ import { ethers } from 'ethers';
 import { IJobParams_get_Arbitrum_Quote_Multi } from '../../store/state.types';
 import { QuoteResultMulti } from '../handlers';
 import { IPairQuoteResult } from '../getQuote_Arbitrum_Multi/arbitrum-multi.quote';
-import { toBigIntSafe } from '../../halpers/toBigIntSafe';
-import {V2_DEXES} from '../../halpers/dex.constants';
+import { toBigIntSafe } from '../../helpers/toBigIntSafe';
+import {V2_DEXES} from '../../helpers/dex.constants';
 
 export async function get_Arbitrum_UniswapV2_Quote_NoMulticall(
   params: IJobParams_get_Arbitrum_Quote_Multi

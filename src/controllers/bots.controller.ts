@@ -7,9 +7,10 @@ import { IBot } from '../store/state.types';
 import {selectBotsList} from '../store/selectors';
 import {firstValueFrom, take} from 'rxjs';
 import {getParamsFromBotInstance} from '../store/bots.halpers';
-import {convertBigIntToString} from '../halpers/convertBigIntToString';
-import {IArbitrage} from '../halpers/createArbitrage';
-import {IBotError} from '../halpers/createError';
+import {convertBigIntToString} from '../helpers/convertBigIntToString';
+import {IArbitrage} from '../helpers/createArbitrage';
+import {IBotError} from '../helpers/createError';
+import {getParsedArbitrage, IParsedArbitrage} from '../helpers/getParsedArbitrage.helper';
 
 @Controller('')
 export class BotsController {
@@ -103,15 +104,15 @@ export class BotsController {
   }
 
   @Get('bot/:botId/arbitrage')
-  async getBotArbitrage(@Param('botId') botId: string) {
+  async getBotArbitrage(@Param('botId') botId: string): Promise<IParsedArbitrage[]> {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
     const bot: IBot | undefined = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {
-      return { error: 'Bot not found' };
+      return { error: 'Bot not found' } as any;
     }
 
     const arbitrageList: IArbitrage[] = bot.botInstance.getArbitrage().slice().reverse();
 
-    return arbitrageList;
+    return getParsedArbitrage(arbitrageList);
   }
 }

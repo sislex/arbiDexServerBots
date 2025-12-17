@@ -1,10 +1,11 @@
 import {IJobParams, IBotParams, IJobType} from '../../store/state.types';
 import { setTimeout as delay } from 'timers/promises';
 import {runJob} from '../../jobs/handlers';
-import {createBotError, IBotError} from '../../halpers/createError';
-import {groupPairQuotes} from '../../arbitrage/groupPairQuotes.helper';
-import {bestSellBuyArbitrage} from '../../arbitrage/bestSellBuy.arbitrage';
-import {createArbitrage, IArbitrage} from '../../halpers/createArbitrage';
+import {createBotError, IBotError} from '../../helpers/createError';
+import {groupPairQuotes} from '../../arbitrage/helpers/groupPairQuotes.helper';
+import {bestSellBuyArbitrage} from '../../arbitrage/helpers/bestSellBuy.arbitrage';
+import {createArbitrage, IArbitrage} from '../../helpers/createArbitrage';
+import {bestBuySellArbitrage} from '../../arbitrage/best-buy-sell.arbitrage';
 
 interface ITestBotState {
   createdAt: Date;
@@ -95,49 +96,7 @@ export class TestBot implements ITestBot {
   }
 
   async analytics(): Promise<void> {
-    const groupedQuotes = groupPairQuotes(this.botState.lastJobResult.result);
-
-    const results= {
-      hasArbitrage: false,
-      arbNumber: 0,
-      groups: {} as Record<string, any>,
-    };
-
-    let arbNumber = 0;
-    for (const key in groupedQuotes) {
-      const items = groupedQuotes[key];
-
-
-      const best = bestSellBuyArbitrage(items);
-
-      const tokenIn =  items[0].pair.tokenIn.address.toLowerCase();
-      const tokenOut =  items[0].pair.tokenOut.address.toLowerCase();
-
-      // spread может быть undefined → учитываем
-      const hasArb = best.spread_pct !== undefined && best.spread_pct > 0;
-
-      if (hasArb) {
-        arbNumber++;
-
-        results.hasArbitrage = true;
-        results.arbNumber = arbNumber;
-        results.groups[key] = {
-          key,
-          num: items.length,
-          tokenIn: tokenIn,
-          tokenOut: tokenOut,
-          // result: best,
-          spread_pct: best.spread_pct,
-        };
-      }
-
-    }
-
-    if (results.hasArbitrage) {
-      // results.quotes = this.botState.lastJobResult;
-    }
-
-    this.botState.lastAnalyticsResult = results;
+    this.botState.lastAnalyticsResult = bestBuySellArbitrage(this.botState.lastJobResult.result, true);
   }
 
   setAnalyticsLatency() {
@@ -163,7 +122,12 @@ export class TestBot implements ITestBot {
     }
 
     if (this.botState.lastAnalyticsResult?.hasArbitrage) {
-      const arbitrage: IArbitrage = createArbitrage({details: this.botState.lastAnalyticsResult});
+      const lastAnalyticsResult = this.botState.lastAnalyticsResult;
+      const arbitrage: IArbitrage = createArbitrage({
+        blockNumber: this.botState.lastJobResult.blockNumber,
+        ...lastAnalyticsResult,
+      });
+
       this.pushArbitrage(arbitrage);
     }
   }

@@ -1,15 +1,13 @@
-import {IPairQuoteResult} from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
+import {IPairQuoteResult} from '../../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
+import {IPairToQuote} from '../../store/state.types';
 
 export interface IBestSellBuyResult {
   amountOut?: string;
   amountIn?: string;
   spread_pct?: number;
 
-  bestSellFeePpm?: number; // опционально — для v2 просто не будет
-  bestBuyFeePpm?: number;
-
-  bestSell?: IPairQuoteResult | null;
-  bestBuy?: IPairQuoteResult | null;
+  bestSellPool?: IPairToQuote | null;
+  bestBuyPool?: IPairToQuote | null;
 }
 
 export function bestSellBuyArbitrage(pairQuote: IPairQuoteResult[]): IBestSellBuyResult {
@@ -42,8 +40,8 @@ export function bestSellBuyArbitrage(pairQuote: IPairQuoteResult[]): IBestSellBu
       amountOut: undefined,
       amountIn: undefined,
       spread_pct: undefined,
-      bestSell,
-      bestBuy,
+      bestSellPool: bestSell?.pair,
+      bestBuyPool: bestBuy?.pair,
     };
   }
 
@@ -58,9 +56,7 @@ export function bestSellBuyArbitrage(pairQuote: IPairQuoteResult[]): IBestSellBu
     amountOut: bestSellOut.toString(),
     amountIn: bestBuyIn.toString(),
     spread_pct: spreadPct,
-    bestSellFeePpm: bestSell.pair.feePpm,
-    bestBuyFeePpm: bestBuy.pair.feePpm,
-    // bestSell,
-    // bestBuy,
+    bestBuyPool: bestBuy.pair,
+    bestSellPool: bestSell.pair,
   };
 }

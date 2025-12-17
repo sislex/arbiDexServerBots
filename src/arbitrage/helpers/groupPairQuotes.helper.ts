@@ -1,4 +1,4 @@
-import {IPairQuoteResult} from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
+import {IPairQuoteResult} from '../../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
 
 export function groupPairQuotes(
   quotes: IPairQuoteResult[],

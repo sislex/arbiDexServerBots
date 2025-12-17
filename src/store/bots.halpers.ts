@@ -1,5 +1,5 @@
 import {IBot} from './state.types';
-import {convertBigIntToString} from '../halpers/convertBigIntToString';
+import {convertBigIntToString} from '../helpers/convertBigIntToString';
 
 export const getParamsFromBotInstance = (bot: IBot)=> ({
   id: bot.id,

@@ -11,11 +11,11 @@ import { AppStore } from '../store/app.store';
 import {ApiEndpointDto} from '../store/dto/api-endpoint.dto';
 import {IBot, IBotsRule} from '../store/state.types';
 import {getParamsFromBotInstance} from '../store/bots.halpers';
-import {convertBigIntToString} from '../halpers/convertBigIntToString';
+import {convertBigIntToString} from '../helpers/convertBigIntToString';
 import {uniswapResponseStub} from '../jobs/stabs/uniswap.stabs';
-import {bestSellBuyArbitrage} from '../arbitrage/bestSellBuy.arbitrage';
+import {bestSellBuyArbitrage} from '../arbitrage/helpers/bestSellBuy.arbitrage';
 import {QuoteResultMulti} from '../jobs/handlers';
-import {groupPairQuotes} from '../arbitrage/groupPairQuotes.helper';
+import {groupPairQuotes} from '../arbitrage/helpers/groupPairQuotes.helper';
 
 @Controller()
 export class AppController {

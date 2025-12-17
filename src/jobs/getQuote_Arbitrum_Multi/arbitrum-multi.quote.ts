@@ -6,10 +6,10 @@ import {
 
 import { ethers } from "ethers";
 import {QuoteResultMulti} from '../handlers';
-import {toBigIntSafe} from '../../halpers/toBigIntSafe';
+import {toBigIntSafe} from '../../helpers/toBigIntSafe';
 import {
   MULTICALL3, MULTICALL_ABI, V2_DEXES, V3_QUOTERS
-} from '../../halpers/dex.constants';
+} from '../../helpers/dex.constants';
 
 export interface QuoteExactInputSingleRaw {
   amountOut: string;

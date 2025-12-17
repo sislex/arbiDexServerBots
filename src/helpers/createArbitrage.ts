@@ -1,13 +1,11 @@
 export interface IArbitrage {
   createdAt: string;      // UTC ISO string
-  details: any;
+  [key: string]: any;
 }
 
-export function createArbitrage(params: {
-  details: any;
-}): IArbitrage {
+export function createArbitrage(params: any): IArbitrage {
   return {
     createdAt: new Date().toISOString(),
-    details: params.details,
+    ...params
   };
 }
