@@ -8,7 +8,7 @@ export const MULTICALL_ABI = [
   "function aggregate(tuple(address target, bytes callData)[] calls) payable returns (uint256 blockNumber, bytes[] returnData)"
 ];
 
-export const UNISWAP_FACTORY_ABI = [
+export const UNISWAP_V3_FACTORY_ABI = [
   "function getPool(address tokenA, address tokenB, uint24 fee) external view returns (address pool)"
 ];
 

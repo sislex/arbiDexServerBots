@@ -1,4 +1,14 @@
-import {DexId, IBotsRule, IBotType, IJobType, IPairToQuote, ITokenInfo, PoolVersion} from '../state.types';
+import {
+  DexId,
+  IBotsRule,
+  IBotType,
+  IJobType,
+  IPairToQuote,
+  IPoolSettings,
+  ITokenInfo,
+  PoolVersion,
+  QuoteSource
+} from '../state.types';
 import {parseUnits} from 'ethers';
 import {
   $SHARBI,
@@ -20,13 +30,30 @@ import {
   WISE, WSTETH,
   YEP, ZRO
 } from './tokens.stabs';
+import {POOL_UNISWAP_V3_USDC_WETH_001} from './poolsUniswapV3.stabs';
 
 export interface IPairsToQuoteParams {
   poolsSettings: IPoolsSettings;
+  quoteSource?: QuoteSource;
   dex?: DexId;
   version?: PoolVersion;
   feePpmList?: number[];
+  amount?: string;
 }
+
+export interface IPairToQuoteParams {
+  poolSettings: IPoolSettings;
+  tokenIn: ITokenInfo;
+  tokenOut: ITokenInfo;
+  amount: string;
+  quoteSource: QuoteSource;
+}
+
+const AMOUNT_USDC_100 = parseUnits("100", USDC.decimals).toString();
+const AMOUNT_WETH_003 = parseUnits("0.03", WETH.decimals).toString();
+
+const AMOUNT_100_6 = parseUnits("100", 6).toString();
+const AMOUNT_003_18 = parseUnits("100", 18).toString();
 
 
 function getPairsToQuote(params: IPairsToQuoteParams): IPairToQuote[] {
@@ -48,16 +75,17 @@ function getpairsV2Uniswap(params: IPairsToQuoteParams): IPairToQuote[] {
     poolsSettings,
     dex = 'uniswap',
     version = 'v2',
+    quoteSource = 'uniswap-v2-router',
   } = params;
   const pairList: IPairToQuote[] = [];
   for (const amount of poolsSettings.amountList) {
     pairList.push({
       dex,
       version,
+      quoteSource,
       tokenIn: poolsSettings.tokenIn,
       tokenOut: poolsSettings.tokenOut,
       amountIn: amount,
-      amountOut: amount,
       feePpm: 3000, // не используется в v2
       path: [poolsSettings.tokenIn, poolsSettings.tokenOut,]
     });
@@ -70,6 +98,7 @@ function getpairsV3Uniswap(params: IPairsToQuoteParams): IPairToQuote[] {
     poolsSettings,
     dex = 'uniswap',
     version = 'v3',
+    quoteSource = 'uniswap-v3-quoter-v2',
   } = params;
   const pairList: IPairToQuote[] = [];
   for (const amount of poolsSettings.amountList) {
@@ -78,10 +107,10 @@ function getpairsV3Uniswap(params: IPairsToQuoteParams): IPairToQuote[] {
         pairList.push({
           dex,
           version,
+          quoteSource,
           tokenIn: poolsSettings.tokenIn,
           tokenOut: poolsSettings.tokenOut,
           amountIn: amount,
-          amountOut: amount,
           feePpm: feePpm,
           poolAddress: poolsSettings.poolAddress,
         });
@@ -96,6 +125,7 @@ function getpairsV3UniswapByPoolAddress(params: IPairsToQuoteParams): IPairToQuo
     poolsSettings,
     dex = 'uniswap',
     version = 'v3',
+    quoteSource = 'uniswap-v3-quoter-v2',
   } = params;
   const pairList: IPairToQuote[] = [];
 
@@ -103,6 +133,7 @@ function getpairsV3UniswapByPoolAddress(params: IPairsToQuoteParams): IPairToQuo
     pairList.push({
       dex,
       version,
+      quoteSource,
       tokenIn: poolsSettings.tokenIn,
       tokenOut: poolsSettings.tokenOut,
       amountIn: amount,
@@ -112,6 +143,54 @@ function getpairsV3UniswapByPoolAddress(params: IPairsToQuoteParams): IPairToQuo
     });
   }
   return pairList;
+}
+
+function normalize(addr: string): string {
+  return addr.toLowerCase();
+}
+
+export function getPairToQuote(params: IPairToQuoteParams): IPairToQuote {
+  const {
+    poolSettings,
+    tokenIn,
+    tokenOut,
+    amount,
+    quoteSource = 'uniswap-v3-quoter-v2',
+  } = params;
+
+  const inAddr = normalize(tokenIn.address);
+  const outAddr = normalize(tokenOut.address);
+
+  const p1 = normalize(poolSettings.token0.address);
+  const p2 = normalize(poolSettings.token1.address);
+
+  // ❌ tokenIn === tokenOut
+  if (inAddr === outAddr) {
+    throw new Error(
+      `Invalid pair: tokenIn and tokenOut are the same (${tokenIn.address})`
+    );
+  }
+
+  // ❌ токены не принадлежат пулу
+  const inMatch = inAddr === p1 || inAddr === p2;
+  const outMatch = outAddr === p1 || outAddr === p2;
+
+  if (!inMatch || !outMatch) {
+    throw new Error(
+      `Tokens do not match pool.
+Pool tokens: [${poolSettings.token0.address}, ${poolSettings.token1.address}]
+Requested: tokenIn=${tokenIn.address}, tokenOut=${tokenOut.address}`
+    );
+  }
+
+  // ✅ всё ок
+  return {
+    ...poolSettings,
+    tokenIn,
+    tokenOut,
+    amountIn: amount,
+    quoteSource,
+  };
 }
 
 export interface IPoolsSettings {
@@ -125,70 +204,70 @@ export interface IPoolsSettings {
 const POOLS_UNISWAP_USDC_WETH: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: WETH,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_WBTC: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: WBTC,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_ARB: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: ARB,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_TMX: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: TMX,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_SECH: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: SECH,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_DAI : IPoolsSettings= {
   tokenIn: USDC,
   tokenOut: DAI,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_YEP: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: YEP,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_QODA: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: QODA,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_OPUL: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: OPUL,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_USDC_FARE: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: FARE,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
@@ -196,84 +275,84 @@ const POOLS_UNISWAP_USDC_FARE: IPoolsSettings = {
 const POOLS_UNISWAP_WETH_USDC: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDC,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_USDT: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDT,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_WBTC: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WBTC,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_ARB: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ARB,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_DAI: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: DAI,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_GMX: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: GMX,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_LINK: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: LINK,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_WISE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WISE,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_RAIN: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: RAIN,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_USDCE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDCE,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_PENDLE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: PENDLE,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
 const POOLS_UNISWAP_WETH_WSTETH: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WSTETH,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 0,
 };
 
@@ -301,7 +380,7 @@ const POOLS_UNISWAP_WETH_CRYPTO: IPoolsSettings = {
 const POOLS_UNISWAP_USDC_WETH_test: IPoolsSettings = {
   tokenIn: USDC,
   tokenOut: WETH,
-  amountList: [parseUnits("100", USDC.decimals).toString()],
+  amountList: [AMOUNT_USDC_100],
   feePpm: 0,
 };
 
@@ -325,7 +404,7 @@ const POOLS_SUSHI_USDC_WETH_100: IPoolsSettings = {
 const POOLS_SUSHI_WETH_USDC_500: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDC,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 500,
   poolAddress: '0xf3eb87c1f6020982173c908e7eb31aa66c1f0296',
 };
@@ -333,7 +412,7 @@ const POOLS_SUSHI_WETH_USDC_500: IPoolsSettings = {
 const POOLS_SUSHI_WETH_USDC_100: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDC,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 100,
   poolAddress: '0xb658ee5c63922d2852f24458effa2bfa2cba3574',
 };
@@ -341,7 +420,7 @@ const POOLS_SUSHI_WETH_USDC_100: IPoolsSettings = {
 const POOLS_SUSHI_WETH_DONUT_10000: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: DONUT,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 10000,
   poolAddress: '0x65f7a98d87bc21a3748545047632fef4d3ff9a67',
 };
@@ -349,7 +428,7 @@ const POOLS_SUSHI_WETH_DONUT_10000: IPoolsSettings = {
 const POOLS_SUSHI_WETH_WSTETH_100: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WSTETH,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 100,
   poolAddress: '0x8bd39fa8608fd949c253987767540c26a0d974cf',
 };
@@ -357,7 +436,7 @@ const POOLS_SUSHI_WETH_WSTETH_100: IPoolsSettings = {
 const POOLS_SUSHI_WETH_GOVI_3000: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: GOVI,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
   poolAddress: '0x581f84f5017f275dd5f6f4c045a66b7439331da0',
 };
@@ -365,7 +444,7 @@ const POOLS_SUSHI_WETH_GOVI_3000: IPoolsSettings = {
 const POOLS_SUSHI_WETH_SNSY_10000: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: SNSY,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 10000,
   poolAddress: '0x8d11274ddeb8b141a24ca8a36c63699214e0d221',
 };
@@ -373,7 +452,7 @@ const POOLS_SUSHI_WETH_SNSY_10000: IPoolsSettings = {
 const POOLS_SUSHI_WETH_ARB_3000: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ARB,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
   poolAddress: '0xb3942c9ffa04efbc1fa746e146be7565c76e3dc1',
 };
@@ -381,7 +460,7 @@ const POOLS_SUSHI_WETH_ARB_3000: IPoolsSettings = {
 const POOLS_SUSHI_WETH_ARB_500: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ARB,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 500,
   poolAddress: '0x99543bf98ca1830aa20d3eb12c1b9962f8eadc11',
 };
@@ -389,7 +468,7 @@ const POOLS_SUSHI_WETH_ARB_500: IPoolsSettings = {
 const POOLS_SUSHI_WETH_USDCE_500: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDCE,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 500,
   poolAddress: '0x15e444da5b343c5a0931f5d3e85d158d1efc3d40',
 };
@@ -397,7 +476,7 @@ const POOLS_SUSHI_WETH_USDCE_500: IPoolsSettings = {
 const POOLS_SUSHI_WETH_USDCE_3000: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDCE,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
   poolAddress: '0x4d1576158518dd61924218446c1057cf03138d57',
 };
@@ -405,7 +484,7 @@ const POOLS_SUSHI_WETH_USDCE_3000: IPoolsSettings = {
 const POOLS_SUSHI_WETH_WBTC_3000: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WBTC,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
   poolAddress: '0x6f10667f314498649eb2f80da244e8c6e9f031d5',
 };
@@ -413,7 +492,7 @@ const POOLS_SUSHI_WETH_WBTC_3000: IPoolsSettings = {
 const POOLS_SUSHI_WETH_ZRO_3000: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ZRO,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
   poolAddress: '0x1797538dd80c041cc2f0c5901d5700868186a9a8',
 };
@@ -421,191 +500,195 @@ const POOLS_SUSHI_WETH_ZRO_3000: IPoolsSettings = {
 const POOLS_SUSHI_WETH_HASH: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: HASH,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_USDCE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDCE,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_MAGIC: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: MAGIC,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_DPX: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: DPX,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_ARVAULT: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ARVAULT,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_SPELL: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: SPELL,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_ARBY: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ARBY,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_USDT: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDT,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_WBTC: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: WBTC,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_ADOGE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ADOGE,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_LIQD: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: LIQD,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_MIM: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: MIM,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_FLUID: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: FLUID,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_EMAX: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: EMAX,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_USDC: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: USDC,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_JETH: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: JETH,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_SUSHI: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: SUSHI,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_PEPE: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: PEPE,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_FLUX: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: FLUX,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_OMNI: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: OMNI,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_HWT: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: HWT,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_GOHM: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: GOHM,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_$SHARBI: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: $SHARBI,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_LINK: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: LINK,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_ARB: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: ARB,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_DAI: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: DAI,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
 
 const POOLS_SUSHI_WETH_GMX: IPoolsSettings = {
   tokenIn: WETH,
   tokenOut: GMX,
-  amountList: [parseUnits("0.03", WETH.decimals).toString()],
+  amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
+
+
+
+
 
 
 
@@ -631,9 +714,6 @@ const pairsV3UniswapWethRain = getPairsToQuote({poolsSettings: POOLS_UNISWAP_WET
 const pairsV3UniswapWethUsdce = getPairsToQuote({poolsSettings: POOLS_UNISWAP_WETH_USDCE, dex: 'uniswap', version: 'v3', feePpmList: [500, 3000]});
 const pairsV3UniswapWethPendle = getPairsToQuote({poolsSettings: POOLS_UNISWAP_WETH_PENDLE, dex: 'uniswap', version: 'v3', feePpmList: [500, 3000, 10000]});
 const pairsV3UniswapWethWstest = getPairsToQuote({poolsSettings: POOLS_UNISWAP_WETH_WSTETH, dex: 'uniswap', version: 'v3', feePpmList: [100, 3000]});
-const pairsV3UniswapWethUsdplus = getPairsToQuote({poolsSettings: POOLS_UNISWAP_WETH_USDPLUS, dex: 'uniswap', version: 'v3', feePpmList: [500]});
-const pairsV3UniswapWethMor = getPairsToQuote({poolsSettings: POOLS_UNISWAP_WETH_MOR, dex: 'uniswap', version: 'v3', feePpmList: [3000, 10000]});
-const pairsV3UniswapWethCrypto = getPairsToQuote({poolsSettings: POOLS_UNISWAP_WETH_CRYPTO, dex: 'uniswap', version: 'v3', feePpmList: [10000]});
 
 const pairsV3UniswapUsdcWeth = getPairsToQuote({poolsSettings: POOLS_UNISWAP_USDC_WETH, dex: 'uniswap', version: 'v3',   feePpmList: [100, 500, 3000, 10000]});
 const pairsV3UniswapUsdcWbtc = getPairsToQuote({poolsSettings: POOLS_UNISWAP_USDC_WBTC, dex: 'uniswap', version: 'v3', feePpmList: [500, 3000, 10000]});
@@ -686,6 +766,26 @@ const pairsV3SushiWethUsdce3000 = getpairsV3UniswapByPoolAddress({poolsSettings:
 const pairsV3SushiWethWbtc3000 = getpairsV3UniswapByPoolAddress({poolsSettings: POOLS_SUSHI_WETH_WBTC_3000, dex: 'sushi'});
 const pairsV3SushiWethZro3000 = getpairsV3UniswapByPoolAddress({poolsSettings: POOLS_SUSHI_WETH_ZRO_3000, dex: 'sushi'});
 
+
+const pairUniswapV3 = getPairToQuote({
+  poolSettings: POOL_UNISWAP_V3_USDC_WETH_001,
+  tokenIn: USDC,
+  tokenOut: WETH,
+  amount: AMOUNT_100_6,
+  quoteSource: 'uniswap-v3-quoter-v2',
+});
+
+const pairUniswapV3Simulation = getPairToQuote({
+  poolSettings: POOL_UNISWAP_V3_USDC_WETH_001,
+  tokenIn: USDC,
+  tokenOut: WETH,
+  amount: AMOUNT_100_6,
+  quoteSource: 'quoteBothBase',
+});
+
+console.log(pairsV2SushiWethGmx);
+
+
 const pairsUniswap: IPairToQuote[] = [
   ...pairsV3UniswapWethUsdc,
   ...pairsV3UniswapWethUsdt,
@@ -698,9 +798,6 @@ const pairsUniswap: IPairToQuote[] = [
   ...pairsV3UniswapWethUsdce,
   ...pairsV3UniswapWethPendle,
   ...pairsV3UniswapWethWstest,
-  ...pairsV3UniswapWethUsdplus,
-  ...pairsV3UniswapWethMor,
-  ...pairsV3UniswapWethCrypto,
 
   ...pairsV3UniswapUsdcWeth,
   ...pairsV3UniswapUsdcWbtc,
@@ -770,20 +867,54 @@ const pairs = [
 ];
 
 const pairsSushiTest: IPairToQuote[] = [
-  ...pairsV2SushiWethGmx,
+  ...pairsV3UniswapWethUsdc,
 ];
 
-console.log('pairsToQuote count:', pairs.length);
+const pairsUniswapV3: IPairToQuote[] = [
+  ...pairsV3UniswapWethUsdc,
+  ...pairsV3UniswapWethUsdt,
+  ...pairsV3UniswapWethWbtc,
+  ...pairsV3UniswapWethArb,
+  ...pairsV3UniswapWethDai,
+  ...pairsV3UniswapWethGmx,
+  ...pairsV3UniswapWethLink,
+  ...pairsV3UniswapWethRain,
+  ...pairsV3UniswapWethUsdce,
+  ...pairsV3UniswapWethPendle,
+  ...pairsV3UniswapWethWstest,
 
+  // ...pairsV3UniswapUsdcWeth,
+  ...pairsV3UniswapUsdcWbtc,
+  ...pairsV3UniswapUsdcArb,
+];
 
 export const BotRuleListStab: IBotsRule[] = [
+  // {
+  //   id: 'botRule1',
+  //   botParams: {
+  //     botType: IBotType.TEST_BOT,
+  //     paused: false,
+  //     isRepeat: true,
+  //     delayBetweenRepeat: 100000,
+  //     maxJobs: 1000000,
+  //     maxErrors: 100,
+  //     timeoutMs: 1000,
+  //   },
+  //   jobParams: {
+  //     jobType: IJobType.GET_ARBITRUM_QUOTES_MULTI,
+  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
+  //
+  //     pairsToQuote: pairsSushiTest,
+  //
+  //   }
+  // },
   {
-    id: 'botRule1',
+    id: 'botRule2',
     botParams: {
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 100,
+      delayBetweenRepeat: 100000,
       maxJobs: 1000000,
       maxErrors: 100,
       timeoutMs: 1000,
@@ -792,28 +923,13 @@ export const BotRuleListStab: IBotsRule[] = [
       jobType: IJobType.GET_ARBITRUM_QUOTES_MULTI,
       rpcUrl: 'https://arb1.arbitrum.io/rpc',
 
-      pairsToQuote: pairs,
+      pairsToQuote: [
+        // pairUniswapV3,
+        // pairUniswapV3Simulation,
+        ...pairsV2SushiWethGmx,
+      ],
 
     }
   },
-  // {
-  //   id: 'botRule2',
-  //   botParams: {
-  //     botType: IBotType.TEST_BOT,
-  //     paused: false,
-  //     isRepeat: true,
-  //     delayBetweenRepeat: 100,
-  //     maxJobs: 1000000,
-  //     maxErrors: 100,
-  //     timeoutMs: 1000,
-  //   },
-  //   jobParams: {
-  //     jobType: IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES,
-  //     rpcUrl: 'https://arb1.arbitrum.io/rpc',
-  //
-  //     pairsToQuote: pairsToQuoteBot2,
-  //
-  //   }
-  // },
 
 ];

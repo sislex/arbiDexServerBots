@@ -1,6 +1,7 @@
 // src/store/state.types.ts
 import {TestBot} from '../bots/test/testBot';
 import {ApiEndpointDto} from './dto/api-endpoint.dto';
+import {resolvePoolsForPairs} from '../jobs/resolvePoolsForPairs/resolvePoolsForPairs.pools';
 
 export enum IBotType {
   TEST_BOT = 'TestBot',
@@ -12,12 +13,18 @@ export enum IJobType {
   GET_ARBITRUM_UNISWAP_V3_QUOTES = 'get_Arbitrum_UniswapV3_Quote',
   GET_ARBITRUM_QUOTES_MULTI = 'get_Arbitrum_Quote_Multi',
   GET_ARBITRUM_UNISWAP_V2_QUOTES = 'get_Arbitrum_UniswapV2_Quote',
+  RESOLVE_POOLS_FOR_PAIRS = 'resolve_pools_for_pairs',
 }
 
 export interface IJobDefaultParams { jobType: IJobType; }
 
 export type DexId = 'uniswap' | 'sushi';
 export type PoolVersion = 'v2' | 'v3';
+
+export type QuoteSource =
+  | 'uniswap-v2-router'
+  | 'uniswap-v3-quoter-v2'
+  | 'quoteBothBase';
 
 export interface ITokenInfo {
   address: `0x${string}`;
@@ -38,6 +45,7 @@ export interface IJobParams_get_Pool_State extends IJobDefaultParams {
 interface IBasePairToQuote {
   dex: DexId;               // 'uniswap' | 'sushi'
   version: PoolVersion;     // 'v2' | 'v3'
+  quoteSource: QuoteSource;
 
   tokenIn:  ITokenInfo;
   tokenOut: ITokenInfo;
@@ -119,11 +127,28 @@ export interface IJobParams_get_Arbitrum_UniswapV2_Quote extends IJobDefaultPara
   ignoreFee?: boolean;
 }
 
+export interface IJobParams_resolve_Pools_For_Pairs extends IJobDefaultParams {
+  jobType: IJobType.RESOLVE_POOLS_FOR_PAIRS;
+
+  rpcUrl: string;
+  pairsToQuote: IPairToQuote[];
+}
+
+export interface IPoolSettings {
+  dex: DexId;
+  version: PoolVersion;
+  poolAddress: string;
+  token0: ITokenInfo;
+  token1: ITokenInfo;
+  feePpm: number;
+}
+
 export type IJobParams =
   | IJobParams_get_Pool_State
   | IJobParams_get_Arbitrum_UniswapV3_Quote
   | IJobParams_get_Arbitrum_Quote_Multi
-  | IJobParams_get_Arbitrum_UniswapV2_Quote;
+  | IJobParams_get_Arbitrum_UniswapV2_Quote
+  | IJobParams_resolve_Pools_For_Pairs;
 
 
 export interface IJobTypeAndDescription {

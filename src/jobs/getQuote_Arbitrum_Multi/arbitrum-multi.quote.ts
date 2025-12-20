@@ -96,7 +96,7 @@ export async function get_Arbitrum_Quote_Multi(
   const pairResults: IPairQuoteResult[] = pairsToQuote.map(pair => ({ pair }));
   const decodePlan: IDecodePlan[] = pairsToQuote.map(() => ({}));
 
-  // ----------  Готовим ОДИН большой multicall к Quoter’у ----------
+  // ---------- Готовим ОДИН большой multicall к Quoter’у ----------
   const calls: Array<{ target: string; callData: string }> = [];
 
   // ---------- 1. Собираем вызовы (и V2, и V3) ----------
@@ -105,46 +105,47 @@ export async function get_Arbitrum_Quote_Multi(
     const tokenOutAddr = ethers.getAddress(pair.tokenOut.address);
 
     const amountIn  = toBigIntSafe(pair.amountIn);
-    const amountOut = toBigIntSafe(pair.amountOut);
 
     if (amountIn === undefined) {
       pairResults[i].error   = "AMOUNT_IN_REQUIRED";
       pairResults[i].message = "amountIn must be provided for exact-input quoting";
       return;
     }
-    if (pair.version === 'v2') {
-      const dexCfg = V2_DEXES[pair.dex];
-      if (!dexCfg) {
-        pairResults[i].error = "DEX_NOT_CONFIGURED";
-        pairResults[i].message = `No V2 config for dex=${pair.dex}`;
-        return;
-      }
 
-      const v2Router = getV2Router(pair.dex);
+    if (pair.quoteSource === 'uniswap-v2-router') {
+      if (pair.version === 'v2') {
+        const dexCfg = V2_DEXES[pair.dex];
+        if (!dexCfg) {
+          pairResults[i].error = "DEX_NOT_CONFIGURED";
+          pairResults[i].message = `No V2 config for dex=${pair.dex}`;
+          return;
+        }
 
-      const pathInOut = (pair.path?.length ?? 0) > 1
-        ? pair.path!.map(t => ethers.getAddress(t.address))
-        : [tokenInAddr, tokenOutAddr];
+        const v2Router = getV2Router(pair.dex);
 
-      const v2ExactInIndex = calls.length;
-      calls.push({
-        target: dexCfg.router,
-        callData: v2Router.interface.encodeFunctionData("getAmountsOut", [amountIn, pathInOut]),
-      });
-      decodePlan[i].v2ExactInIndex = v2ExactInIndex;
+        const pathInOut = (pair.path?.length ?? 0) > 1
+          ? pair.path!.map(t => ethers.getAddress(t.address))
+          : [tokenInAddr, tokenOutAddr];
 
-      if (amountOut !== undefined) {
+        const v2ExactInIndex = calls.length;
+        calls.push({
+          target: dexCfg.router,
+          callData: v2Router.interface.encodeFunctionData("getAmountsOut", [amountIn, pathInOut]),
+        });
+        decodePlan[i].v2ExactInIndex = v2ExactInIndex;
+
         const pathOutIn = [...pathInOut].reverse();
         const v2ExactOutIndex = calls.length;
         calls.push({
           target: dexCfg.router,
-          callData: v2Router.interface.encodeFunctionData("getAmountsIn", [amountOut, pathOutIn]),
+          callData: v2Router.interface.encodeFunctionData("getAmountsIn", [amountIn, pathOutIn]),
         });
         decodePlan[i].v2ExactOutIndex = v2ExactOutIndex;
-      }
 
-      return;
-    } else if (pair.version === 'v3') {
+        return;
+      }
+    } else  if (pair.quoteSource === 'quoteBothBase') {
+      console.log(pair);
       if (pair.poolAddress) {
         const q = getPoolIdQuoter();
 
@@ -165,56 +166,52 @@ export async function get_Arbitrum_Quote_Multi(
 
         decodePlan[i].poolIdIndex = poolIdIndex;
         return;
-      } else {
-        const dexCfg = V3_QUOTERS[pair.dex];
-        if (!dexCfg) {
-          pairResults[i].error = "DEX_NOT_CONFIGURED";
-          pairResults[i].message = `No V3 quoter config for dex=${pair.dex}`;
-          return;
-        }
-
-        if (pair.feePpm === undefined) {
-          pairResults[i].error = "FEE_PPM_REQUIRED";
-          pairResults[i].message = "feePpm must be provided for v3 pools";
-          return;
-        }
-
-        const quoterV3 = getV3Quoter(pair.dex);
-
-        const qParamsIn = {
-          tokenIn: tokenInAddr,
-          tokenOut: tokenOutAddr,
-          amountIn,
-          fee: pair.feePpm,
-          sqrtPriceLimitX96: 0n,
-        };
-
-        const qParamsOut = amountOut !== undefined ? {
-          tokenIn: tokenOutAddr,
-          tokenOut: tokenInAddr,
-          amountOut,
-          fee: pair.feePpm,
-          sqrtPriceLimitX96: 0n,
-        } : undefined;
-
-        const exactInIndex = calls.length;
-        calls.push({
-          target: dexCfg.quoter,
-          callData: quoterV3.interface.encodeFunctionData("quoteExactInputSingle", [qParamsIn]),
-        });
-        decodePlan[i].exactInIndex = exactInIndex;
-
-        if (qParamsOut) {
-          const exactOutIndex = calls.length;
-          calls.push({
-            target: dexCfg.quoter,
-            callData: quoterV3.interface.encodeFunctionData("quoteExactOutputSingle", [qParamsOut]),
-          });
-          decodePlan[i].exactOutIndex = exactOutIndex;
-        }
+      }
+    } else  if (pair.quoteSource === 'uniswap-v3-quoter-v2') {
+      const dexCfg = V3_QUOTERS[pair.dex];
+      if (!dexCfg) {
+        pairResults[i].error = "DEX_NOT_CONFIGURED";
+        pairResults[i].message = `No V3 quoter config for dex=${pair.dex}`;
+        return;
       }
 
-      return;
+      if (pair.feePpm === undefined) {
+        pairResults[i].error = "FEE_PPM_REQUIRED";
+        pairResults[i].message = "feePpm must be provided for v3 pools";
+        return;
+      }
+
+      const quoterV3 = getV3Quoter(pair.dex);
+
+      const qParamsIn = {
+        tokenIn: tokenInAddr,
+        tokenOut: tokenOutAddr,
+        amountIn,
+        fee: pair.feePpm,
+        sqrtPriceLimitX96: 0n,
+      };
+
+      const qParamsOut = {
+        tokenIn: tokenOutAddr,
+        tokenOut: tokenInAddr,
+        amountOut: amountIn,
+        fee: pair.feePpm,
+        sqrtPriceLimitX96: 0n,
+      };
+
+      const exactInIndex = calls.length;
+      calls.push({
+        target: dexCfg.quoter,
+        callData: quoterV3.interface.encodeFunctionData("quoteExactInputSingle", [qParamsIn]),
+      });
+      decodePlan[i].exactInIndex = exactInIndex;
+
+      const exactOutIndex = calls.length;
+      calls.push({
+        target: dexCfg.quoter,
+        callData: quoterV3.interface.encodeFunctionData("quoteExactOutputSingle", [qParamsOut]),
+      });
+      decodePlan[i].exactOutIndex = exactOutIndex;
     }
   });
 
@@ -240,8 +237,7 @@ export async function get_Arbitrum_Quote_Multi(
       const plan = decodePlan[i];
       const pair = pairsToQuote[i];
 
-      if (pair.version === 'v2') {
-        const dexCfg = V2_DEXES[pair.dex];
+      if (pair.quoteSource === 'uniswap-v2-router') {
         const v2Router = getV2Router(pair.dex);
 
         // --- V2 decode ---
@@ -250,12 +246,7 @@ export async function get_Arbitrum_Quote_Multi(
 
         if (plan.v2ExactInIndex !== undefined) {
           try {
-            const decoded = v2Router.interface.decodeFunctionResult(
-              "getAmountsOut",
-              returnData[plan.v2ExactInIndex]
-            );
-
-
+            const decoded = v2Router.interface.decodeFunctionResult("getAmountsOut", returnData[plan.v2ExactInIndex]);
             const amounts = decoded[0] as bigint[];
             if (amounts && amounts.length > 0) {
               v2AmountOutExactIn = amounts[amounts.length - 1].toString();
@@ -268,15 +259,14 @@ export async function get_Arbitrum_Quote_Multi(
 
         if (plan.v2ExactOutIndex !== undefined) {
           try {
-            const decoded = v2Router.interface.decodeFunctionResult(
-              "getAmountsIn",
-              returnData[plan.v2ExactOutIndex]
-            );
+            const decoded = v2Router.interface.decodeFunctionResult("getAmountsIn", returnData[plan.v2ExactOutIndex]);
             const amounts = decoded[0] as bigint[];
             if (amounts && amounts.length > 0) {
               v2AmountInExactOut = amounts[0].toString();
             }
-          } catch {/* ignore */}
+          } catch(e: any) {
+            console.log('Error decoding V2 getAmountsOut:', e);
+          }
         }
 
         // чтобы bestSellBuyArbitrage мог с этим работать,
@@ -300,80 +290,73 @@ export async function get_Arbitrum_Quote_Multi(
           };
         }
 
-        continue;
-      } else if (pair.version === 'v3') {
-        if (pair.poolAddress) {
-          const q = getPoolIdQuoter();
+      } else if (pair.quoteSource === 'quoteBothBase') {
+        const q = getPoolIdQuoter();
 
-          if (plan.poolIdIndex === undefined) {
-            pairResults[i].error = "NO_CALL_PLANNED";
-            pairResults[i].message = "poolIdIndex missing in decodePlan";
-            continue;
-          }
-
-          const decoded = q.interface.decodeFunctionResult(
-            "quoteBothBase",
-            returnData[plan.poolIdIndex]
-          );
-
-          // decoded[0] = QuoteBothResponse tuple
-          const resp = decoded[0];
-
-          // сохраним poolAddress
-          pairResults[i].poolAddress = (resp.pool as string);
-
-          // Мапим в твою старую структуру "как будто UniswapQuoterV2"
-          pairResults[i].quote = {
-            quoteExactInputSingle: {
-              amountOut: (resp.exactIn.amountOut as bigint).toString(),
-              sqrtPriceX96After: (resp.exactIn.sqrtPriceX96After as bigint).toString(),
-              initializedTicksCrossed: (resp.exactIn.initializedTicksCrossed as bigint).toString(),
-              gasEstimate: (resp.exactIn.gasEstimate as bigint).toString(),
-            },
-            quoteExactOutputSingle: {
-              amountIn: (resp.exactOut.amountIn as bigint).toString(),
-              sqrtPriceX96After: (resp.exactOut.sqrtPriceX96After as bigint).toString(),
-              initializedTicksCrossed: (resp.exactOut.initializedTicksCrossed as bigint).toString(),
-              gasEstimate: (resp.exactOut.gasEstimate as bigint).toString(),
-            },
-          };
-
+        if (plan.poolIdIndex === undefined) {
+          pairResults[i].error = "NO_CALL_PLANNED";
+          pairResults[i].message = "poolIdIndex missing in decodePlan";
           continue;
-        } else {
-          const quoterV3 = getV3Quoter(pair.dex);
-
-          let quoteExactInputSingle: QuoteExactInputSingleRaw | undefined;
-          let quoteExactOutputSingle: QuoteExactOutputSingleRaw | undefined;
-
-          if (plan.exactInIndex !== undefined) {
-            const decodedIn = quoterV3.interface.decodeFunctionResult(
-              "quoteExactInputSingle",
-              returnData[plan.exactInIndex]
-            );
-            quoteExactInputSingle = mapExactIn(decodedIn);
-          }
-
-          if (plan.exactOutIndex !== undefined) {
-            const decodedOut = quoterV3.interface.decodeFunctionResult(
-              "quoteExactOutputSingle",
-              returnData[plan.exactOutIndex]
-            );
-            quoteExactOutputSingle = mapExactOut(decodedOut);
-          }
-
-          if (!quoteExactInputSingle) {
-            pairResults[i].error   = "NO_QUOTE_IN_RESULT";
-            pairResults[i].message = "Multicall result missing quoteExactInputSingle for this pair";
-            continue;
-          }
-
-          pairResults[i].quote = {
-            quoteExactInputSingle,
-            quoteExactOutputSingle,
-          };
         }
 
-        continue;
+        const decoded = q.interface.decodeFunctionResult(
+          "quoteBothBase",
+          returnData[plan.poolIdIndex]
+        );
+
+        // decoded[0] = QuoteBothResponse tuple
+        const resp = decoded[0];
+
+        // сохраним poolAddress
+        pairResults[i].poolAddress = (resp.pool as string);
+
+        // Мапим в твою старую структуру "как будто UniswapQuoterV2"
+        pairResults[i].quote = {
+          quoteExactInputSingle: {
+            amountOut: (resp.exactIn.amountOut as bigint).toString(),
+            sqrtPriceX96After: (resp.exactIn.sqrtPriceX96After as bigint).toString(),
+            initializedTicksCrossed: (resp.exactIn.initializedTicksCrossed as bigint).toString(),
+            gasEstimate: (resp.exactIn.gasEstimate as bigint).toString(),
+          },
+          quoteExactOutputSingle: {
+            amountIn: (resp.exactOut.amountIn as bigint).toString(),
+            sqrtPriceX96After: (resp.exactOut.sqrtPriceX96After as bigint).toString(),
+            initializedTicksCrossed: (resp.exactOut.initializedTicksCrossed as bigint).toString(),
+            gasEstimate: (resp.exactOut.gasEstimate as bigint).toString(),
+          },
+        };
+      } else if (pair.quoteSource === 'uniswap-v3-quoter-v2') {
+        const quoterV3 = getV3Quoter(pair.dex);
+
+        let quoteExactInputSingle: QuoteExactInputSingleRaw | undefined;
+        let quoteExactOutputSingle: QuoteExactOutputSingleRaw | undefined;
+
+        if (plan.exactInIndex !== undefined) {
+          const decodedIn = quoterV3.interface.decodeFunctionResult(
+            "quoteExactInputSingle",
+            returnData[plan.exactInIndex]
+          );
+          quoteExactInputSingle = mapExactIn(decodedIn);
+        }
+
+        if (plan.exactOutIndex !== undefined) {
+          const decodedOut = quoterV3.interface.decodeFunctionResult(
+            "quoteExactOutputSingle",
+            returnData[plan.exactOutIndex]
+          );
+          quoteExactOutputSingle = mapExactOut(decodedOut);
+        }
+
+        if (!quoteExactInputSingle) {
+          pairResults[i].error   = "NO_QUOTE_IN_RESULT";
+          pairResults[i].message = "Multicall result missing quoteExactInputSingle for this pair";
+          continue;
+        }
+
+        pairResults[i].quote = {
+          quoteExactInputSingle,
+          quoteExactOutputSingle,
+        };
       }
     }
 
