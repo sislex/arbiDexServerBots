@@ -10,8 +10,8 @@ import {
   WETH,
   WSTETH,
   ZRO,
-} from "../tokens.stabs";
-import {IPool} from '../../state.types';
+} from "../../tokens.stabs";
+import {IPool} from '../../../state.types';
 
 // ==================== USDC / WETH ====================
 

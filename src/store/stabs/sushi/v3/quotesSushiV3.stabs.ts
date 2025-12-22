@@ -1,4 +1,4 @@
-import { BuildQuotesParams, IQuote } from "../../state.types";
+import { BuildQuotesParams, IQuote } from "../../../state.types";
 
 import {
   PAIRS_SUSHI_WETH_OUT,
@@ -6,7 +6,7 @@ import {
   PAIR_SUSHI_V3_USDC_WETH_100_USDC_TO_WETH,
 } from "./pairsSushiV3.stabs";
 
-import { AMOUNT_003_18, AMOUNT_100_6 } from "../pricses.stabs";
+import { AMOUNT_003_18, AMOUNT_100_6 } from "../../pricses.stabs";
 
 // ==================== buildQuotes (shared logic) ====================
 

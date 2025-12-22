@@ -1,4 +1,4 @@
-import { IPair } from "../../state.types";
+import { IPair } from "../../../state.types";
 import {
   ARB,
   DONUT,
@@ -10,7 +10,7 @@ import {
   WETH,
   WSTETH,
   ZRO,
-} from "../tokens.stabs";
+} from "../../tokens.stabs";
 
 import {
   POOL_SUSHI_V3_USDC_WETH_001,

@@ -3,7 +3,6 @@ import {
   IBotsRule,
   IBotType,
   IJobType,
-  IPairToQuote,
   IPool,
   ITokenInfo,
   PoolVersion,
@@ -11,7 +10,7 @@ import {
 } from '../state.types';
 import {parseUnits} from 'ethers';
 import {
-  $SHARBI,
+  SHARBI,
   ADOGE,
   ARB, ARBY, ARVAULT, CRYPTO,
   DAI, DONUT, DPX, EMAX,
@@ -30,29 +29,11 @@ import {
   WISE, WSTETH,
   YEP, ZRO
 } from './tokens.stabs';
-import {POOL_UNISWAP_V3_USDC_WETH_001} from './uniswap/poolsUniswapV3.stabs';
-import {PAIRS_USDC_OUT} from './uniswap/pairsUniswapV3.stabs';
-import {quotesBothTest, quotesUniTest, quotesWethOut} from './uniswap/quotesUniswapV3.stabs';
-import {quotesSushiUsdcOut, quotesSushiWethOut} from './sushi/quotesSushiV3.stabs';
+import {quotesSushiUsdcOut, quotesSushiWethOut} from './sushi/v3/quotesSushiV3.stabs';
+import {hydrateSushiV2Pools} from '../../helpers/hydrateSushiV2Pools';
+import {quotesSushiV2WethOut} from './sushi/v2/quotesSushiV2.stabs';
+import {quotesUsdcOut, quotesWethOut} from './uniswap/v3/quotesUniswapV3.stabs';
 
-export interface IPairsToQuoteParams {
-  poolsSettings: IPoolsSettings;
-  quoteSource?: QuoteSource;
-  dex?: DexId;
-  version?: PoolVersion;
-  feePpmList?: number[];
-  amount?: string;
-}
-
-export interface IPairToQuoteParams {
-  poolSettings: IPool;
-  tokenIn: ITokenInfo;
-  tokenOut: ITokenInfo;
-  amount: string;
-  quoteSource: QuoteSource;
-}
-
-const AMOUNT_USDC_100 = parseUnits("100", USDC.decimals).toString();
 const AMOUNT_WETH_003 = parseUnits("0.03", WETH.decimals).toString();
 
 export interface IPoolsSettings {
@@ -217,9 +198,9 @@ const POOLS_SUSHI_WETH_GOHM: IPoolsSettings = {
   feePpm: 3000,
 };
 
-const POOLS_SUSHI_WETH_$SHARBI: IPoolsSettings = {
+const POOLS_SUSHI_WETH_SHARBI: IPoolsSettings = {
   tokenIn: WETH,
-  tokenOut: $SHARBI,
+  tokenOut: SHARBI,
   amountList: [AMOUNT_WETH_003],
   feePpm: 3000,
 };
@@ -252,6 +233,36 @@ const POOLS_SUSHI_WETH_GMX: IPoolsSettings = {
   feePpm: 3000,
 };
 
+export const POOLS_SUSHI_WETH_ALL: IPoolsSettings[] = [
+  POOLS_SUSHI_WETH_HASH,
+  POOLS_SUSHI_WETH_USDCE,
+  POOLS_SUSHI_WETH_MAGIC,
+  POOLS_SUSHI_WETH_DPX,
+  POOLS_SUSHI_WETH_ARVAULT,
+  POOLS_SUSHI_WETH_SPELL,
+  POOLS_SUSHI_WETH_ARBY,
+  POOLS_SUSHI_WETH_USDT,
+  POOLS_SUSHI_WETH_WBTC,
+  POOLS_SUSHI_WETH_ADOGE,
+  POOLS_SUSHI_WETH_LIQD,
+  POOLS_SUSHI_WETH_MIM,
+  POOLS_SUSHI_WETH_FLUID,
+  POOLS_SUSHI_WETH_EMAX,
+  POOLS_SUSHI_WETH_USDC,
+  POOLS_SUSHI_WETH_JETH,
+  POOLS_SUSHI_WETH_SUSHI,
+  POOLS_SUSHI_WETH_PEPE,
+  POOLS_SUSHI_WETH_FLUX,
+  POOLS_SUSHI_WETH_OMNI,
+  POOLS_SUSHI_WETH_HWT,
+  POOLS_SUSHI_WETH_GOHM,
+  POOLS_SUSHI_WETH_SHARBI,
+  POOLS_SUSHI_WETH_LINK,
+  POOLS_SUSHI_WETH_ARB,
+  POOLS_SUSHI_WETH_DAI,
+  POOLS_SUSHI_WETH_GMX,
+];
+
 export const BotRuleListStab: IBotsRule[] = [
   {
     id: 'botRule2',
@@ -269,8 +280,11 @@ export const BotRuleListStab: IBotsRule[] = [
       rpcUrl: 'https://arb1.arbitrum.io/rpc',
 
       pairsToQuote: [
-        // pairUniswapV3,
-        // pairUniswapV3Simulation,
+        ...quotesWethOut,
+        ...quotesUsdcOut,
+
+        ...quotesSushiV2WethOut,
+
         ...quotesSushiWethOut,
         ...quotesSushiUsdcOut,
       ],

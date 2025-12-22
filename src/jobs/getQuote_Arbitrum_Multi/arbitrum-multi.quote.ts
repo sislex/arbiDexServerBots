@@ -145,7 +145,6 @@ export async function get_Arbitrum_Quote_Multi(
         return;
       }
     } else  if (pair.quoteSource === 'quoteBothBase') {
-      console.log(pair);
       if (pair.poolAddress) {
         const q = getPoolIdQuoter();
 
@@ -361,8 +360,6 @@ export async function get_Arbitrum_Quote_Multi(
     }
 
     const latencyMs = Date.now() - startedAt;
-
-    console.log(pairResults)
 
     return {
       ok: true,

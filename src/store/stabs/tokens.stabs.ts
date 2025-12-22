@@ -46,4 +46,4 @@ export const FLUX: ITokenInfo = { address: '0xf80d589b3dbe130c270a69f1a69d050f26
 export const OMNI: ITokenInfo = { address: '0x9e20461bc2c4c980f62f1b279d71734207a6a356', decimals: 18 };
 export const HWT: ITokenInfo = { address: '0xbcc9c1763d54427bdf5efb6e9eb9494e5a1fbabf', decimals: 18 };
 export const GOHM: ITokenInfo = { address: '0x8d9ba570d6cb60c7e3e0f31343efe75ab8e65fb1', decimals: 18 };
-export const $SHARBI: ITokenInfo = { address: '0xaa54e84a3e6e5a80288d2c2f8e36ea5ca3a3ca30', decimals: 18 };
+export const SHARBI: ITokenInfo = { address: '0xaa54e84a3e6e5a80288d2c2f8e36ea5ca3a3ca30', decimals: 18 };
