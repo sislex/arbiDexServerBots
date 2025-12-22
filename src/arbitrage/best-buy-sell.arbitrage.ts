@@ -7,46 +7,50 @@ export interface IBestBuySellArbitrage {
   arbNumber: number;
   groups: any[];
 }
-
-export function bestBuySellArbitrage(quotes: IPairQuoteResult[], testMode = false): IBestBuySellArbitrage {
+export function bestBuySellArbitrage(
+  quotes: IPairQuoteResult[],
+  testMode = false
+): IBestBuySellArbitrage {
   const groupedQuotes = groupPairQuotes(quotes);
 
-  const groups: any = [];
+  const groups: any[] = [];
   let arbNumber = 0;
   let hasArb = false;
 
   for (const key in groupedQuotes) {
-    const quotes = groupedQuotes[key];
-    if (quotes.length > 1) {
-      const bestSellBuy = bestSellBuyArbitrage(quotes);
-      const tokenIn =  quotes[0].pair.tokenIn;
-      const tokenOut =  quotes[0].pair.tokenOut;
-      const amountIn = quotes[0].pair.amount;
+    const groupQuotes = groupedQuotes[key];
+    if (groupQuotes.length <= 1) continue;
 
-      // spread может быть undefined → учитываем
-      hasArb = bestSellBuy.spread_pct !== undefined && bestSellBuy.spread_pct > 0;
+    const bestSellBuy = bestSellBuyArbitrage(groupQuotes);
 
-      if (testMode || hasArb) {
-        arbNumber++;
+    const tokenIn = groupQuotes[0].pair.tokenIn;
+    const tokenOut = groupQuotes[0].pair.tokenOut;
+    const amountIn = groupQuotes[0].pair.amount;
 
-        groups.push({
-          tokenIn: tokenIn,
-          tokenOut: tokenOut,
-          amountIn,
-          poolsCount: quotes.length,
-          spread_pct: bestSellBuy.spread_pct,
-          bestBuyPool: bestSellBuy.bestBuyPool,
-          bestSellPool: bestSellBuy.bestSellPool,
-        });
-      }
+    const groupHasArb =
+      bestSellBuy.spread_pct !== undefined && bestSellBuy.spread_pct > 0;
+
+    // аккумулируем по всем группам, а не перезаписываем
+    hasArb = hasArb || groupHasArb;
+
+    if (testMode || groupHasArb) {
+      arbNumber++;
+
+      groups.push({
+        tokenIn,
+        tokenOut,
+        amountIn,
+        poolsCount: groupQuotes.length,
+        spread_pct: bestSellBuy.spread_pct,
+        bestBuyPool: bestSellBuy.bestBuyPool,
+        bestSellPool: bestSellBuy.bestSellPool,
+      });
     }
   }
 
-  const results: IBestBuySellArbitrage= {
-    hasArbitrage:  testMode || hasArb,
+  return {
+    hasArbitrage: testMode || hasArb,
     arbNumber,
     groups,
   };
-
-  return results;
 }
