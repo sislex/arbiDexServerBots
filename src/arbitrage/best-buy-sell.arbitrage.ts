@@ -21,7 +21,7 @@ export function bestBuySellArbitrage(quotes: IPairQuoteResult[], testMode = fals
       const bestSellBuy = bestSellBuyArbitrage(quotes);
       const tokenIn =  quotes[0].pair.tokenIn;
       const tokenOut =  quotes[0].pair.tokenOut;
-      const amountIn = quotes[0].pair.amountIn;
+      const amountIn = quotes[0].pair.amount;
 
       // spread может быть undefined → учитываем
       hasArb = bestSellBuy.spread_pct !== undefined && bestSellBuy.spread_pct > 0;

@@ -1,9 +1,9 @@
-import { IPoolSettings } from "../state.types";
-import {ARB, DAI, GMX, LINK, PENDLE, RAIN, USDC, USDCE, USDT, WBTC, WETH, WSTETH} from './tokens.stabs';
+import { IPool } from "../../state.types";
+import {ARB, DAI, GMX, LINK, PENDLE, RAIN, USDC, USDCE, USDT, WBTC, WETH, WSTETH} from '../tokens.stabs';
 
 // -------------------- USDC / WETH -------------------- +
 
-export const POOL_UNISWAP_V3_USDC_WETH_001: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_WETH_001: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -12,7 +12,7 @@ export const POOL_UNISWAP_V3_USDC_WETH_001: IPoolSettings = {
   feePpm: 100,
 };
 
-export const POOL_UNISWAP_V3_USDC_WETH_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_WETH_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -21,7 +21,7 @@ export const POOL_UNISWAP_V3_USDC_WETH_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_USDC_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -30,7 +30,7 @@ export const POOL_UNISWAP_V3_USDC_WETH_03: IPoolSettings = {
   feePpm: 3000,
 };
 
-export const POOL_UNISWAP_V3_USDC_WETH_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_WETH_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -41,7 +41,7 @@ export const POOL_UNISWAP_V3_USDC_WETH_1: IPoolSettings = {
 
 // -------------------- USDT / WETH --------------------
 
-export const POOL_UNISWAP_V3_USDT_WETH_001: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDT_WETH_001: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDT,
@@ -50,7 +50,7 @@ export const POOL_UNISWAP_V3_USDT_WETH_001: IPoolSettings = {
   feePpm: 100,
 };
 
-export const POOL_UNISWAP_V3_USDT_WETH_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDT_WETH_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDT,
@@ -59,7 +59,7 @@ export const POOL_UNISWAP_V3_USDT_WETH_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_USDT_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDT_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDT,
@@ -68,7 +68,7 @@ export const POOL_UNISWAP_V3_USDT_WETH_03: IPoolSettings = {
   feePpm: 3000,
 };
 
-export const POOL_UNISWAP_V3_USDT_WETH_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDT_WETH_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDT,
@@ -79,7 +79,7 @@ export const POOL_UNISWAP_V3_USDT_WETH_1: IPoolSettings = {
 
 // -------------------- WBTC / WETH --------------------
 
-export const POOL_UNISWAP_V3_WBTC_WETH_001: IPoolSettings = {
+export const POOL_UNISWAP_V3_WBTC_WETH_001: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: WBTC,
@@ -88,7 +88,7 @@ export const POOL_UNISWAP_V3_WBTC_WETH_001: IPoolSettings = {
   feePpm: 100,
 };
 
-export const POOL_UNISWAP_V3_WBTC_WETH_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_WBTC_WETH_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: WBTC,
@@ -97,7 +97,7 @@ export const POOL_UNISWAP_V3_WBTC_WETH_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_WBTC_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_WBTC_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: WBTC,
@@ -106,7 +106,7 @@ export const POOL_UNISWAP_V3_WBTC_WETH_03: IPoolSettings = {
   feePpm: 3000,
 };
 
-export const POOL_UNISWAP_V3_WBTC_WETH_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_WBTC_WETH_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: WBTC,
@@ -117,7 +117,7 @@ export const POOL_UNISWAP_V3_WBTC_WETH_1: IPoolSettings = {
 
 // -------------------- ARB / WETH --------------------
 
-export const POOL_UNISWAP_V3_ARB_WETH_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_ARB_WETH_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: ARB,
@@ -126,7 +126,7 @@ export const POOL_UNISWAP_V3_ARB_WETH_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_ARB_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_ARB_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: ARB,
@@ -135,7 +135,7 @@ export const POOL_UNISWAP_V3_ARB_WETH_03: IPoolSettings = {
   feePpm: 3000,
 };
 
-export const POOL_UNISWAP_V3_ARB_WETH_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_ARB_WETH_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: ARB,
@@ -146,7 +146,7 @@ export const POOL_UNISWAP_V3_ARB_WETH_1: IPoolSettings = {
 
 // -------------------- DAI / WETH --------------------
 
-export const POOL_UNISWAP_V3_DAI_WETH_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_DAI_WETH_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: DAI,
@@ -155,7 +155,7 @@ export const POOL_UNISWAP_V3_DAI_WETH_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_DAI_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_DAI_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: DAI,
@@ -164,7 +164,7 @@ export const POOL_UNISWAP_V3_DAI_WETH_03: IPoolSettings = {
   feePpm: 3000,
 };
 
-export const POOL_UNISWAP_V3_DAI_WETH_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_DAI_WETH_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: DAI,
@@ -175,7 +175,7 @@ export const POOL_UNISWAP_V3_DAI_WETH_1: IPoolSettings = {
 
 // -------------------- GMX / WETH --------------------
 
-export const POOL_UNISWAP_V3_GMX_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_GMX_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: GMX,
@@ -184,7 +184,7 @@ export const POOL_UNISWAP_V3_GMX_WETH_03: IPoolSettings = {
   feePpm: 3000,
 };
 
-export const POOL_UNISWAP_V3_GMX_WETH_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_GMX_WETH_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: GMX,
@@ -195,7 +195,7 @@ export const POOL_UNISWAP_V3_GMX_WETH_1: IPoolSettings = {
 
 // -------------------- LINK / WETH --------------------
 
-export const POOL_UNISWAP_V3_LINK_WETH_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_LINK_WETH_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: LINK,
@@ -204,7 +204,7 @@ export const POOL_UNISWAP_V3_LINK_WETH_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_LINK_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_LINK_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: LINK,
@@ -215,7 +215,7 @@ export const POOL_UNISWAP_V3_LINK_WETH_03: IPoolSettings = {
 
 // -------------------- RAIN / WETH --------------------
 
-export const POOL_UNISWAP_V3_RAIN_WETH_001: IPoolSettings = {
+export const POOL_UNISWAP_V3_RAIN_WETH_001: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: RAIN,
@@ -224,7 +224,7 @@ export const POOL_UNISWAP_V3_RAIN_WETH_001: IPoolSettings = {
   feePpm: 100,
 };
 
-export const POOL_UNISWAP_V3_RAIN_WETH_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_RAIN_WETH_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: RAIN,
@@ -235,7 +235,7 @@ export const POOL_UNISWAP_V3_RAIN_WETH_1: IPoolSettings = {
 
 // -------------------- USDCE / WETH --------------------
 
-export const POOL_UNISWAP_V3_USDCE_WETH_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDCE_WETH_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDCE,
@@ -244,7 +244,7 @@ export const POOL_UNISWAP_V3_USDCE_WETH_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_USDCE_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDCE_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDCE,
@@ -255,7 +255,7 @@ export const POOL_UNISWAP_V3_USDCE_WETH_03: IPoolSettings = {
 
 // -------------------- PENDLE / WETH --------------------
 
-export const POOL_UNISWAP_V3_PENDLE_WETH_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_PENDLE_WETH_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: PENDLE,
@@ -264,7 +264,7 @@ export const POOL_UNISWAP_V3_PENDLE_WETH_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_PENDLE_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_PENDLE_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: PENDLE,
@@ -273,7 +273,7 @@ export const POOL_UNISWAP_V3_PENDLE_WETH_03: IPoolSettings = {
   feePpm: 3000,
 };
 
-export const POOL_UNISWAP_V3_PENDLE_WETH_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_PENDLE_WETH_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: PENDLE,
@@ -284,7 +284,7 @@ export const POOL_UNISWAP_V3_PENDLE_WETH_1: IPoolSettings = {
 
 // -------------------- WSTETH / WETH --------------------
 
-export const POOL_UNISWAP_V3_WSTETH_WETH_001: IPoolSettings = {
+export const POOL_UNISWAP_V3_WSTETH_WETH_001: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: WSTETH,
@@ -293,7 +293,7 @@ export const POOL_UNISWAP_V3_WSTETH_WETH_001: IPoolSettings = {
   feePpm: 100,
 };
 
-export const POOL_UNISWAP_V3_WSTETH_WETH_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_WSTETH_WETH_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: WSTETH,
@@ -304,7 +304,7 @@ export const POOL_UNISWAP_V3_WSTETH_WETH_03: IPoolSettings = {
 
 // -------------------- USDC / WBTC --------------------
 
-export const POOL_UNISWAP_V3_USDC_WBTC_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_WBTC_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -313,7 +313,7 @@ export const POOL_UNISWAP_V3_USDC_WBTC_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_USDC_WBTC_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_WBTC_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -322,7 +322,7 @@ export const POOL_UNISWAP_V3_USDC_WBTC_03: IPoolSettings = {
   feePpm: 3000,
 };
 
-export const POOL_UNISWAP_V3_USDC_WBTC_1: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_WBTC_1: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -333,7 +333,7 @@ export const POOL_UNISWAP_V3_USDC_WBTC_1: IPoolSettings = {
 
 // -------------------- USDC / ARB --------------------
 
-export const POOL_UNISWAP_V3_USDC_ARB_005: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_ARB_005: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -342,7 +342,7 @@ export const POOL_UNISWAP_V3_USDC_ARB_005: IPoolSettings = {
   feePpm: 500,
 };
 
-export const POOL_UNISWAP_V3_USDC_ARB_03: IPoolSettings = {
+export const POOL_UNISWAP_V3_USDC_ARB_03: IPool = {
   dex: "uniswap",
   version: "v3",
   token0: USDC,
@@ -353,7 +353,7 @@ export const POOL_UNISWAP_V3_USDC_ARB_03: IPoolSettings = {
 
 // -------------------- ALL --------------------
 
-export const ALL_UNISWAP_V3_POOLS: IPoolSettings[] = [
+export const ALL_UNISWAP_V3_POOLS: IPool[] = [
   POOL_UNISWAP_V3_USDC_WETH_001,
   POOL_UNISWAP_V3_USDC_WETH_005,
   POOL_UNISWAP_V3_USDC_WETH_03,

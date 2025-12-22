@@ -1,7 +1,7 @@
 // arbitrum-multi.quote.ts
 import {
   DexId,
-  IJobParams_get_Arbitrum_Quote_Multi, IPairToQuote
+  IJobParams_get_Arbitrum_Quote_Multi, IQuote
 } from '../../store/state.types';
 
 import { ethers } from "ethers";
@@ -42,7 +42,7 @@ const mapExactOut = (raw: any): QuoteExactOutputSingleRaw => ({
 
 // один результат по одной паре
 export interface IPairQuoteResult {
-  pair: IPairToQuote;
+  pair: IQuote;
   poolAddress?: string;
   quote?: {
     quoteExactInputSingle: QuoteExactInputSingleRaw;
@@ -104,7 +104,7 @@ export async function get_Arbitrum_Quote_Multi(
     const tokenInAddr  = ethers.getAddress(pair.tokenIn.address);
     const tokenOutAddr = ethers.getAddress(pair.tokenOut.address);
 
-    const amountIn  = toBigIntSafe(pair.amountIn);
+    const amountIn  = toBigIntSafe(pair.amount);
 
     if (amountIn === undefined) {
       pairResults[i].error   = "AMOUNT_IN_REQUIRED";
@@ -361,6 +361,8 @@ export async function get_Arbitrum_Quote_Multi(
     }
 
     const latencyMs = Date.now() - startedAt;
+
+    console.log(pairResults)
 
     return {
       ok: true,

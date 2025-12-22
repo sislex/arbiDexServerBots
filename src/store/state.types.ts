@@ -82,6 +82,7 @@ export interface ISushiV3PairToQuote extends IBasePairToQuote {
 }
 
 export type IPairToQuote =
+  | IQuote
   | IUniV2PairToQuote
   | IUniV3PairToQuote
   | ISushiV2PairToQuote
@@ -92,7 +93,7 @@ export interface IJobParams_get_Arbitrum_Quote_Multi extends IJobDefaultParams {
 
   rpcUrl: string;
 
-  pairsToQuote: IPairToQuote[];
+  pairsToQuote: IQuote[];
 
   roundUp?: boolean;
   ignoreFee?: boolean;
@@ -134,13 +135,77 @@ export interface IJobParams_resolve_Pools_For_Pairs extends IJobDefaultParams {
   pairsToQuote: IPairToQuote[];
 }
 
-export interface IPoolSettings {
+export interface IPool {
   dex: DexId;
   version: PoolVersion;
   poolAddress: string;
   token0: ITokenInfo;
   token1: ITokenInfo;
   feePpm: number;
+}
+
+export interface IPair extends IPool {
+  tokenIn: ITokenInfo;
+  tokenOut: ITokenInfo;
+}
+
+/** Данные, которые получаются как результат котирования (v2/v3). */
+export interface IQuoteResult {
+  amountOut?: string;         // для exactIn
+  amountIn?: string;          // для exactOut
+
+  // v3-поля (если есть)
+  sqrtPriceX96After?: string;
+  initializedTicksCrossed?: string;
+  gasEstimate?: string;
+
+  // можно добавить sourceLatencyMs, error и т.п. при желании
+}
+
+export type QuoteSide = "exactIn" | "exactOut";
+
+/** QUOTE = pair + amount (+ blockTag) + результат */
+export interface IQuote extends IPair {
+  side: QuoteSide;            // "exactIn" | "exactOut"
+  amount: string;             // amountIn (если exactIn) или amountOut (если exactOut), в smallest units
+  blockTag?: number | "latest";
+
+  quoteSource?: QuoteSource;       // например: "uniswap-v3-quoter-v2" | "uniswap-v2-router" | ...
+  result?: IQuoteResult;      // результат котирования (если успешно)
+  createdAt?: string;         // ISO string, если хочешь логировать снапшоты
+
+  path?: ITokenInfo[];      // для v2-мультипула (если есть)
+}
+
+/** Данные для исполнения сделки (подготовка транзакции) */
+export interface ITrade extends IQuote {
+  slippageBps: number;        // 50 = 0.50%
+  deadline: number;           // unix seconds
+
+  recipient: string;          // кому отправить tokenOut
+  routerAddress?: string;     // адрес роутера/пермиссионлесс контракта, если нужно
+
+  // подготовленные данные для отправки транзакции (если у тебя есть отдельный слой исполнения)
+  tx?: {
+    to: string;
+    data: string;
+    value?: string;           // wei как строка
+    gasLimit?: string;
+    maxFeePerGas?: string;
+    maxPriorityFeePerGas?: string;
+  };
+
+  signature?: string;         // если ты подписываешь вне отправки (опционально)
+  txHash?: string;            // после отправки
+}
+
+export interface BuildQuotesParams {
+  pairs: IPair[];
+  amount: string;                 // already in smallest units
+  side?: QuoteSide;               // default: "exactIn"
+  blockTag?: number | "latest";
+  quoteSource?: QuoteSource;
+  createdAt?: string;
 }
 
 export type IJobParams =

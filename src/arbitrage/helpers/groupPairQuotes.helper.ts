@@ -13,7 +13,7 @@ export function groupPairQuotes(
       '|' +
       pair.tokenOut.address.toLowerCase() +
       '|' +
-      pair.amountIn;
+      pair.amount;
 
     if (!groups[key]) {
       groups[key] = [];

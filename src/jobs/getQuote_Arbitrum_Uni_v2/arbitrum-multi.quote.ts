@@ -34,8 +34,8 @@ export async function get_Arbitrum_UniswapV2_Quote_NoMulticall(
     const tokenInAddr  = ethers.getAddress(pair.tokenIn.address);
     const tokenOutAddr = ethers.getAddress(pair.tokenOut.address);
 
-    const amountIn  = toBigIntSafe(pair.amountIn);
-    const amountOut = toBigIntSafe(pair.amountOut);
+    const amountIn  = toBigIntSafe(pair.amount);
+    const amountOut = toBigIntSafe(pair.amount);
 
     if (amountIn === undefined) {
       pairResults[i].error   = "AMOUNT_IN_REQUIRED";
