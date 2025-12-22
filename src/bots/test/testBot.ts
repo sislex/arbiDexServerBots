@@ -5,7 +5,7 @@ import {createBotError, IBotError} from '../../helpers/createError';
 import {groupPairQuotes} from '../../arbitrage/helpers/groupPairQuotes.helper';
 import {bestSellBuyArbitrage} from '../../arbitrage/helpers/bestSellBuy.arbitrage';
 import {createArbitrage, IArbitrage} from '../../helpers/createArbitrage';
-import {bestBuySellArbitrage} from '../../arbitrage/best-buy-sell.arbitrage';
+import {bestBuySellArbitrage, IBestBuySellArbitrage, IGroupedQuotes} from '../../arbitrage/best-buy-sell.arbitrage';
 
 interface ITestBotState {
   createdAt: Date;
@@ -22,7 +22,7 @@ interface ITestBotState {
   lastAnalyticsTimeFinish: Date | null;
   lastAnalyticsLatency: number | null;
   analyticsLatency: number;
-  lastAnalyticsResult: any;
+  lastAnalyticsResult: IBestBuySellArbitrage | null;
 
   arbitrageList: IArbitrage[],
 
@@ -121,8 +121,10 @@ export class TestBot implements ITestBot {
       this.botState.analyticsLatency = Math.round(avg + (this.botState.lastAnalyticsLatency - avg) / n);
     }
 
+    // console.log(this.botState.lastAnalyticsResult.spread_pct);
+
     if (this.botState.lastAnalyticsResult?.hasArbitrage) {
-      const lastAnalyticsResult = this.botState.lastAnalyticsResult;
+      const lastAnalyticsResult: IBestBuySellArbitrage = this.botState.lastAnalyticsResult;
       const arbitrage: IArbitrage = createArbitrage({
         blockNumber: this.botState.lastJobResult.blockNumber,
         ...lastAnalyticsResult,

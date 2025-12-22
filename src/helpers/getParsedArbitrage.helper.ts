@@ -1,37 +1,70 @@
 import {IArbitrage} from './createArbitrage';
 import {IPairToQuote, ITokenInfo} from '../store/state.types';
 
+import type {
+  QuoteExactInputSingleRaw,
+  QuoteExactOutputSingleRaw,
+} from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
+
 export interface IParsedArbitrage {
-  createdAt: string;      // UTC ISO string
+  createdAt: string;
   blockNumber: number;
-  poolsCount: number;
-  amountIn: string;
-  spread_pct: number;
+
   tokenIn: ITokenInfo;
   tokenOut: ITokenInfo;
-  bestBuyPool: IPairToQuote;
-  bestSellPool: IPairToQuote;
-}
 
-export const getParsedArbitrage = (arbitrageList: IArbitrage[]): IParsedArbitrage[] | any => {
-  const parsedArbitrage: IParsedArbitrage[]= [];
-  arbitrageList.forEach((arbitrage: IArbitrage) => {
-    const createdAt = arbitrage.createdAt;
-    const blockNumber = arbitrage.blockNumber;
-    arbitrage.groups.forEach(group => {
-      parsedArbitrage.push({
+  amountIn: string;
+  poolsCount: number;
+
+  spread_pct?: number;
+  spread_bps?: number;
+
+  amountOut?: string;
+  amountInBuy?: string;
+  profitOutToken?: string;
+
+  bestBuyPool?: IPairToQuote | null;
+  bestSellPool?: IPairToQuote | null;
+
+  // ✅ котировки, по которым выбрали bestBuy/bestSell
+  bestSellQuote?: QuoteExactInputSingleRaw | null; // quoteExactInputSingle
+  bestBuyQuote?: QuoteExactOutputSingleRaw | null; // quoteExactOutputSingle
+}
+export const getParsedArbitrage = (
+  arbitrageList: IArbitrage[]
+): IParsedArbitrage[] => {
+  const parsed: IParsedArbitrage[] = [];
+
+  for (const arbitrage of arbitrageList) {
+    const { createdAt, blockNumber } = arbitrage;
+
+    for (const group of arbitrage.groups) {
+      parsed.push({
         createdAt,
         blockNumber,
-        poolsCount: group.poolsCount,
-        amountIn: group.amountIn,
-        spread_pct: group.spread_pct,
+
         tokenIn: group.tokenIn,
         tokenOut: group.tokenOut,
-        bestBuyPool: group.bestBuyPool,
-        bestSellPool: group.bestSellPool,
-      } );
-    })
-  });
 
-  return parsedArbitrage;
+        amountIn: group.amountIn,
+        poolsCount: group.poolsCount,
+
+        spread_pct: group.spread_pct,
+        spread_bps: group.spread_bps,
+
+        amountOut: group.amountOut,
+        amountInBuy: group.amountInBuy,
+        profitOutToken: group.profitOutToken,
+
+        bestBuyPool: group.bestBuyPool ?? null,
+        bestSellPool: group.bestSellPool ?? null,
+
+        // ✅ вот оно
+        bestSellQuote: group.bestSellQuote ?? null,
+        bestBuyQuote: group.bestBuyQuote ?? null,
+      });
+    }
+  }
+
+  return parsed;
 };
