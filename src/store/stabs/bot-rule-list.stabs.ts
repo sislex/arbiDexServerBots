@@ -9,12 +9,13 @@ import {quotesUsdcOut, quotesWethOut} from './uniswap/v3/quotesUniswapV3.stabs';
 
 const quotes = [
   ...quotesWethOut,
-  ...quotesUsdcOut,
+  // ...quotesUsdcOut,
 
   ...quotesSushiV2WethOut,
 
   ...quotesSushiWethOut,
-  ...quotesSushiUsdcOut,
+  // ...quotesSushiUsdcOut,
+
 ];
 
 console.log(quotes.length);
@@ -26,7 +27,7 @@ export const BotRuleListStab: IBotsRule[] = [
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 100,
+      delayBetweenRepeat: 10,
       maxJobs: 1000000,
       maxErrors: 100,
       timeoutMs: 1000,
