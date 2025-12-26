@@ -68,7 +68,7 @@ export function bestBuySellArbitrage(
     hasArbitrage = hasArbitrage || groupHasArb;
 
     if (testMode || groupHasArb) {
-      console.log(groupQuotes);
+      // console.log(groupQuotes);
 
       groups.push({
         key,
