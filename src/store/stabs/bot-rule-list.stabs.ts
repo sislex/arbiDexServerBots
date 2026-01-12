@@ -74,7 +74,7 @@ export const BotRuleListStab: IBotsRule[] = [
       jobType: IJobType.GET_ARBITRUM_QUOTES_MULTI,
       rpcUrl: 'https://arb1.arbitrum.io/rpc',
 
-      pairsToQuote: quotes_0003,
+      pairsToQuote: quotes,
     }
   },
 

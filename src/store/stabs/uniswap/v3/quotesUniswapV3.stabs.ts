@@ -30,7 +30,7 @@ export function buildQuotes(params: BuildQuotesParams): IQuote[] {
 
 export const quotesWethOut = buildQuotes({
   pairs: PAIRS_WETH_OUT,
-  amount: AMOUNT_03_18,
+  amount: AMOUNT_0003_18,
   side: "exactIn",
   blockTag: "latest",
   quoteSource: "uniswap-v3-quoter-v2",

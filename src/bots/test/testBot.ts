@@ -177,7 +177,7 @@ export class TestBot implements ITestBot {
   }
 
   private async swaps(arbitrage: IArbitrage): Promise<void> {
-    // doTwoSwap(arbitrage);
+    await doTwoSwap(arbitrage);
   }
 
   setSwapsLatency() {
