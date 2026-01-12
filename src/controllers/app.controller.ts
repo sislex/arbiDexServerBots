@@ -4,16 +4,15 @@ import {
   selectAppVersion,
   selectBotsCount,
   selectBotsTypes,
-  selectServerStartedAt, selectBotsList, selectBotsRulesList
+  selectServerStartedAt, selectBotsRulesList
 } from '../store/selectors';
-import {firstValueFrom, take} from 'rxjs';
+import {firstValueFrom} from 'rxjs';
 import { AppStore } from '../store/app.store';
 import {ApiEndpointDto} from '../store/dto/api-endpoint.dto';
-import {IBot, IBotsRule} from '../store/state.types';
-import {getParamsFromBotInstance} from '../store/bots.halpers';
+import {IBotsRule} from '../store/state.types';
 import {convertBigIntToString} from '../helpers/convertBigIntToString';
 import {uniswapResponseStub} from '../jobs/stabs/uniswap.stabs';
-import {bestSellBuyArbitrage} from '../arbitrage/helpers/bestSellBuy.arbitrage';
+import {bestArbitrageByGroup} from '../arbitrage/helpers/bestSellBuy.arbitrage';
 import {QuoteResultMulti} from '../jobs/handlers';
 import {groupPairQuotes} from '../arbitrage/helpers/groupPairQuotes.helper';
 
@@ -58,37 +57,4 @@ export class AppController {
     return convertBigIntToString(rulesList);
   }
 
-  @Get('test')
-  async test() {
-    const uniswapResponseStubObj: QuoteResultMulti = uniswapResponseStub;
-
-    const groupedQuotes = groupPairQuotes(uniswapResponseStubObj.result);
-
-    const results = {
-      hasArbitrage: false,
-      groups: {} as Record<string, any>,
-    };
-
-    for (const key in groupedQuotes) {
-      const items = groupedQuotes[key];
-
-      const best = bestSellBuyArbitrage(items);
-
-      // spread может быть undefined → учитываем
-      const hasArb = best.spread_pct !== undefined && best.spread_pct > 0;
-
-      if (hasArb) {
-        results.hasArbitrage = true;
-      }
-
-      results.groups[key] = {
-        key,
-        num: items.length,
-        hasArbitrage: hasArb,
-        result: best,
-      };
-    }
-
-    return results;
-  }
 }

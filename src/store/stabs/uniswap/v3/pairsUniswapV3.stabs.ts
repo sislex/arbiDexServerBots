@@ -193,6 +193,11 @@ export const PAIRS_WETH_OUT: IPair[] = [
   PAIR_UNISWAP_V3_WSTETH_WETH_3000_WETH_TO_WSTETH,
 ];
 
+export const PAIRS_WETH_OUT_TEST: IPair[] = [
+  // USDT
+  PAIR_UNISWAP_V3_USDT_WETH_100_WETH_TO_USDT,
+];
+
 // ==================== ALL PAIRS: USDC → X ====================
 
 export const PAIRS_USDC_OUT: IPair[] = [

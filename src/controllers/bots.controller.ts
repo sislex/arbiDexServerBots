@@ -1,16 +1,16 @@
 // src/store/bots.controller.ts
 import {Body, Controller, Get, Param, Post, Put} from '@nestjs/common';
 import { AppStore } from '../store/app.store';
-import type { IJobParams, IBotParams } from '../store/state.types';
+import type {IJobParams, IBotParams, IArbitrage} from '../store/state.types';
 import { IBot } from '../store/state.types';
 
 import {selectBotsList} from '../store/selectors';
-import {firstValueFrom, take} from 'rxjs';
+import {firstValueFrom} from 'rxjs';
 import {getParamsFromBotInstance} from '../store/bots.halpers';
 import {convertBigIntToString} from '../helpers/convertBigIntToString';
-import {IArbitrage} from '../helpers/createArbitrage';
 import {IBotError} from '../helpers/createError';
-import {getParsedArbitrage, IParsedArbitrage} from '../helpers/getParsedArbitrage.helper';
+import {getParsedArbitrage} from '../helpers/getParsedArbitrage.helper';
+// import {getParsedArbitrage, IParsedArbitrage} from '../helpers/getParsedArbitrage.helper';
 
 @Controller('')
 export class BotsController {
@@ -104,7 +104,7 @@ export class BotsController {
   }
 
   @Get('bot/:botId/arbitrage')
-  async getBotArbitrage(@Param('botId') botId: string): Promise<IParsedArbitrage[]> {
+  async getBotArbitrage(@Param('botId') botId: string): Promise<any[]> {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
     const bot: IBot | undefined = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {
@@ -113,6 +113,9 @@ export class BotsController {
 
     const arbitrageList: IArbitrage[] = bot.botInstance.getArbitrage().slice().reverse();
 
+    console.log(arbitrageList);
+
+    // return convertBigIntToString(arbitrageList);
     return getParsedArbitrage(arbitrageList);
   }
 }

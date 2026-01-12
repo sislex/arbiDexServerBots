@@ -1,3 +1,5 @@
+import {V2DexesMap, V3QuotersMap} from '../store/state.types';
+
 export const MULTICALL3 = "0xca11bde05977b3631167028862be2a173976ca11";
 
 export const UNISWAP_V2_FACTORY = "0xf1D7CC64Fb4452F05c498126312eBE29F30Bfcf9";
@@ -43,7 +45,7 @@ export const UNISWAP_V2_ROUTER_ABI = [
 
 
 
-export const V2_DEXES = {
+export const V2_DEXES: V2DexesMap = {
   uniswap: {
     name: 'Uniswap V2',
     router: '0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24',
@@ -61,7 +63,7 @@ export const V2_DEXES = {
   }
 } as const;
 
-export const V3_QUOTERS = {
+export const V3_QUOTERS: V3QuotersMap = {
   poolId: {
     name: 'PoolId Quoter (V3-like)',
     quoter: '0x5F61BD957276B28Be96571C2F9876E2ECD85C648',

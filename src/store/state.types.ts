@@ -1,7 +1,31 @@
 // src/store/state.types.ts
 import {TestBot} from '../bots/test/testBot';
 import {ApiEndpointDto} from './dto/api-endpoint.dto';
-import {resolvePoolsForPairs} from '../jobs/resolvePoolsForPairs/resolvePoolsForPairs.pools';
+import {
+  IPairQuoteResult,
+  QuoteExactInputSingleRaw,
+  QuoteExactOutputSingleRaw
+} from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
+
+export type ContractAbi = readonly string[];
+
+export type V2DexId = 'uniswap' | 'sushi' | 'pancake';
+export interface IV2DexConfig {
+  name: string;
+  router: Address;
+  abi: ContractAbi;
+}
+export type V2DexesMap = Record<V2DexId, IV2DexConfig>;
+
+
+export type V3QuoterId = 'uniswap' | 'sushi' | 'poolId';
+export interface IV3QuoterConfig {
+  name: string;
+  quoter: Address;
+  abi: ContractAbi;
+}
+export type V3QuotersMap = Record<V3QuoterId, IV3QuoterConfig>;
+
 
 export enum IBotType {
   TEST_BOT = 'TestBot',
@@ -26,8 +50,12 @@ export type QuoteSource =
   | 'uniswap-v3-quoter-v2'
   | 'quoteBothBase';
 
+export type Address = `0x${string}`;
+
+export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as Address;
+
 export interface ITokenInfo {
-  address: `0x${string}`;
+  address: Address;
   decimals: number;
   symbol?: string;
   name?: string;
@@ -37,7 +65,7 @@ export interface IJobParams_get_Pool_State extends IJobDefaultParams {
   jobType: IJobType.GET_POOL_STATE;
 
   rpcUrl: string;
-  poolAddress: `0x${string}`;
+  poolAddress: Address;
   wordsAround: number;
   maxTicks: number;
 }
@@ -111,7 +139,7 @@ export interface IJobParams_get_Arbitrum_UniswapV3_Quote extends IJobDefaultPara
   amountOut?: bigint | string;                // 1000 USDC → "1000000000"
   feePpm: number;                           // 500, 3000...
 
-  poolAddress?: `0x${string}`;
+  poolAddress?: Address;
 
   roundUp?: boolean;
   ignoreFee?: boolean;
@@ -265,5 +293,56 @@ export interface IBotsRule {
 export interface IBot {
   id: string;                           // уникальный ид бота, соответствует id из botsSettingsList
   botInstance: TestBot;
+}
+
+export interface IBestArbitrageByGroup {
+  bestBuy: IPairQuoteResult | null;
+  bestSell: IPairQuoteResult | null;
+}
+
+export interface IGroupedQuotes {
+  bestArbitrage: IBestArbitrageByGroup,
+  amountOutStep1: bigint,
+  spread_bps: number,
+  spread_pct: number,
+}
+
+export interface IBestBuySellArbitrage {
+  hasArbitrage: boolean;
+  groups: IGroupedQuotes[];
+}
+
+export interface IArbitrage extends IBestBuySellArbitrage {
+  createdAt: string;   // UTC ISO
+  blockNumber: number;
+}
+
+export enum SwapKind {
+  V2_EXACT_IN = 0,
+  V2_EXACT_OUT = 1,
+  V3_POOL_EXACT_IN = 2,
+  V3_POOL_EXACT_OUT = 3,
+}
+
+export interface IContractStep {
+  kind: SwapKind;
+
+  router: Address;     // V2: router, V3: ZeroAddress
+  path: Address[];     // V2: [a,b,...], V3: []
+
+  pool: Address;       // V3: poolAddress, V2: ZeroAddress
+
+  tokenIn: Address;
+  tokenOut: Address;
+
+  amountIn: bigint;      // step0: amountIn, step1: 0n (auto from prev) если твой контракт так умеет
+  amountOutMin: bigint;
+
+  // exactOut поля
+  amountOut: bigint;
+  amountInMax: bigint;
+
+  sqrtPriceLimitX96: number;
+  deadline: number;
 }
 

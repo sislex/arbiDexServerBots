@@ -1,11 +1,10 @@
-import {IJobParams, IBotParams, IJobType} from '../../store/state.types';
+import {IJobParams, IBotParams, IBestBuySellArbitrage, IArbitrage} from '../../store/state.types';
 import { setTimeout as delay } from 'timers/promises';
 import {runJob} from '../../jobs/handlers';
 import {createBotError, IBotError} from '../../helpers/createError';
-import {groupPairQuotes} from '../../arbitrage/helpers/groupPairQuotes.helper';
-import {bestSellBuyArbitrage} from '../../arbitrage/helpers/bestSellBuy.arbitrage';
-import {createArbitrage, IArbitrage} from '../../helpers/createArbitrage';
-import {bestBuySellArbitrage, IBestBuySellArbitrage, IGroupedQuotes} from '../../arbitrage/best-buy-sell.arbitrage';
+import {createArbitrage} from '../../helpers/createArbitrage';
+import {bestBuySellArbitrage} from '../../arbitrage/best-buy-sell.arbitrage';
+import {doTwoSwap} from '../../swap/doTwoSwap.swap';
 
 interface ITestBotState {
   createdAt: Date;
@@ -25,6 +24,14 @@ interface ITestBotState {
   lastAnalyticsResult: IBestBuySellArbitrage | null;
 
   arbitrageList: IArbitrage[],
+
+  lastSwapsTimeStart: Date | null;
+  lastSwapsTimeFinish: Date | null;
+  lastSwapsLatency: number | null;
+  swapsLatency: number;
+  lastSwapsResult: any | null;
+
+  swapList: any[],
 
   running: boolean;
   restartRequested: boolean;
@@ -49,6 +56,14 @@ function createInitialState(): ITestBotState {
     lastAnalyticsResult: null,
 
     arbitrageList: [],
+
+    lastSwapsTimeStart: null,
+    lastSwapsTimeFinish: null,
+    lastSwapsLatency: null,
+    swapsLatency: 0,
+    lastSwapsResult: null,
+
+    swapList: [],
 
     running: false,
     restartRequested: false,
@@ -96,7 +111,8 @@ export class TestBot implements ITestBot {
   }
 
   async analytics(): Promise<void> {
-    this.botState.lastAnalyticsResult = bestBuySellArbitrage(this.botState.lastJobResult.result, false);
+    this.botState.lastAnalyticsResult = bestBuySellArbitrage(this.botState.lastJobResult.result, true);
+    console.log('this.botState.lastAnalyticsResult ', this.botState.lastAnalyticsResult);
   }
 
   setAnalyticsLatency() {
@@ -115,22 +131,23 @@ export class TestBot implements ITestBot {
   async afterAnalyticsLaunch() {
     // --- обновление средней analyticsLatency
     if (this.botState.lastAnalyticsLatency != null) {
-      const n = this.botState.jobCount;
+      const n = this.botState.arbitrageList.length;
       const avg = this.botState.analyticsLatency;
 
       this.botState.analyticsLatency = Math.round(avg + (this.botState.lastAnalyticsLatency - avg) / n);
     }
 
-    // console.log(this.botState.lastAnalyticsResult.spread_pct);
-
     if (this.botState.lastAnalyticsResult?.hasArbitrage) {
       const lastAnalyticsResult: IBestBuySellArbitrage = this.botState.lastAnalyticsResult;
-      const arbitrage: IArbitrage = createArbitrage({
-        blockNumber: this.botState.lastJobResult.blockNumber,
-        ...lastAnalyticsResult,
-      });
+      if (lastAnalyticsResult.hasArbitrage) {
+        const arbitrage: IArbitrage = createArbitrage({
+          blockNumber: this.botState.lastJobResult.blockNumber,
+          ...lastAnalyticsResult,
+        });
 
-      this.pushArbitrage(arbitrage);
+        this.pushArbitrage(arbitrage);
+        this.startSwaps(arbitrage);
+      }
     }
   }
 
@@ -141,6 +158,60 @@ export class TestBot implements ITestBot {
     if (this.botState.arbitrageList.length > maxArbitrage) {
       this.botState.arbitrageList.shift();
     }
+  }
+
+  async beforeSwapsLaunch() {
+    this.botState.lastSwapsTimeStart = new Date();
+  }
+
+  async startSwaps(arbitrage: IArbitrage): Promise<void> {
+    this.beforeSwapsLaunch();
+    try {
+      await this.swaps(arbitrage);
+      this.setSwapsLatency();
+    } catch (err: any) {
+      // обработка ошибки аналитики
+    } finally {
+      this.afterSwapsLaunch();
+    }
+  }
+
+  private async swaps(arbitrage: IArbitrage): Promise<void> {
+    // doTwoSwap(arbitrage);
+  }
+
+  setSwapsLatency() {
+    this.botState.lastSwapsTimeFinish = new Date();
+
+    if (this.botState.lastSwapsTimeStart) {
+      this.botState.lastSwapsLatency =
+        this.botState.lastSwapsTimeFinish.getTime() -
+        this.botState.lastSwapsTimeStart.getTime();
+    } else {
+      this.botState.lastSwapsLatency = null;
+    }
+  }
+
+  async afterSwapsLaunch() {
+    // --- обновление средней swapsLatency
+    if (this.botState.lastSwapsLatency != null) {
+      const n = this.botState.jobCount;
+      const avg = this.botState.swapsLatency;
+
+      this.botState.swapsLatency = Math.round(avg + (this.botState.lastSwapsLatency - avg) / n);
+    }
+
+    // console.log(this.botState.lastSwapsResult.spread_pct);
+
+    // if (this.botState.lastSwapsResult?.hasArbitrage) {
+    //   const lastSwapsResult: IBestBuySellArbitrage = this.botState.lastSwapsResult;
+    //   const swaps: IArbitrage = createArbitrage({
+    //     blockNumber: this.botState.lastJobResult.blockNumber,
+    //     ...lastSwapsResult,
+    //   });
+    //
+    //   // this.pushSwaps(swaps);
+    // }
   }
 
   async beforeJobLaunch() {

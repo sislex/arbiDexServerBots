@@ -7,7 +7,7 @@ import {
   // PAIRS_SUSHI_V2_USDC_OUT,
 } from "./pairsSushiV2.stabs";
 
-import { AMOUNT_003_18, AMOUNT_100_6 } from "../../pricses.stabs";
+import {AMOUNT_0003_18, AMOUNT_003_18, AMOUNT_03_18, AMOUNT_100_6, AMOUNT_1_18} from '../../pricses.stabs';
 
 // ======================================================================
 // buildQuotes (shared logic, 1-в-1 как у Uni / Sushi V3)
@@ -39,7 +39,15 @@ export function buildQuotes(params: BuildQuotesParams): IQuote[] {
 
 export const quotesSushiV2WethOut = buildQuotes({
   pairs: PAIRS_SUSHI_V2_WETH_OUT,
-  amount: AMOUNT_003_18,
+  amount: AMOUNT_03_18,
+  side: "exactIn",
+  blockTag: "latest",
+  quoteSource: "uniswap-v2-router", // 🔑 для v2 всегда router
+});
+
+export const quotesSushiV2WethOut0003 = buildQuotes({
+  pairs: PAIRS_SUSHI_V2_WETH_OUT,
+  amount: AMOUNT_0003_18,
   side: "exactIn",
   blockTag: "latest",
   quoteSource: "uniswap-v2-router", // 🔑 для v2 всегда router

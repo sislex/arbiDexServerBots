@@ -1,9 +1,4 @@
-import { IBestBuySellArbitrage } from '../arbitrage/best-buy-sell.arbitrage';
-
-export interface IArbitrage extends IBestBuySellArbitrage {
-  createdAt: string;   // UTC ISO
-  blockNumber: number;
-}
+import {IArbitrage} from '../store/state.types';
 
 export function createArbitrage(
   params: Omit<IArbitrage, 'createdAt'>

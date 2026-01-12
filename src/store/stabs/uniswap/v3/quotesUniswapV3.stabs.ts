@@ -1,6 +1,11 @@
 import {BuildQuotesParams, IQuote} from '../../../state.types';
-import {PAIR_UNISWAP_V3_USDC_WBTC_500_USDC_TO_WBTC, PAIRS_USDC_OUT, PAIRS_WETH_OUT} from './pairsUniswapV3.stabs';
-import {AMOUNT_003_18, AMOUNT_100_6} from '../../pricses.stabs';
+import {
+  PAIR_UNISWAP_V3_USDC_WBTC_500_USDC_TO_WBTC,
+  PAIRS_USDC_OUT,
+  PAIRS_WETH_OUT,
+  PAIRS_WETH_OUT_TEST
+} from './pairsUniswapV3.stabs';
+import {AMOUNT_0003_18, AMOUNT_003_18, AMOUNT_03_18, AMOUNT_100_6, AMOUNT_1_18} from '../../pricses.stabs';
 
 export function buildQuotes(params: BuildQuotesParams): IQuote[] {
   const {
@@ -25,7 +30,15 @@ export function buildQuotes(params: BuildQuotesParams): IQuote[] {
 
 export const quotesWethOut = buildQuotes({
   pairs: PAIRS_WETH_OUT,
-  amount: AMOUNT_003_18,
+  amount: AMOUNT_03_18,
+  side: "exactIn",
+  blockTag: "latest",
+  quoteSource: "uniswap-v3-quoter-v2",
+});
+
+export const quotesWethOut0003 = buildQuotes({
+  pairs: PAIRS_WETH_OUT_TEST,
+  amount: AMOUNT_0003_18,
   side: "exactIn",
   blockTag: "latest",
   quoteSource: "uniswap-v3-quoter-v2",

@@ -1,49 +1,9 @@
 import { IPairQuoteResult } from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
 import { groupPairQuotes } from './helpers/groupPairQuotes.helper';
-import { bestSellBuyArbitrage } from './helpers/bestSellBuy.arbitrage';
-import {
-  ITokenInfo,
-  IPairToQuote,
-} from '../store/state.types';
+import {bestArbitrageByGroup} from './helpers/bestSellBuy.arbitrage';
+import {IBestArbitrageByGroup, IBestBuySellArbitrage, IGroupedQuotes} from '../store/state.types';
+import {calculateFinalAmountOut} from '../helpers/calculateFinalAmountOut';
 
-import type {
-  QuoteExactInputSingleRaw,
-  QuoteExactOutputSingleRaw,
-} from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
-
-export interface IGroupedQuotes {
-  key: string;
-
-  tokenIn: ITokenInfo;
-  tokenOut: ITokenInfo;
-  amountIn: string;
-
-  poolsCount: number;
-
-  // метрики
-  spread_pct?: number;
-  spread_bps?: number;
-
-  // полезно для твоего 2-step алгоритма:
-  // profitOutToken = amountOut - amountIn (в tokenOut, smallest units)
-  amountOut?: string;       // bestSell exactIn -> out
-  amountInBuy?: string;     // bestBuy exactOut -> in
-  profitOutToken?: string;
-
-  // ✅ котировки (по которым выбрали bestBuy/bestSell)
-  bestSellQuote?: QuoteExactInputSingleRaw | null;   // quoteExactInputSingle
-  bestBuyQuote?: QuoteExactOutputSingleRaw | null;   // quoteExactOutputSingle
-
-  // выбранные пулы
-  bestBuyPool?: IPairToQuote | null;
-  bestSellPool?: IPairToQuote | null;
-}
-
-export interface IBestBuySellArbitrage {
-  hasArbitrage: boolean;
-  arbNumber: number;
-  groups: IGroupedQuotes[];
-}
 
 export function bestBuySellArbitrage(
   quotes: IPairQuoteResult[],
@@ -56,47 +16,41 @@ export function bestBuySellArbitrage(
 
   for (const key in grouped) {
     const groupQuotes = grouped[key];
-    if (groupQuotes.length <= 1) continue;
 
-    const r = bestSellBuyArbitrage(groupQuotes);
+    // console.log('groupQuotes', groupQuotes[0]);
+    const bestArbitrage: IBestArbitrageByGroup = bestArbitrageByGroup(groupQuotes);
 
-    const tokenIn = groupQuotes[0].pair.tokenIn;
-    const tokenOut = groupQuotes[0].pair.tokenOut;
-    const amountIn = groupQuotes[0].pair.amount;
+    const amountInStep0 = BigInt(bestArbitrage.bestBuy?.pair.amount ?? '0');
+    const amountOutStep0 = BigInt(bestArbitrage.bestBuy?.quote?.quoteExactInputSingle?.amountOut ?? '0');
+    const amountInStep1 = BigInt(bestArbitrage.bestSell?.quote?.quoteExactOutputSingle?.amountIn ?? '0');
 
-    const groupHasArb = (r.spread_pct ?? 0) > 0;
+    const amountOutStep1 = calculateFinalAmountOut(
+      amountInStep0,
+      amountOutStep0,
+      amountInStep1,
+    );
+
+    const diff = amountOutStep1 - amountInStep0;
+
+    const spreadBpsBI = (diff * 10000n) / amountInStep0;
+    const spread_bps = Number(spreadBpsBI);
+    const spread_pct = spread_bps / 100;
+
+    const groupHasArb = (spread_bps ?? 0) > 0;
     hasArbitrage = hasArbitrage || groupHasArb;
 
     if (testMode || groupHasArb) {
-      // console.log(groupQuotes);
-
       groups.push({
-        key,
-        tokenIn,
-        tokenOut,
-        amountIn,
-        poolsCount: groupQuotes.length,
-
-        spread_pct: r.spread_pct,
-        spread_bps: r.spread_bps,
-
-        amountOut: r.amountOut,
-        amountInBuy: r.amountIn,
-        profitOutToken: r.profitOutToken,
-
-        // ✅ прокидываем котировки
-        bestSellQuote: r.bestSellQuote ?? null,
-        bestBuyQuote: r.bestBuyQuote ?? null,
-
-        bestBuyPool: r.bestBuyPool ?? null,
-        bestSellPool: r.bestSellPool ?? null,
+        bestArbitrage,
+        amountOutStep1,
+        spread_bps,
+        spread_pct
       });
     }
   }
 
   return {
     hasArbitrage,
-    arbNumber: groups.length,
     groups,
   };
 }

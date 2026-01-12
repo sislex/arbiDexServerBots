@@ -1,5 +1,4 @@
-import {IArbitrage} from './createArbitrage';
-import {IPairToQuote, ITokenInfo} from '../store/state.types';
+import {IArbitrage, IPairToQuote, ITokenInfo} from '../store/state.types';
 
 import type {
   QuoteExactInputSingleRaw,
@@ -10,11 +9,10 @@ export interface IParsedArbitrage {
   createdAt: string;
   blockNumber: number;
 
-  tokenIn: ITokenInfo;
-  tokenOut: ITokenInfo;
+  tokenIn?: ITokenInfo;
+  tokenOut?: ITokenInfo;
 
-  amountIn: string;
-  poolsCount: number;
+  amountIn?: string;
 
   spread_pct?: number;
   spread_bps?: number;
@@ -25,10 +23,6 @@ export interface IParsedArbitrage {
 
   bestBuyPool?: IPairToQuote | null;
   bestSellPool?: IPairToQuote | null;
-
-  // ✅ котировки, по которым выбрали bestBuy/bestSell
-  bestSellQuote?: QuoteExactInputSingleRaw | null; // quoteExactInputSingle
-  bestBuyQuote?: QuoteExactOutputSingleRaw | null; // quoteExactOutputSingle
 }
 export const getParsedArbitrage = (
   arbitrageList: IArbitrage[]
@@ -43,25 +37,16 @@ export const getParsedArbitrage = (
         createdAt,
         blockNumber,
 
-        tokenIn: group.tokenIn,
-        tokenOut: group.tokenOut,
+        tokenIn: group.bestArbitrage.bestBuy?.pair.tokenIn,
+        tokenOut: group.bestArbitrage.bestBuy?.pair.tokenOut,
 
-        amountIn: group.amountIn,
-        poolsCount: group.poolsCount,
+        amountIn: group.bestArbitrage.bestBuy?.pair.amount,
 
         spread_pct: group.spread_pct,
         spread_bps: group.spread_bps,
 
-        amountOut: group.amountOut,
-        amountInBuy: group.amountInBuy,
-        profitOutToken: group.profitOutToken,
-
-        bestBuyPool: group.bestBuyPool ?? null,
-        bestSellPool: group.bestSellPool ?? null,
-
-        // ✅ вот оно
-        bestSellQuote: group.bestSellQuote ?? null,
-        bestBuyQuote: group.bestBuyQuote ?? null,
+        bestBuyPool: group.bestArbitrage.bestBuy?.pair ?? null,
+        bestSellPool: group.bestArbitrage.bestSell?.pair ?? null,
       });
     }
   }

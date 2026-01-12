@@ -4,8 +4,9 @@ import {
   IJobType, IQuote
 } from '../state.types';
 import {quotesSushiUsdcOut, quotesSushiWethOut} from './sushi/v3/quotesSushiV3.stabs';
-import {quotesSushiV2WethOut} from './sushi/v2/quotesSushiV2.stabs';
-import {quotesUsdcOut, quotesWethOut} from './uniswap/v3/quotesUniswapV3.stabs';
+import {quotesSushiV2WethOut, quotesSushiV2WethOut0003} from './sushi/v2/quotesSushiV2.stabs';
+import {quotesUsdcOut, quotesWethOut, quotesWethOut0003} from './uniswap/v3/quotesUniswapV3.stabs';
+import {USDC, USDT} from './tokens.stabs';
 
 export function filterDirectionsWithDuplicates(items: IQuote[]): IQuote[] {
   const counts = new Map<string, number>();
@@ -31,15 +32,31 @@ const quotes = [
 
   ...quotesSushiV2WethOut,
 
-  ...quotesSushiWethOut,
+  // ...quotesSushiWethOut,
   // ...quotesSushiUsdcOut,
 
 ];
 
 // фильтруем только направления, где есть дубликаты (хотя бы 2 котировки на одно направление)
-const filteredQuotes = filterDirectionsWithDuplicates(quotes);
+let filteredQuotes = filterDirectionsWithDuplicates(quotes);
 
-console.log(filteredQuotes.length);
+const quotes_0003 = [
+  ...quotesWethOut0003,
+  // ...quotesUsdcOut,
+
+  // ...quotesSushiV2WethOut0003,
+
+  // ...quotesSushiWethOut,
+  // ...quotesSushiUsdcOut,
+
+];
+let filteredQuotes_0003 = filterDirectionsWithDuplicates(quotes_0003);
+
+filteredQuotes_0003 = filteredQuotes_0003.filter(item => item.tokenOut.address === USDT.address);
+
+console.log(quotes_0003.length);
+console.log(quotes_0003);
+
 
 export const BotRuleListStab: IBotsRule[] = [
   {
@@ -48,8 +65,8 @@ export const BotRuleListStab: IBotsRule[] = [
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 10,
-      maxJobs: 1000000,
+      delayBetweenRepeat: 1000000,
+      maxJobs: 100000,
       maxErrors: 100,
       timeoutMs: 1000,
     },
@@ -57,8 +74,7 @@ export const BotRuleListStab: IBotsRule[] = [
       jobType: IJobType.GET_ARBITRUM_QUOTES_MULTI,
       rpcUrl: 'https://arb1.arbitrum.io/rpc',
 
-      pairsToQuote: filteredQuotes,
-
+      pairsToQuote: quotes_0003,
     }
   },
 

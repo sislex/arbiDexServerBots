@@ -6,7 +6,7 @@ import {
   PAIR_SUSHI_V3_USDC_WETH_100_USDC_TO_WETH,
 } from "./pairsSushiV3.stabs";
 
-import { AMOUNT_003_18, AMOUNT_100_6 } from "../../pricses.stabs";
+import {AMOUNT_003_18, AMOUNT_03_18, AMOUNT_100_6, AMOUNT_1_18} from '../../pricses.stabs';
 
 // ==================== buildQuotes (shared logic) ====================
 
@@ -34,7 +34,7 @@ export function buildQuotes(params: BuildQuotesParams): IQuote[] {
 
 export const quotesSushiWethOut = buildQuotes({
   pairs: PAIRS_SUSHI_WETH_OUT,
-  amount: AMOUNT_003_18,
+  amount: AMOUNT_03_18,
   side: "exactIn",
   blockTag: "latest",
   quoteSource: "quoteBothBase",
