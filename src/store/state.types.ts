@@ -346,3 +346,23 @@ export interface IContractStep {
   deadline: number;
 }
 
+export interface IParsedArbitrage {
+  createdAt: string;
+  blockNumber: number;
+
+  tokenIn?: ITokenInfo;
+  tokenOut?: ITokenInfo;
+
+  amountIn?: string;
+
+  spread_pct?: number;
+  spread_bps?: number;
+
+  amountOut?: string;
+  amountInBuy?: string;
+  profitOutToken?: string;
+
+  bestBuyPool?: IPairToQuote | null;
+  bestSellPool?: IPairToQuote | null;
+}
+

@@ -1,29 +1,5 @@
-import {IArbitrage, IPairToQuote, ITokenInfo} from '../store/state.types';
+import {IArbitrage, IPairToQuote, IParsedArbitrage, ITokenInfo} from '../store/state.types';
 
-import type {
-  QuoteExactInputSingleRaw,
-  QuoteExactOutputSingleRaw,
-} from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
-
-export interface IParsedArbitrage {
-  createdAt: string;
-  blockNumber: number;
-
-  tokenIn?: ITokenInfo;
-  tokenOut?: ITokenInfo;
-
-  amountIn?: string;
-
-  spread_pct?: number;
-  spread_bps?: number;
-
-  amountOut?: string;
-  amountInBuy?: string;
-  profitOutToken?: string;
-
-  bestBuyPool?: IPairToQuote | null;
-  bestSellPool?: IPairToQuote | null;
-}
 export const getParsedArbitrage = (
   arbitrageList: IArbitrage[]
 ): IParsedArbitrage[] => {
