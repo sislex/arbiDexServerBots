@@ -28,8 +28,8 @@ import {
   POOL_SUSHI_V3_WETH_USDCE_03,
 
   POOL_SUSHI_V3_WETH_WBTC_03,
-  POOL_SUSHI_V3_WETH_ZRO_03,
-} from "./poolsSushiV3.stabs";
+  POOL_SUSHI_V3_WETH_ZRO_03, POOL_SUSHI_V3_USDC_WETH_003
+} from './poolsSushiV3.stabs';
 
 
 // ======================================================================
@@ -45,11 +45,19 @@ export const PAIR_SUSHI_V3_USDC_WETH_100_WETH_TO_USDC: IPair = {
   tokenOut: USDC,
 };
 
+export const PAIR_SUSHI_V3_USDC_WETH_300_WETH_TO_USDC: IPair = {
+  ...POOL_SUSHI_V3_USDC_WETH_003,
+  tokenIn: WETH,
+  tokenOut: USDC,
+};
+
 export const PAIR_SUSHI_V3_USDC_WETH_500_WETH_TO_USDC: IPair = {
   ...POOL_SUSHI_V3_USDC_WETH_005,
   tokenIn: WETH,
   tokenOut: USDC,
 };
+
+
 
 // ---------- WETH / DONUT ----------
 export const PAIR_SUSHI_V3_WETH_DONUT_10000_WETH_TO_DONUT: IPair = {
@@ -144,17 +152,18 @@ export const PAIR_SUSHI_V3_USDC_WETH_500_USDC_TO_WETH: IPair = {
 
 export const PAIRS_SUSHI_WETH_OUT: IPair[] = [
   // USDC
-  PAIR_SUSHI_V3_USDC_WETH_100_WETH_TO_USDC,
+  // PAIR_SUSHI_V3_USDC_WETH_100_WETH_TO_USDC, // очень небольшой ликвидности
+  // PAIR_SUSHI_V3_USDC_WETH_300_WETH_TO_USDC,
   PAIR_SUSHI_V3_USDC_WETH_500_WETH_TO_USDC,
 
-  // DONUT
-  PAIR_SUSHI_V3_WETH_DONUT_10000_WETH_TO_DONUT,
+  // // DONUT
+  // PAIR_SUSHI_V3_WETH_DONUT_10000_WETH_TO_DONUT,
 
   // WSTETH
   PAIR_SUSHI_V3_WETH_WSTETH_100_WETH_TO_WSTETH,
 
-  // GOVI
-  PAIR_SUSHI_V3_WETH_GOVI_3000_WETH_TO_GOVI,
+  // // GOVI
+  // PAIR_SUSHI_V3_WETH_GOVI_3000_WETH_TO_GOVI,
 
   // SNSY
   PAIR_SUSHI_V3_WETH_SNSY_10000_WETH_TO_SNSY,

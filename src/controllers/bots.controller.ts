@@ -1,7 +1,7 @@
 // src/store/bots.controller.ts
 import {Body, Controller, Get, Param, Post, Put} from '@nestjs/common';
 import { AppStore } from '../store/app.store';
-import type {IJobParams, IBotParams, IArbitrage} from '../store/state.types';
+import {IJobParams, IBotParams, IArbitrage, IBotsRule} from '../store/state.types';
 import { IBot } from '../store/state.types';
 
 import {selectBotsList} from '../store/selectors';
@@ -113,9 +113,27 @@ export class BotsController {
 
     const arbitrageList: IArbitrage[] = bot.botInstance.getArbitrage().slice().reverse();
 
-    console.log(arbitrageList);
+    // console.log(arbitrageList);
 
     // return convertBigIntToString(arbitrageList);
     return getParsedArbitrage(arbitrageList);
   }
+
+  @Post('setBotsRulesList')
+  async setBotsRulesList(@Body('botsRulesList') botsRulesList: IBotsRule[]) {
+    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    botsList.forEach((bot: IBot) => {
+      const paused = bot.botInstance.setPaused(true);
+    });
+
+    // console.log('botsRulesList', botsRulesList);
+
+    this.store.dispatch({ type: 'BOTS_RULES_LIST/SET_ALL', payload: {botsRulesList: []} }); // reset bots list
+    this.store.dispatch({ type: 'BOTS_RULES_LIST/SET_ALL', payload: {botsRulesList} });
+
+
+    return true;
+  }
+
+
 }

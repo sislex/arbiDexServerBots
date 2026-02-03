@@ -13,6 +13,7 @@ export function bestArbitrageByGroup(pairQuote: IPairQuoteResult[]): IBestArbitr
 
   for (const q of pairQuote) {
     const amountOut = q.quote?.quoteExactInputSingle?.amountOut;
+    // console.log('amountOut', amountOut, q.pair.dex, q.pair.feePpm, q.pair.tokenIn.address);
     if (amountOut != null) {
       const out = BigInt(amountOut);
       if (bestBuyOut === null || out > bestBuyOut) {
@@ -21,9 +22,10 @@ export function bestArbitrageByGroup(pairQuote: IPairQuoteResult[]): IBestArbitr
       }
     }
 
-    const inStr = q.quote?.quoteExactOutputSingle?.amountIn;
-    if (inStr != null) {
-      const inn = BigInt(inStr);
+    const amountIn = q.quote?.quoteExactOutputSingle?.amountIn;
+    // console.log('amountIn', q.pair.dex, q.pair.feePpm, amountIn, q.pair.tokenOut.address);
+    if (amountIn != null) {
+      const inn = BigInt(amountIn);
       if (bestSellIn === null || inn < bestSellIn) {
         bestSellIn = inn;
         bestSell = q;

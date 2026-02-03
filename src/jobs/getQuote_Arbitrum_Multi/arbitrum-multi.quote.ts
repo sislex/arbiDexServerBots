@@ -115,6 +115,7 @@ export async function get_Arbitrum_Quote_Multi(
     if (pair.quoteSource === 'uniswap-v2-router') {
       if (pair.version === 'v2') {
         const dexCfg = V2_DEXES[pair.dex];
+        console.log(dexCfg);
         if (!dexCfg) {
           pairResults[i].error = "DEX_NOT_CONFIGURED";
           pairResults[i].message = `No V2 config for dex=${pair.dex}`;
@@ -211,6 +212,25 @@ export async function get_Arbitrum_Quote_Multi(
         callData: quoterV3.interface.encodeFunctionData("quoteExactOutputSingle", [qParamsOut]),
       });
       decodePlan[i].exactOutIndex = exactOutIndex;
+    } else if (pair.quoteSource === 'camelot-v3-quoter') {
+      const quoter = getV3Quoter('camelot');
+
+      const qParamsIn = {
+        tokenIn: tokenInAddr,
+        tokenOut: tokenOutAddr,
+        amountIn,
+        limitSqrtPrice: 0n,
+      };
+
+      const exactInIndex = calls.length;
+      calls.push({
+        target: V3_QUOTERS.camelot.quoter,
+        callData: quoter.interface.encodeFunctionData(
+          "quoteExactInputSingle",
+          [qParamsIn]
+        ),
+      });
+      decodePlan[i].exactInIndex = exactInIndex;
     }
   });
 
@@ -223,6 +243,8 @@ export async function get_Arbitrum_Quote_Multi(
       result: pairResults,
     };
   }
+
+  // console.log('calls to multicall:', calls);
 
   // ---------- 2. Один multicall.aggregate ----------
   try {
@@ -356,6 +378,46 @@ export async function get_Arbitrum_Quote_Multi(
           quoteExactInputSingle,
           quoteExactOutputSingle,
         };
+      } else if (pair.quoteSource === 'camelot-v3-quoter') {
+
+        console.log(123);
+        const quoter = getV3Quoter('camelot');
+
+        // exact in
+        if (plan.exactInIndex === undefined) {
+          pairResults[i].error = "NO_CALL_PLANNED";
+          pairResults[i].message = "exactInIndex missing in decodePlan for camelot-v3-quoter";
+          continue;
+        }
+
+        try {
+          const decodedIn = quoter.interface.decodeFunctionResult(
+            "quoteExactInputSingle",
+            returnData[plan.exactInIndex]
+          );
+
+          // Algebra Quoter returns:
+          // (amountOut, sqrtPriceX96After, tickAfter, gasEstimate)
+          const amountOut = decodedIn[0] as bigint;
+          const sqrtPriceX96After = decodedIn[1] as bigint;
+          const tickAfter = decodedIn[2]; // может быть number | bigint в зависимости от ABI/ethers
+          const gasEstimate = decodedIn[3] as bigint;
+
+          pairResults[i].quote = {
+            quoteExactInputSingle: {
+              amountOut: amountOut.toString(),
+              sqrtPriceX96After: sqrtPriceX96After.toString(),
+              // маппим tickAfter в initializedTicksCrossed (для совместимости)
+              initializedTicksCrossed: tickAfter.toString(),
+              gasEstimate: gasEstimate.toString(),
+            },
+            // exactOut пока не вызываем — поэтому undefined
+            quoteExactOutputSingle: undefined,
+          };
+        } catch (e: any) {
+          pairResults[i].error = "CAMELOT_V3_DECODE_FAILED";
+          pairResults[i].message = e?.shortMessage || e?.message || String(e);
+        }
       }
     }
 
@@ -368,6 +430,7 @@ export async function get_Arbitrum_Quote_Multi(
       blockNumber: Number(blockNumber),
     };
   } catch (e: any) {
+    console.log('error in multicall aggregate:', e);
     const latencyMs = Date.now() - startedAt;
 
     return {

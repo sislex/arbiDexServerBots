@@ -27,7 +27,7 @@ export function filterDirectionsWithDuplicates(items: IQuote[]): IQuote[] {
 }
 
 const quotes = [
-  ...quotesWethOut,
+  // ...quotesWethOut,
   // ...quotesUsdcOut,
 
   ...quotesSushiV2WethOut,
@@ -41,7 +41,7 @@ const quotes = [
 let filteredQuotes = filterDirectionsWithDuplicates(quotes);
 
 const quotes_0003 = [
-  ...quotesWethOut0003,
+  // ...quotesWethOut0003,
   // ...quotesUsdcOut,
 
   // ...quotesSushiV2WethOut0003,
@@ -54,8 +54,8 @@ let filteredQuotes_0003 = filterDirectionsWithDuplicates(quotes_0003);
 
 filteredQuotes_0003 = filteredQuotes_0003.filter(item => item.tokenOut.address === USDT.address);
 
-console.log(quotes_0003.length);
-console.log(quotes_0003);
+console.log(filteredQuotes.length);
+// console.log(quotes);
 
 
 export const BotRuleListStab: IBotsRule[] = [
@@ -65,8 +65,8 @@ export const BotRuleListStab: IBotsRule[] = [
       botType: IBotType.TEST_BOT,
       paused: false,
       isRepeat: true,
-      delayBetweenRepeat: 1000000,
-      maxJobs: 100000,
+      delayBetweenRepeat: 10,
+      maxJobs: 1,
       maxErrors: 100,
       timeoutMs: 1000,
     },
@@ -79,3 +79,5 @@ export const BotRuleListStab: IBotsRule[] = [
   },
 
 ];
+
+console.log(filteredQuotes);

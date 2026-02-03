@@ -1,5 +1,5 @@
 // src/store/jobs.ts
-import {IBot, IBotType, IErrorItem} from './state.types';
+import {IBot, IBotsRule, IBotType, IErrorItem} from './state.types';
 
 export type Action =
 // botsTypesList
@@ -7,6 +7,8 @@ export type Action =
   | { type: 'BOTS_TYPES/ADD_ONE'; payload: IBotType }
   | { type: 'BOTS_TYPES/UPSERT_ONE'; payload: IBotType }      // по type
   | { type: 'BOTS_TYPES/REMOVE_ONE'; payload: { type: string } }
+
+  | { type: 'BOTS_RULES_LIST/SET_ALL'; payload: { botsRulesList: IBotsRule[] } }
 
   | { type: 'BOTS_LIST/SET_ALL'; payload: { botsList: IBot[] } }
 

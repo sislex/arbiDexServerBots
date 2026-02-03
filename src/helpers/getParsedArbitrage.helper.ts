@@ -19,7 +19,6 @@ export const getParsedArbitrage = (
         amountIn: group.bestArbitrage.bestBuy?.pair.amount,
 
         spread_pct: group.spread_pct,
-        spread_bps: group.spread_bps,
 
         bestBuyPool: group.bestArbitrage.bestBuy?.pair ?? null,
         bestSellPool: group.bestArbitrage.bestSell?.pair ?? null,

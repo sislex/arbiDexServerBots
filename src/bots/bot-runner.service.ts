@@ -25,21 +25,26 @@ export class BotRunnerService {
       distinctUntilChanged(),
       withLatestFrom(this.botsList$)
     ).subscribe(([botsRulesList, botsList]) => {
-      const newBotsList: IBot[] = [];
-      const oldBotsList: IBot[] = [];
-      botsRulesList.forEach((botRule: IBotsRule) => {
-        const bot: IBot | undefined = botsList.find(botItem => botItem.id === botRule.id);
-        if (!bot) {
-          const newBot: IBot = {
-            id: botRule.id,
-            botInstance: getBot(botRule.botParams, botRule.jobParams),
-          };
-          newBotsList.push(newBot);
-        } else {
-          oldBotsList.push(bot);
-        }
-      })
-      this.store.dispatch({ type: 'BOTS_LIST/SET_ALL', payload: {botsList: [...newBotsList, ...oldBotsList]} });
+      console.log('botsRulesList.length', botsRulesList.length);
+      if (botsRulesList?.length) {
+        const newBotsList: IBot[] = [];
+        const oldBotsList: IBot[] = [];
+        botsRulesList.forEach((botRule: IBotsRule) => {
+          const bot: IBot | undefined = botsList.find(botItem => botItem.id === botRule.id);
+          if (!bot) {
+            const newBot: IBot = {
+              id: botRule.id,
+              botInstance: getBot(botRule.botParams, botRule.jobParams),
+            };
+            newBotsList.push(newBot);
+          } else {
+            oldBotsList.push(bot);
+          }
+        })
+        this.store.dispatch({ type: 'BOTS_LIST/SET_ALL', payload: {botsList: [...newBotsList, ...oldBotsList]} });
+      } else {
+        this.store.dispatch({ type: 'BOTS_LIST/SET_ALL', payload: {botsList: []} });
+      }
     });
   }
 }

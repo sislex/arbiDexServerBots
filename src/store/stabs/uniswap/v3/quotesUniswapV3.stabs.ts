@@ -5,7 +5,14 @@ import {
   PAIRS_WETH_OUT,
   PAIRS_WETH_OUT_TEST
 } from './pairsUniswapV3.stabs';
-import {AMOUNT_0003_18, AMOUNT_003_18, AMOUNT_03_18, AMOUNT_100_6, AMOUNT_1_18} from '../../pricses.stabs';
+import {
+  AMOUNT_0003_18,
+  AMOUNT_001_18,
+  AMOUNT_003_18,
+  AMOUNT_03_18,
+  AMOUNT_100_6,
+  AMOUNT_1_18
+} from '../../pricses.stabs';
 
 export function buildQuotes(params: BuildQuotesParams): IQuote[] {
   const {
@@ -30,10 +37,11 @@ export function buildQuotes(params: BuildQuotesParams): IQuote[] {
 
 export const quotesWethOut = buildQuotes({
   pairs: PAIRS_WETH_OUT,
-  amount: AMOUNT_0003_18,
+  amount: AMOUNT_003_18,
   side: "exactIn",
   blockTag: "latest",
-  quoteSource: "uniswap-v3-quoter-v2",
+  // quoteSource: "uniswap-v3-quoter-v2",
+  quoteSource: "quoteBothBase",
 });
 
 export const quotesWethOut0003 = buildQuotes({

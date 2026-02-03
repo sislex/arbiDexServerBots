@@ -112,7 +112,8 @@ export class TestBot implements ITestBot {
 
   async analytics(): Promise<void> {
     this.botState.lastAnalyticsResult = bestBuySellArbitrage(this.botState.lastJobResult.result, true);
-    console.log('this.botState.lastAnalyticsResult ', this.botState.lastAnalyticsResult);
+    // console.log('this.botState.lastAnalyticsResult ', this.botState.lastAnalyticsResult);
+    // console.log('this.botState.lastAnalyticsResult.groups[0] ', this.botState.lastAnalyticsResult.groups[0]);
   }
 
   setAnalyticsLatency() {
@@ -145,7 +146,7 @@ export class TestBot implements ITestBot {
           ...lastAnalyticsResult,
         });
 
-        this.pushArbitrage(arbitrage);
+        this.pushArbitrage({...arbitrage, groups: [arbitrage.groups[0]]}); // сохраняем только первую группу для теста
         this.startSwaps(arbitrage);
       }
     }
@@ -154,7 +155,7 @@ export class TestBot implements ITestBot {
   private pushArbitrage(arbitrage: IArbitrage) {
     this.botState.arbitrageList.push(arbitrage);
 
-    const maxArbitrage = this.botParams.maxArbitrage ?? 10000; // дефолт 10000
+    const maxArbitrage = this.botParams.maxArbitrage ?? 1000000; // дефолт 1000000
     if (this.botState.arbitrageList.length > maxArbitrage) {
       this.botState.arbitrageList.shift();
     }
@@ -226,6 +227,7 @@ export class TestBot implements ITestBot {
       while (!this.botParams.paused && !this.botState.restartRequested) {
         await this.beforeJobLaunch();
         try {
+          // console.log('this.jobParams', this.jobParams);
           const jobResult = await this.job(this.jobParams);
           this.setJobLatency();
 

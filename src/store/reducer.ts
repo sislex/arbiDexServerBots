@@ -3,6 +3,7 @@ import { Action } from './actions';
 import {AppState, IJobType, IBotType} from './state.types';
 import {ApiStabs} from './stabs/api.stabs';
 import {BotRuleListStab} from './stabs/bot-rule-list.stabs';
+import {BotsListReplacedStab, BotsListSourceStab, BotsListStab} from './stabs/bots-list.stabs';
 
 const ERROR_CAP = 1000;
 
@@ -18,7 +19,9 @@ export const initialState: AppState = {
     { type: IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES, description: 'get_Arbitrum_UniswapV3_Quote' },
     { type: IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES, description: 'get_Arbitrum_UniswapV2_Quote' },
   ],
-  botsRulesList: BotRuleListStab,
+  // botsRulesList: BotRuleListStab,
+  // botsRulesList: BotsListReplacedStab,
+  botsRulesList: [],
   botsList: [],
   errorList: [],
   apis: ApiStabs,
@@ -27,6 +30,11 @@ export const initialState: AppState = {
 export function reducer(state: AppState = initialState, action: Action): AppState {
   switch (action.type) {
     // ---- botsTypesList ----
+
+    // ---- botList ----
+    case 'BOTS_RULES_LIST/SET_ALL': {
+      return bump({ ...state, botsRulesList: action.payload.botsRulesList });
+    }
 
     // ---- botList ----
     case 'BOTS_LIST/SET_ALL': {

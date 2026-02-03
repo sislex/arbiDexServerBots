@@ -1,6 +1,6 @@
 // src/helpers/arbitrageToContractSteps.ts
 import {
-  IContractStep, IGroupedQuotes,
+  IContractStep, IGroupedQuotes, ITwoStepsConfig,
   SwapKind,
   V2DexesMap,
   ZERO_ADDRESS
@@ -10,7 +10,6 @@ import { biReq } from "../../helpers/biReq.helper";
 import { asAddress } from "../../helpers/asAddress.helper";
 import { v2RouterOf } from "../../helpers/v2RouterOf.helper";
 import { requireAddress } from "../../helpers/requireAddress.helper";
-type TwoStepsConfig = [IContractStep, IContractStep];
 
 // floor slippage: outMin = out * (1 - bps/10000)
 function addSlippageFloor(amount: bigint, slippageBps: number): bigint {
@@ -39,7 +38,7 @@ export function arbitrageToTwoStepsConfigs(
      */
     buyQuoteAmountOut?: bigint; // tokenMid smallest units (optional)
   }
-): TwoStepsConfig {
+): ITwoStepsConfig {
   const {
     v2Dexes,
     slippageBps,
@@ -49,12 +48,14 @@ export function arbitrageToTwoStepsConfigs(
   } = opts;
 
 // console.log('group', group);
+// console.log('group.bestArbitrage.bestBuy', group.bestArbitrage.bestBuy);
 
   const tokenIn = asAddress(group.bestArbitrage.bestBuy?.pair.tokenIn.address!);
   const tokenMid = asAddress(group.bestArbitrage.bestBuy?.pair.tokenOut.address!);
 
   // ✅ BUY exactIn amount: берём вход из group.amountIn (tokenIn smallest units)
   const amountInBuy = biReq(group.bestArbitrage.bestBuy?.pair.amount, "group.amountIn");
+  const amountOutBuy = biReq(group.bestArbitrage.bestBuy?.quote?.quoteExactInputSingle.amountOut, "group.amountIn");
 
   // ✅ outMin для BUY (tokenMid units)
   // если есть точная котировка EXACT_IN для buy-пула — используем её,
@@ -90,7 +91,8 @@ export function arbitrageToTwoStepsConfigs(
     amountOutMin: amountOutMinBuy,
 
     // exactOut поля (не используются)
-    amountOut: 0n,
+    amountOut: amountOutBuy,
+    // amountOut: 0n,
     amountInMax: 0n,
 
     sqrtPriceLimitX96: 0,

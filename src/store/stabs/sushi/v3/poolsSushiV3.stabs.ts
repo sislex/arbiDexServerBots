@@ -24,6 +24,15 @@ export const POOL_SUSHI_V3_USDC_WETH_001: IPool = {
   feePpm: 100,
 };
 
+export const POOL_SUSHI_V3_USDC_WETH_003: IPool = { // не работает
+  dex: "sushi",
+  version: "v3",
+  token0: USDC,
+  token1: WETH,
+  poolAddress: "0x763d3b7296e7c9718ad5b058ac2692a19e5b3638",
+  feePpm: 300,
+};
+
 export const POOL_SUSHI_V3_USDC_WETH_005: IPool = {
   dex: "sushi",
   version: "v3",

@@ -1,20 +1,18 @@
-import { Controller, Get } from '@nestjs/common';
+import {Body, Controller, Get, Param, Post} from '@nestjs/common';
 import {
   selectJobTypesList, selectApis,
   selectAppVersion,
   selectBotsCount,
   selectBotsTypes,
-  selectServerStartedAt, selectBotsRulesList
+  selectServerStartedAt, selectBotsRulesList, selectBotsList
 } from '../store/selectors';
 import {firstValueFrom} from 'rxjs';
 import { AppStore } from '../store/app.store';
 import {ApiEndpointDto} from '../store/dto/api-endpoint.dto';
-import {IBotsRule} from '../store/state.types';
+import {IBot, IBotsRule} from '../store/state.types';
 import {convertBigIntToString} from '../helpers/convertBigIntToString';
-import {uniswapResponseStub} from '../jobs/stabs/uniswap.stabs';
-import {bestArbitrageByGroup} from '../arbitrage/helpers/bestSellBuy.arbitrage';
-import {QuoteResultMulti} from '../jobs/handlers';
-import {groupPairQuotes} from '../arbitrage/helpers/groupPairQuotes.helper';
+import {getV3PoolsFromFactory} from '../helpers/getPoolsByFactoryAddress/getV3PoolsFromFactory';
+import {CAMELOT_V3_FACTORY, SUSHISWAP_V3_FACTORY, UNISWAP_V3_FACTORY} from '../helpers/dex.constants';
 
 @Controller()
 export class AppController {
@@ -55,6 +53,13 @@ export class AppController {
   async getAll() {
     const rulesList: IBotsRule[] = await firstValueFrom(this.store.select$(selectBotsRulesList));
     return convertBigIntToString(rulesList);
+  }
+
+  @Get('getPoolsByFactoryUniswapV3')
+  async getPools() {
+    const pools = await getV3PoolsFromFactory(UNISWAP_V3_FACTORY, 0, 426085324);
+
+    return pools;
   }
 
 }

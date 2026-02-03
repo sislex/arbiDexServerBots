@@ -9,7 +9,7 @@ import {
 
 export type ContractAbi = readonly string[];
 
-export type V2DexId = 'uniswap' | 'sushi' | 'pancake';
+export type V2DexId = 'uniswap' | 'sushi' | 'pancake' | 'camelot';
 export interface IV2DexConfig {
   name: string;
   router: Address;
@@ -18,7 +18,7 @@ export interface IV2DexConfig {
 export type V2DexesMap = Record<V2DexId, IV2DexConfig>;
 
 
-export type V3QuoterId = 'uniswap' | 'sushi' | 'poolId';
+export type V3QuoterId = 'uniswap' | 'sushi' | 'poolId' | 'camelot';
 export interface IV3QuoterConfig {
   name: string;
   quoter: Address;
@@ -42,12 +42,13 @@ export enum IJobType {
 
 export interface IJobDefaultParams { jobType: IJobType; }
 
-export type DexId = 'uniswap' | 'sushi';
+export type DexId = 'uniswap' | 'sushi' | 'pancake' | 'camelot';
 export type PoolVersion = 'v2' | 'v3';
 
 export type QuoteSource =
   | 'uniswap-v2-router'
   | 'uniswap-v3-quoter-v2'
+  | 'camelot-v3-quoter'
   | 'quoteBothBase';
 
 export type Address = `0x${string}`;
@@ -303,7 +304,6 @@ export interface IBestArbitrageByGroup {
 export interface IGroupedQuotes {
   bestArbitrage: IBestArbitrageByGroup,
   amountOutStep1: bigint,
-  spread_bps: number,
   spread_pct: number,
 }
 
@@ -319,10 +319,11 @@ export interface IArbitrage extends IBestBuySellArbitrage {
 
 export enum SwapKind {
   V2_EXACT_IN = 0,
-  V2_EXACT_OUT = 1,
-  V3_POOL_EXACT_IN = 2,
-  V3_POOL_EXACT_OUT = 3,
+  V3_POOL_EXACT_IN = 1,
 }
+
+
+export type ITwoStepsConfig = [IContractStep, IContractStep];
 
 export interface IContractStep {
   kind: SwapKind;

@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-const RPC = "https://arb1.arbitrum.io/rpc";
+export const ARBISCAN_RPC = "https://arb1.arbitrum.io/rpc";
 const ARBISCAN_V2 = "https://api.etherscan.io/v2/api";
 const ARBITRUM_CHAIN_ID = 42161;
 
