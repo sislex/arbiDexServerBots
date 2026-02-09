@@ -15,27 +15,37 @@ export async function get_Arbitrum_UniswapV2_Quote_NoMulticall(
   } = params;
 
   const provider = new ethers.JsonRpcProvider(rpcUrl);
-  const v2Router = new ethers.Contract(V2_DEXES.uniswap.router, V2_DEXES.uniswap.abi, provider);
 
   const startedAt = Date.now();
 
   // результат по всем парам
   const pairResults: IPairQuoteResult[] = pairsToQuote.map(pair => ({ pair }));
-
   // массив промисов — по одному на каждую пару
   const tasks: Promise<void>[] = pairsToQuote.map(async (pair, i) => {
-    // Эта функция работает ТОЛЬКО с Uniswap V2
-    if (!(pair.dex === 'uniswap' && pair.version === 'v2')) {
+    const v2Router = new ethers.Contract(V2_DEXES[pair.dex].router, V2_DEXES[pair.dex].abi, provider);
+    if (pair.version !== 'v2') {
+      console.error('error: Эта функция работает ТОЛЬКО с Uniswap V2')
       pairResults[i].error   = "UNSUPPORTED_PAIR";
       pairResults[i].message = "get_Arbitrum_UniswapV2_Quote_NoMulticall обрабатывает только пары Uniswap v2";
       return;
+    } else {
+      if (
+        !(
+          pair.dex === 'uniswap'
+          || pair.dex === 'sushi'
+          || pair.dex === 'camelot'
+        )
+      ) {
+        console.error('error: Эта функция работает ТОЛЬКО с Uniswap V2')
+        pairResults[i].error   = "UNSUPPORTED_PAIR";
+        pairResults[i].message = "get_Arbitrum_UniswapV2_Quote_NoMulticall обрабатывает только пары Uniswap v2";
+      }
     }
 
     const tokenInAddr  = ethers.getAddress(pair.tokenIn.address);
     const tokenOutAddr = ethers.getAddress(pair.tokenOut.address);
 
     const amountIn  = toBigIntSafe(pair.amount);
-    const amountOut = toBigIntSafe(pair.amount);
 
     if (amountIn === undefined) {
       pairResults[i].error   = "AMOUNT_IN_REQUIRED";
@@ -51,35 +61,16 @@ export async function get_Arbitrum_UniswapV2_Quote_NoMulticall(
     try {
       // -------- exact-in: getAmountsOut --------
       const amountsOut: bigint[] = await v2Router.getAmountsOut(amountIn, pathInOut);
-      const v2AmountOutExactIn = amountsOut[amountsOut.length - 1].toString();
+      const v2AmountOutExactIn: string = amountsOut[amountsOut.length - 1].toString();
 
-      // -------- exact-out: getAmountsIn (если задан amountOut) --------
-      let v2AmountInExactOut: string | undefined;
-      if (amountOut !== undefined) {
-        const pathOutIn = [...pathInOut].reverse();
-        const amountsIn: bigint[] = await v2Router.getAmountsIn(amountOut, pathOutIn);
-        v2AmountInExactOut = amountsIn[0].toString();
-      }
-
-      // Адаптируем под структуру, "как будто это V3"
       pairResults[i].quote = {
         quoteExactInputSingle: {
           amountOut: v2AmountOutExactIn,
-          sqrtPriceX96After: "0",
-          initializedTicksCrossed: "0",
-          gasEstimate: "0",
         },
-        quoteExactOutputSingle: v2AmountInExactOut
-          ? {
-            amountIn: v2AmountInExactOut,
-            sqrtPriceX96After: "0",
-            initializedTicksCrossed: "0",
-            gasEstimate: "0",
-          }
-          : undefined,
       };
 
     } catch (e: any) {
+      console.log('error', e);
       pairResults[i].error   = "V2_ROUTER_REVERT";
       pairResults[i].message = e?.shortMessage || e?.message || String(e);
       return;

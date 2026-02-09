@@ -2,7 +2,7 @@ import {
   IJobParams,
   IJobParams_get_Arbitrum_UniswapV3_Quote, IJobParams_get_Arbitrum_Quote_Multi,
   IJobParams_get_Pool_State,
-  IJobType, IJobParams_resolve_Pools_For_Pairs, IPairToQuote
+  IJobType, IJobParams_resolve_Pools_For_Pairs, IPairToQuote, IJobParams_get_Arbitrum_Arb_Executor_Quotes
 } from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
@@ -13,6 +13,7 @@ import {PoolState} from './getPoolState/getPoolState.types';
 import {get_Arbitrum_Quote_Multi} from './getQuote_Arbitrum_Multi/arbitrum-multi.quote';
 import {get_Arbitrum_UniswapV2_Quote_NoMulticall} from './getQuote_Arbitrum_Uni_v2/arbitrum-multi.quote';
 import {resolvePoolsForPairs} from './resolvePoolsForPairs/resolvePoolsForPairs.pools';
+import {getArbExecutorQuotes} from './getQuoteFromArbExecutor/getArbExecutor.quotes';
 
 
 // базовый результат для всех квот
@@ -46,6 +47,8 @@ export interface QuoteResultMulti<T = any> extends BaseQuoteResult {
 
 // Регистрируем хендлеры: каждый принимает *ровно те же params*, что пришли в раннер
 const handlers = {
+  [IJobType.GET_ARB_EXECUTOR_QUOTES]:
+    async (params: IJobParams_get_Arbitrum_Arb_Executor_Quotes): Promise<QuoteResult> => getArbExecutorQuotes(params),
   [IJobType.GET_POOL_STATE]:
     async (params: IJobParams_get_Pool_State): Promise<PoolState> => getPoolState(params),
   [IJobType.GET_ARBITRUM_UNISWAP_V3_QUOTES]:

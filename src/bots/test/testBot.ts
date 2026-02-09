@@ -1,10 +1,12 @@
-import {IJobParams, IBotParams, IBestBuySellArbitrage, IArbitrage} from '../../store/state.types';
+import {IJobParams, IBotParams, IBestBuySellArbitrage, IArbitrage, IQuoteResult} from '../../store/state.types';
 import { setTimeout as delay } from 'timers/promises';
 import {runJob} from '../../jobs/handlers';
 import {createBotError, IBotError} from '../../helpers/createError';
 import {createArbitrage} from '../../helpers/createArbitrage';
 import {bestBuySellArbitrage} from '../../arbitrage/best-buy-sell.arbitrage';
 import {doTwoSwap} from '../../swap/doTwoSwap.swap';
+import {pairQuoteToHuman} from '../../helpers/pairQuoteToHuman';
+import {IPairQuoteResult} from '../../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
 
 interface ITestBotState {
   createdAt: Date;
@@ -229,10 +231,16 @@ export class TestBot implements ITestBot {
         try {
           // console.log('this.jobParams', this.jobParams);
           const jobResult = await this.job(this.jobParams);
+
           this.setJobLatency();
 
           if (!jobResult.error) {
+
             this.botState.lastJobResult = jobResult;
+            const result: IQuoteResult[] = jobResult.result;
+            // console.log('result:', result);
+            // const readableResult = result.map((quoteResult: IQuoteResult) => pairQuoteToHuman(quoteResult));
+            // console.log('readableResult: ', readableResult[0], readableResult[1]);
           } else {
             const error = createBotError({
               errorCode: `JOB: ${jobResult.error}`,
@@ -315,7 +323,7 @@ export class TestBot implements ITestBot {
       this.botState.latency = Math.round(avg + (this.botState.lastLatency - avg) / n);
     }
 
-    this.startAnalytics();
+    // this.startAnalytics();
   }
 
   async job(jobParams: IJobParams = this.jobParams): Promise<any> {

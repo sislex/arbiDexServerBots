@@ -50,6 +50,11 @@ export const UNISWAP_V2_ROUTER_ABI = [
 ];
 
 export const CAMELOT_V2_ROUTER_ABI = [
+  // quoting
+  "function getAmountsOut(uint256 amountIn, address[] calldata path) external view returns (uint256[] memory amounts)",
+  "function getAmountsIn(uint256 amountOut, address[] calldata path) external view returns (uint256[] memory amounts)",
+
+  // swaps (как у тебя)
   "function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint,uint,address[],address,address,uint)",
   "function swapExactETHForTokensSupportingFeeOnTransferTokens(uint,address[],address,address,uint)",
   "function swapExactTokensForETHSupportingFeeOnTransferTokens(uint,uint,address[],address,address,uint)",
@@ -61,8 +66,6 @@ export const ALGEBRA_QUOTER_ABI = [
   // (опционально) exactOut
   "function quoteExactOutputSingle(address tokenIn,address tokenOut,uint256 amountOut,uint160 limitSqrtPrice) external returns (uint256 amountIn,uint160 sqrtPriceX96After,int24 tickAfter,uint256 gasEstimate)",
 ];
-
-
 
 export const V2_DEXES: V2DexesMap = {
   uniswap: {

@@ -1,0 +1,46 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ArbErrors",
+  "sourceName": "contracts/ArbErrors.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "NO_ACTIVE_V3_SWAP",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "PATH_TOO_SHORT",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "POOL_ZERO",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ROUTER_ZERO",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "SLIPPAGE",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TOKEN_NOT_IN_POOL",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UNEXPECTED_V3_POOL",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea26469706673582212207bbad21066f3efda0e66d49417fd5d1abfef1c4b0441d86bf8eb74fe44eda92464736f6c634300081c0033",
+  "deployedBytecode": "0x600080fdfea26469706673582212207bbad21066f3efda0e66d49417fd5d1abfef1c4b0441d86bf8eb74fe44eda92464736f6c634300081c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

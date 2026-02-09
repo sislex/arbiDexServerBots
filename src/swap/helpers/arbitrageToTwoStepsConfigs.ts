@@ -122,9 +122,6 @@ export function arbitrageToTwoStepsConfigs(
     // amountOutMin: amountOutMinSell,  // защита от убытка
     amountOutMin: 0n,
 
-    amountOut: 0n,
-    amountInMax: 0n,
-
     sqrtPriceLimitX96: 0,
     deadline,
   };

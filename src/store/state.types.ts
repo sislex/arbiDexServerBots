@@ -38,6 +38,7 @@ export enum IJobType {
   GET_ARBITRUM_QUOTES_MULTI = 'get_Arbitrum_Quote_Multi',
   GET_ARBITRUM_UNISWAP_V2_QUOTES = 'get_Arbitrum_UniswapV2_Quote',
   RESOLVE_POOLS_FOR_PAIRS = 'resolve_pools_for_pairs',
+  GET_ARB_EXECUTOR_QUOTES = 'getArbExecutorQuotes',
 }
 
 export interface IJobDefaultParams { jobType: IJobType; }
@@ -157,6 +158,18 @@ export interface IJobParams_get_Arbitrum_UniswapV2_Quote extends IJobDefaultPara
   ignoreFee?: boolean;
 }
 
+export interface IJobParams_get_Arbitrum_Arb_Executor_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_ARB_EXECUTOR_QUOTES;
+  rpcUrl: string;
+
+  pairsToQuote: IQuote[];
+  stepPrefundPct?: number;
+  // stepPrefund?: {
+  //   amount: bigint;
+  //   tokenAddress: string;
+  // };
+}
+
 export interface IJobParams_resolve_Pools_For_Pairs extends IJobDefaultParams {
   jobType: IJobType.RESOLVE_POOLS_FOR_PAIRS;
 
@@ -178,25 +191,15 @@ export interface IPair extends IPool {
   tokenOut: ITokenInfo;
 }
 
-/** Данные, которые получаются как результат котирования (v2/v3). */
-export interface IQuoteResult {
-  amountOut?: string;         // для exactIn
-  amountIn?: string;          // для exactOut
-
-  // v3-поля (если есть)
-  sqrtPriceX96After?: string;
-  initializedTicksCrossed?: string;
-  gasEstimate?: string;
-
-  // можно добавить sourceLatencyMs, error и т.п. при желании
-}
-
 export type QuoteSide = "exactIn" | "exactOut";
 
 /** QUOTE = pair + amount (+ blockTag) + результат */
 export interface IQuote extends IPair {
   side: QuoteSide;            // "exactIn" | "exactOut"
-  amount: string;             // amountIn (если exactIn) или amountOut (если exactOut), в smallest units
+  amount: string | bigint;             // amountIn (если exactIn) или amountOut (если exactOut), в smallest units
+  amountOut?: string | bigint;
+  amountOutMin?: bigint;
+
   blockTag?: number | "latest";
 
   quoteSource?: QuoteSource;       // например: "uniswap-v3-quoter-v2" | "uniswap-v2-router" | ...
@@ -238,6 +241,7 @@ export interface BuildQuotesParams {
 }
 
 export type IJobParams =
+  | IJobParams_get_Arbitrum_Arb_Executor_Quotes
   | IJobParams_get_Pool_State
   | IJobParams_get_Arbitrum_UniswapV3_Quote
   | IJobParams_get_Arbitrum_Quote_Multi
@@ -339,10 +343,6 @@ export interface IContractStep {
   amountIn: bigint;      // step0: amountIn, step1: 0n (auto from prev) если твой контракт так умеет
   amountOutMin: bigint;
 
-  // exactOut поля
-  amountOut: bigint;
-  amountInMax: bigint;
-
   sqrtPriceLimitX96: number;
   deadline: number;
 }
@@ -354,7 +354,7 @@ export interface IParsedArbitrage {
   tokenIn?: ITokenInfo;
   tokenOut?: ITokenInfo;
 
-  amountIn?: string;
+  amountIn?: string | bigint;
 
   spread_pct?: number;
   spread_bps?: number;
@@ -365,5 +365,22 @@ export interface IParsedArbitrage {
 
   bestBuyPool?: IPairToQuote | null;
   bestSellPool?: IPairToQuote | null;
+}
+
+export  interface ISimulationStepsLogs {
+  poolAddress: string;
+  tokenIn: Address;
+  tokenOut: Address;
+  amountIn: bigint;
+  amountOut: bigint;
+  gas: bigint;
+}
+
+// один результат по одной паре
+export interface IQuoteResult {
+  pairToQuote: IQuote;
+  simulationStepsLogs?: ISimulationStepsLogs[];
+  error?: string;
+  message?: string;
 }
 

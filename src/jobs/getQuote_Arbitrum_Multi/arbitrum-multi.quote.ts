@@ -13,9 +13,9 @@ import {
 
 export interface QuoteExactInputSingleRaw {
   amountOut: string;
-  sqrtPriceX96After: string;
-  initializedTicksCrossed: string;
-  gasEstimate: string;
+  sqrtPriceX96After?: string;
+  initializedTicksCrossed?: string;
+  gasEstimate?: string;
 }
 
 export interface QuoteExactOutputSingleRaw {

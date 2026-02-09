@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
   "contractName": "IV3PoolLike",
-  "sourceName": "contracts/ArbExecutor.sol",
+  "sourceName": "contracts/V3SwapLib.sol",
   "abi": [
     {
       "inputs": [
