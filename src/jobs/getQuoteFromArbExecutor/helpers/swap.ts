@@ -10,7 +10,7 @@ export async function swap(
   try {
     const [simulationSummary, simulationLogs] = await vault.executeSwaps.staticCall(
       swapSteps,
-      swapSteps[0].tokenIn,
+      swapSteps[0].tokenOut,
       false,
       false,
     );

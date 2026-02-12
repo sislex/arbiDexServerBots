@@ -1,34 +1,27 @@
 import {IQuoteResult} from '../../../store/state.types';
+import {IQuoteStepsResults} from './getQuotesFromLastStep';
 function compareBigIntAsc(a: bigint, b: bigint): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-function compareBigIntDesc(a: bigint, b: bigint): number {
+export function compareBigIntDesc(a: bigint, b: bigint): number {
   return a > b ? -1 : a < b ? 1 : 0;
 }
 
-export const sortQuotesByAmounts = (quotes: IQuoteResult[]) => {
-  const safe = (q: IQuoteResult) => Array.isArray(q.simulationStepsLogs);
+export const sortStepQuotes = (quoteStepsResults: IQuoteStepsResults[]) => {
+  const safe = (q: IQuoteStepsResults) => Array.isArray(q.simulationStepsLogs);
 
-  const buy = quotes
-    .filter((q) => safe(q) && q.simulationStepsLogs!.length > 0)
+  const sortedFirstStepQuotes:  IQuoteStepsResults[] = quoteStepsResults
+    .filter((q) => safe(q) && !!q.quoteLog)
     // buy: simulationStepsLogs[0].amountOut desc (больше -> меньше)
-    .sort((a, b) =>
+    .sort((a: IQuoteStepsResults, b: IQuoteStepsResults) =>
       compareBigIntDesc(
-        a.simulationStepsLogs![0].amountOut,
-        b.simulationStepsLogs![0].amountOut
+        a.quoteLog!.amountOut,
+        b.quoteLog!.amountOut
       )
     );
 
-  const sell = quotes
-    .filter((q) => safe(q) && q.simulationStepsLogs!.length > 1)
-    // sell: simulationStepsLogs[1].amountIn asc (меньше -> больше)
-    .sort((a, b) =>
-      compareBigIntAsc(
-        a.simulationStepsLogs![1].amountIn,
-        b.simulationStepsLogs![1].amountIn
-      )
-    );
 
-  return { buy, sell };
+
+  return sortedFirstStepQuotes;
 };

@@ -1,17 +1,19 @@
 import {ethers} from 'ethers';
 import {
   IContractStep,
-  IJobParams_get_Arbitrum_Arb_Executor_Quotes, ISimulationStepsLogs, SwapKind
+  IJobParams_get_Arbitrum_Arb_Executor_Quotes, IQuote, ISimulationStepsLogs, SwapKind
 } from '../../store/state.types';
 import ArbExecutorAbi from '../../artifacts/contracts/ArbExecutor.sol/ArbExecutor.json';
 import {getQuotes} from './helpers/getQuotes';
 import {QuoteResultMulti} from '../handlers';
-import {sortQuotesByAmounts} from './helpers/sortQuotesByAmounts';
 import {calcProfitPctFromBase} from './helpers/calcProfitPctFromBase';
-import {calcProfitBaseSigned} from './helpers/calcProfitBaseSigned';
-import {configToStep} from './helpers/configToStep';
 import {swap} from './helpers/swap';
 import {calcProfitPctFromTwoSwaps} from './helpers/calcProfitPctFromTwoSwaps';
+import {getStepsByQuotesResults} from './helpers/getStepsByQuotesResults';
+import {configToStep} from './helpers/configToStep';
+import {getQuotesFromLastStep, IQuoteStepsResults} from './helpers/getQuotesFromLastStep';
+import {compareBigIntDesc, sortStepQuotes} from './helpers/sortQuotesByAmounts';
+import {revertConfigToStep} from './helpers/revertConfigToStep';
 
 const VAULT = "0x25499918EdD7aB818F29c01045fCc4b4fdCAB5Cf";
 
@@ -27,57 +29,70 @@ export async function getArbExecutorQuotes(
   const signer = new ethers.Wallet(pk, provider);
   const vault = new ethers.Contract(VAULT, ArbExecutorAbi.abi, signer);
 
-  // Шаг 1: получение котировок
-  const quotesResult: QuoteResultMulti =  await getQuotes(pairsToQuote, vault);
 
-  // Шаг 2: Сортировка пулов по лучшим котировкам
-  const {buy, sell} = sortQuotesByAmounts(quotesResult.result);
 
- // Шаг 3: расчет прибыли обмена  в пулах с лучшими ценами покупки/продажи
-  const bestBuyLog = buy[0].simulationStepsLogs![0];   // base -> quote
-  const bestSellLog = sell[0].simulationStepsLogs![1];  // quote -> base (exactOut)
-  const baseAmount = bestBuyLog.amountIn;      // amountIn первого шага
-  const quoteOut   = bestBuyLog.amountOut;     // сколько получили quote
-  const quoteIn    = bestSellLog.amountIn;      // сколько quote нужно, чтобы вернуть baseAmount
-  const calcProfitBase: bigint = calcProfitBaseSigned({ baseAmount, quoteOut, quoteIn });
-  const calcProfitPct = calcProfitPctFromBase(calcProfitBase, baseAmount);
+  // Шаг 1: получение шагов для котировок
+  const quoteSteps: IContractStep[][] = pairsToQuote.map((quote: IQuote) => [configToStep(quote)]);
 
-  console.log('baseAmount', baseAmount);
-  console.log('quoteOut', quoteOut);
-  console.log('quoteIn', quoteIn);
-  console.log('profitBase', calcProfitBase);
-  console.log('profitPct', calcProfitPct);
+  // Шаг 2: получение котировок для последнего шага
+  const firstStepQuotes = await getQuotesFromLastStep(quoteSteps, vault, provider);
+  const firstStepQuotesResult: IQuoteStepsResults[] = firstStepQuotes.result;
+  // console.log('firstStepQuotesResult', firstStepQuotesResult);
 
-  // Шаг 4: Симуляция
-  const firstStep: IContractStep = {
-    ...configToStep(buy[0].pairToQuote),
-    amountOutMin: quoteOut,
-  };
+  // Шаг 3: Сортируем котировки по лучшей цене
+  const sortedFirstStepQuotes = sortStepQuotes(firstStepQuotesResult);
+  // console.log('sortedFirstStepQuotes', sortedFirstStepQuotes);
 
-  const secondStep: IContractStep  = {
-    ...configToStep(sell[0].pairToQuote),
-    amountIn: 0n,
-  };
-  const tokenIn = secondStep.tokenOut;
-  const tokenOut = secondStep.tokenIn;
-  secondStep.tokenIn = tokenIn;
-  secondStep.tokenOut = tokenOut;
-  if (secondStep.kind === SwapKind.V2_EXACT_IN) {
-    secondStep.path = [tokenIn, tokenOut];
-  }
+  // Шаг 3: 1 step с лучшей ценой
+  const firstStep: IContractStep = sortedFirstStepQuotes[0].quoteStep[0];
 
-  const swapSteps = [firstStep, secondStep];
-  console.log('swapSteps', swapSteps);
+  // Шаг 4: получение шагов для симуляции на покупку/продажу
+  const simulationSeps: IContractStep[][] = pairsToQuote.map((quote: IQuote) => [
+    firstStep,
+    {
+      ...revertConfigToStep(configToStep(quote)),
+      amountIn: 0n,
+    }
+  ]);
 
-  const simulation: ISimulationStepsLogs[] = await swap(swapSteps, vault);
-  console.log('simulation', simulation);
+  // Шаг 5: симуляция
+  const swapSimulation = await getQuotesFromLastStep(simulationSeps, vault, provider);
+  const simulationSepsResult: IQuoteStepsResults[] = swapSimulation.result;
 
-  const simulationCalcProfitBase: bigint = simulation[1].amountOut - simulation[0].amountIn;
-  const simulationProfitPct = calcProfitPctFromTwoSwaps(simulation[0].amountIn, simulation[1].amountOut);
+  // console.log('simulationSepsResult', simulationSepsResult);
+  const simulationSepsResultMapped: IQuoteStepsResults[] = simulationSepsResult.map(item => {
+    const baseAmountIn = item.simulationStepsLogs![0].amountIn;
+    const baseAmountOut = item.simulationStepsLogs![1].amountOut;
+    const profitBase: bigint = baseAmountOut - baseAmountIn;
+    const profitPct: number = calcProfitPctFromBase(profitBase, baseAmountIn);
+    const gas: bigint = item.simulationStepsLogs![0].gas +  item.simulationStepsLogs![1].gas;
+    return {
+      quoteStep: item.quoteStep,
+      profitBase,
+      profitPct,
+      gas,
+    };
+  });
 
-  console.log('simulationCalcProfitBase', simulationCalcProfitBase);
-  console.log('simulationProfitPct', simulationProfitPct);
+  // Шаг 5: сортируем по profitBase
+  simulationSepsResultMapped.sort((a: IQuoteStepsResults, b: IQuoteStepsResults) =>
+    compareBigIntDesc(
+      a.profitBase!,
+      b.profitBase!
+    )
+  )
 
-  return quotesResult;
+  const profitSimulationSepsResult = simulationSepsResultMapped.filter(iitem => iitem.profitBase! > 0);
+
+  console.log('simulationSepsResultMapped', simulationSepsResultMapped);
+  console.log('swapSimulation.blockNumber', swapSimulation.blockNumber);
+  console.log('swapSimulation.latencyMs', swapSimulation.latencyMs);
+
+  console.log('profitSimulationSepsResult', profitSimulationSepsResult.map(item => ({
+    profitBase: item.profitBase!,
+    profitPct: item.profitPct!,
+  })));
+
+  return [];
 
 }

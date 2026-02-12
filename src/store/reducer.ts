@@ -3,7 +3,7 @@ import { Action } from './actions';
 import {AppState, IJobType, IBotType} from './state.types';
 import {ApiStabs} from './stabs/api.stabs';
 import {BotRuleListStab} from './stabs/bot-rule-list.stabs';
-import {BotsListReplacedStab, BotsListSourceStab, BotsListStab} from './stabs/bots-list.stabs';
+import {BotList10, BotsListReplacedStab, BotsListSourceStab, BotsListStab} from './stabs/bots-list.stabs';
 
 const ERROR_CAP = 1000;
 
@@ -20,7 +20,8 @@ export const initialState: AppState = {
     { type: IJobType.GET_ARBITRUM_UNISWAP_V2_QUOTES, description: 'get_Arbitrum_UniswapV2_Quote' },
   ],
   // botsRulesList: BotRuleListStab,
-  botsRulesList: BotsListReplacedStab,
+  // botsRulesList: BotsListReplacedStab,
+  botsRulesList: BotList10,
   // botsRulesList: [],
   botsList: [],
   errorList: [],

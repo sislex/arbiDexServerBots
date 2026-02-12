@@ -6,7 +6,6 @@ import {
 import {QuoteResultMulti} from '../../handlers';
 import {ethers} from 'ethers';
 import {configToStep} from './configToStep';
-import {normalizeQuoteByAmountOut} from './normalizeQuoteByAmountOut';
 
 export async function getQuotes(
   pairsToQuote: IQuote[],
@@ -57,10 +56,10 @@ export async function getQuotes(
         gas: log![7],
       }));
 
-      if (simulationStepsLogs[simulationStepsLogs.length - 1].amountOut !== simulationStepsLogs[simulationStepsLogs.length - 2].amountIn) {
-        const normalizedAmountOut = simulationStepsLogs[simulationStepsLogs.length - 2].amountIn;
-        simulationStepsLogs[simulationStepsLogs.length - 1] = normalizeQuoteByAmountOut(simulationStepsLogs[simulationStepsLogs.length - 1], normalizedAmountOut);
-      }
+      // if (simulationStepsLogs[simulationStepsLogs.length - 1].amountOut !== simulationStepsLogs[simulationStepsLogs.length - 2].amountIn) {
+      //   const normalizedAmountOut = simulationStepsLogs[simulationStepsLogs.length - 2].amountIn;
+      //   simulationStepsLogs[simulationStepsLogs.length - 1] = normalizeQuoteByAmountOut(simulationStepsLogs[simulationStepsLogs.length - 1], normalizedAmountOut);
+      // }
 
       item.simulationStepsLogs = simulationStepsLogs;
     } catch (e: any) {
