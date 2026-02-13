@@ -14,7 +14,7 @@ import {get_Arbitrum_Quote_Multi} from './getQuote_Arbitrum_Multi/arbitrum-multi
 import {get_Arbitrum_UniswapV2_Quote_NoMulticall} from './getQuote_Arbitrum_Uni_v2/arbitrum-multi.quote';
 import {resolvePoolsForPairs} from './resolvePoolsForPairs/resolvePoolsForPairs.pools';
 import {getArbExecutorQuotes} from './getQuoteFromArbExecutor/getArbExecutor.quotes';
-
+import { getPoolsFromFactory } from './getPoolsFromFactory/getPoolsFromFactory';
 
 // базовый результат для всех квот
 export interface BaseQuoteResult {
@@ -63,6 +63,10 @@ const handlers = {
   [IJobType.RESOLVE_POOLS_FOR_PAIRS]:
     async (params: IJobParams_resolve_Pools_For_Pairs): Promise<any[]> =>
       resolvePoolsForPairs(params),
+
+  [IJobType.GET_POOLS_FROM_FACTORY]:
+    async (params: any): Promise<any[]> =>
+      getPoolsFromFactory(params),
 } as const;
 
 // Единая точка входа

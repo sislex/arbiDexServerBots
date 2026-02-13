@@ -1,0 +1,74 @@
+import { ethers } from 'ethers';
+
+export const ARBISCAN_RPC2 = 'https://arb1.arbitrum.io/rpc';
+
+const ERC20_ABI = [
+  'function name() view returns (string)',
+  'function symbol() view returns (string)',
+  'function decimals() view returns (uint8)',
+];
+
+type TokenData = {
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+};
+
+type Pool = {
+  token0: string;
+  token1: string;
+  pair: string; //pair/pool в зависимости от фабрики
+  blockNumber: number;
+};
+
+export function getUniqueTokens(pools: Pool[]): string[] {
+  const tokenSet = new Set<string>();
+
+  for (const pool of pools) {
+    tokenSet.add(pool.token0.toLowerCase());
+    tokenSet.add(pool.token1.toLowerCase());
+  }
+
+  return Array.from(tokenSet);
+}
+
+export async function fetchTokensData(
+  tokenAddresses: string[],
+): Promise<TokenData[]> {
+  const provider = new ethers.JsonRpcProvider(ARBISCAN_RPC2);
+  const results: TokenData[] = [];
+
+  const CONCURRENCY = 1;
+  for (let i = 0; i < tokenAddresses.length; i += CONCURRENCY) {
+    const batch = tokenAddresses.slice(i, i + CONCURRENCY);
+
+    const promises = batch.map(async (addr) => {
+      try {
+        console.log('GET TOKEN DATA addr::::', addr);
+        const contract = new ethers.Contract(addr, ERC20_ABI, provider);
+
+        const [symbol, name, decimals] = await Promise.all([
+          contract.symbol(),
+          contract.name(),
+          contract.decimals(),
+        ]);
+
+        return {
+          address: addr.toLowerCase(),
+          symbol,
+          name,
+          decimals: Number(decimals),
+        } as TokenData;
+      } catch (err) {
+        console.warn('Error fetching token', addr, err);
+        return null;
+      }
+    });
+
+    const batchResults = await Promise.all(promises);
+    results.push(...batchResults.filter((r): r is TokenData => r !== null));
+  }
+
+  return results;
+}
