@@ -1,7 +1,7 @@
 // import { getUniswapV3PoolsFromFactory } from '../-helpers/getUniswapV3PoolsFromFactory';
 // import { getCamelotV3PoolsFromFactory } from '../-helpers/getCamelotV3PoolsFromFactory';
 
-import { IConfig } from './getPoolsFromFactory';
+import { IConfig, IConfigDB } from './getPoolsFromFactory';
 
 // const pools = await getUniswapV3PoolsFromFactory(UNISWAP_V3_FACTORY, 1, );
 // const pools = await getV2PoolsFromFactory(UNISWAP_V2_FACTORY, 1,  );
@@ -81,4 +81,13 @@ export const configCreateCamelotV3: IConfig = {
   start: 1,
   finish: undefined,
   dexName: 'camelot',
+};
+
+export const DB: IConfigDB = {
+  type: 'postgres',
+  host: 'localhost', // из DB_HOST
+  port: 5432, // из DB_PORT
+  username: 'user_secret', // из POSTGRES_USER
+  password: 'pass_secret', // из POSTGRES_PASSWORD
+  database: 'config_info_db_2', // из POSTGRES_DB
 };

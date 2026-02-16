@@ -65,7 +65,7 @@ const handlers = {
       resolvePoolsForPairs(params),
 
   [IJobType.GET_POOLS_FROM_FACTORY]:
-    async (params: any): Promise<any[]> =>
+    async (params: any): Promise<any> =>
       getPoolsFromFactory(params),
 } as const;
 

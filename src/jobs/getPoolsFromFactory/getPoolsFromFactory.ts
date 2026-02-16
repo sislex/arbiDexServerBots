@@ -1,22 +1,20 @@
+import { DataSource, DataSourceOptions, EntityManager } from 'typeorm';
+import { Logger } from '@nestjs/common';
 import { fetchTokensData, getUniqueTokens } from './helpers/getTokensData';
 import { Tokens } from './helpers/entities/entities/Tokens';
 import { Pools } from './helpers/entities/entities/Pools';
-import { PoolDto, UpdateReservesDto } from './helpers/dtos/pools-dto/pool.dto';
 import { CreateTokenDto } from './helpers/dtos/token-dto/token.dto';
 import { TokensService } from './helpers/tokens/tokens.service';
 import { PoolsService } from './helpers/pools/pools.service';
-import { Logger } from '@nestjs/common';
-
 import { getUniswapV3PoolsFromFactory } from './helpers/getUniswapV3PoolsFromFactory';
 import { getCamelotV3PoolsFromFactory } from './helpers/getCamelotV3PoolsFromFactory';
 import { getV2PoolsFromFactory } from './helpers/getV2PoolsFromFactory';
-
-// functions get Reserves
 import { GetV3ReservesHelper } from './helpers/getV3Reserves';
 import { GetV2ReservesHelper } from './helpers/getV2Reserves';
-
-import { configCreateCamelotV2 } from './config';
-
+import { UpdateReservesDto } from './helpers/dtos/pools-dto/pool.dto';
+import { configCreateCamelotV2, DB } from './config';
+import { Chains } from './helpers/entities/entities/Chains';
+import { Dexes } from './helpers/entities/entities/Dexes';
 export interface IPool {
   pool?: string;
   pair?: string;
@@ -42,6 +40,34 @@ interface IV2ReserveResponse {
   reserve1: bigint | number | string;
 }
 
+export interface IConfigDB {
+  type: 'postgres' | 'mysql' | 'mariadb' | 'sqlite' | 'mssql'; // тип БД
+  host: string;
+  port: number;
+  username: string;
+  password?: string;
+  database: string;
+  // Можно добавить дополнительные поля, если используете специфичные настройки
+  schema?: string;
+  ssl?: boolean | object;
+}
+
+// const dataSource = await createDbConnection({
+//   ...configDB,
+//   // ДОБАВЬТЕ СЮДА Chains и Dexes!
+//   entities: [Pools, Tokens, Chains, Dexes],
+//   synchronize: false,
+// });
+export const createDbConnection = async (config: DataSourceOptions) => {
+  const ds = new DataSource(config);
+  return await ds.initialize();
+};
+export const closeDbConnection = async (ds: DataSource) => {
+  if (ds && ds.isInitialized) {
+    await ds.destroy();
+  }
+};
+
 const logger = new Logger('BlockchainLogic');
 
 export async function getPoolsFromFactory(deps: {
@@ -49,68 +75,104 @@ export async function getPoolsFromFactory(deps: {
   poolsService: PoolsService;
   getV2ReservesHelper: GetV2ReservesHelper;
   getV3ReservesHelper: GetV3ReservesHelper;
-  configData: IConfig;
+  configData?: IConfig; // Сделали опциональным для деструктуризации
+  configDB?: IConfigDB;
 }) {
-  console.debug('getPoolsFromFactory');
-  const { tokensService, poolsService, getV2ReservesHelper, getV3ReservesHelper, configData = configCreateCamelotV2} = deps;
+  // 1. Деструктуризация ПЕРВОЙ строкой.
+  // Если в deps нет configDB, возьмется импортированный DB
+  const {
+    tokensService,
+    poolsService,
+    getV2ReservesHelper,
+    getV3ReservesHelper,
+    configData = configCreateCamelotV2,
+    configDB = DB
+  } = deps;
 
-  let pools: any;
-  if (configData.dexName === 'camelot' && configData.version === 'v3') {
-    pools = await getCamelotV3PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
-  } else if (configData.dexName === 'sushiswap' && configData.version === 'v3') {
-    pools = await getUniswapV3PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
-  } else if (configData.dexName === 'uniswap' && configData.version === 'v3') {
-    pools = await getUniswapV3PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
-  } else if (configData.version === 'v2') {
-    pools = await getV2PoolsFromFactory(
-      configData.factoryAddress,
-      configData.start,
-      configData.finish
-    );
+  // 2. Теперь проверяем уже извлеченную переменную configDB, а не deps.configDB
+  if (!configDB) {
+    console.error('!!! Ошибка: Конфигурация БД не найдена');
+    return { success: false, error: 'No configDB provided' };
   }
 
+  console.log('--- [START] getPoolsFromFactory ---');
+  console.log('Используемая БД:', configDB.database);
 
-  const uniqueTokens = getUniqueTokens(pools);
-  console.log('uniqueTokens::::', uniqueTokens);
+  let dataSource: DataSource | undefined;
 
-  const newTokenAddresses = await filterNewTokenAddresses(
-    uniqueTokens,
-    tokensService,
-  );
-  console.log('newTokenAddresses::::', newTokenAddresses);
+  try {
+    console.log('--- [2] Попытка открыть соединение с БД:', configDB.database, 'на хосте:', configDB.host);
 
-  const tokensData = await fetchTokensData(newTokenAddresses);
-  console.log('tokensData::::', tokensData);
+    // 1. ОТКРЫВАЕМ соединение (ОБЯЗАТЕЛЬНО добавляем все 4 сущности)
+    dataSource = await createDbConnection({
+      ...configDB,
+      entities: [Pools, Tokens, Chains, Dexes],
+      synchronize: false,
+      connectTimeoutMS: 15000, // Тайм-аут 15 сек, чтобы не висело вечно
+    } as any);
 
-  const tokensToSave = tokensData.map((t) => ({ ...t, chainId: 42161 }));
+    const manager = dataSource.manager;
+    console.log('--- [3] Соединение установлено! Переходим к блокчейну... ---');
 
-  await saveTokensIfNotExist(tokensToSave, tokensService);
+    // 2. Получение пулов из блокчейна
+    let pools: any[] = [];
+    if (configData.dexName === 'camelot' && configData.version === 'v3') {
+      pools = await getCamelotV3PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
+    } else if (configData.version === 'v3') {
+      pools = await getUniswapV3PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
+    } else if (configData.version === 'v2') {
+      pools = await getV2PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
+    }
 
-  const tokenMap = await buildTokenMap(tokensService);
+    console.log(`--- [4] Получено пулов из сети: ${pools?.length || 0} ---`);
+    if (!pools || pools.length === 0) return { success: true, message: 'No pools found' };
 
-  const existingPools = await getExistingPoolsSet(poolsService);
+    const uniqueTokens = getUniqueTokens(pools);
+    console.log('--- [5] Уникальных токенов обнаружено:', uniqueTokens.length);
 
-  await createPools(pools, tokenMap, existingPools, configData, poolsService);
+    // 3. Обработка данных с пробросом manager
+    const newTokenAddresses = await filterNewTokenAddresses(uniqueTokens, tokensService, manager);
+    console.log('--- [6] Новых токенов для сохранения:', newTokenAddresses.length);
 
-  await setReserves(poolsService, getV2ReservesHelper, getV3ReservesHelper, configData);
+    const tokensData = await fetchTokensData(newTokenAddresses);
+    const tokensToSave = tokensData.map((t) => ({ ...t, chainId: 42161 }));
 
+    await saveTokensIfNotExist(tokensToSave, tokensService, manager);
+    const tokenMap = await buildTokenMap(tokensService, manager);
+    const existingPools = await getExistingPoolsSet(poolsService, manager);
 
-  return await createPools(
-    pools,
-    tokenMap,
-    existingPools,
-    configData,
-    poolsService,
-  ); //добавленная логика
+    console.log('--- [7] Создание пулов в базе... ---');
+    const createdPools = await createPools(pools, tokenMap, existingPools, configData, poolsService, manager);
+    console.log(`--- [8] Создано новых записей в БД: ${createdPools.length} ---`);
+
+    // 4. Обновление резервов
+    console.log('--- [9] Обновление резервов... ---');
+    await setReserves(poolsService, getV2ReservesHelper, getV3ReservesHelper, configData, manager);
+
+    console.log('--- [DONE] Все операции успешно завершены ---');
+    return createdPools; // Возвращаем массив (для корректной работы Job)
+
+  } catch (error) {
+    console.error('!!! КРИТИЧЕСКАЯ ОШИБКА в getPoolsFromFactory:', error.message);
+    console.error(error.stack); // Выводим стек ошибки для отладки
+    throw error;
+  } finally {
+    // 5. ЗАКРЫВАЕМ соединение
+    if (dataSource) {
+      await closeDbConnection(dataSource);
+      console.debug('--- [FINALLY] Соединение с динамической БД закрыто ---');
+    }
+  }
 }
 
 export async function filterNewTokenAddresses(
   tokenAddresses: string[],
   tokensService: TokensService,
+  manager: EntityManager,
 ): Promise<string[]> {
   console.log('existingTokens::::');
 
-  const existingTokens = await tokensService.findAll();
+  const existingTokens = await tokensService.findAll(manager);
   console.log('existingTokens::::', existingTokens);
   const existingAddresses = new Set(
     existingTokens.map((t) => t.address.toLowerCase()),
@@ -138,6 +200,7 @@ export async function saveTokensIfNotExist(
     chainId: number;
   }>,
   tokensService: TokensService,
+  manager: EntityManager,
 ) {
   const savedTokens: Tokens[] = [];
 
@@ -159,7 +222,7 @@ export async function saveTokensIfNotExist(
       chainId: token.chainId,
     };
 
-    const savedToken = await tokensService.create(dto);
+    const savedToken = await tokensService.create(dto, manager);
     savedTokens.push(savedToken);
   }
 
@@ -168,16 +231,18 @@ export async function saveTokensIfNotExist(
 
 export async function buildTokenMap(
   tokensService: TokensService,
+  manager: EntityManager
 ): Promise<Map<string, number>> {
-  const tokens = await tokensService.findAll();
+  const tokens = await tokensService.findAll(manager);
 
   return new Map(tokens.map((t) => [t.address.toLowerCase(), t.tokenId]));
 }
 
 export async function getExistingPoolsSet(
   poolsService: PoolsService,
+  manager: EntityManager
 ): Promise<Set<string>> {
-  const existingPools = await poolsService.findAll();
+  const existingPools = await poolsService.findAll(manager);
   return new Set(
     existingPools
       .map((p) => p.poolAddress)
@@ -191,6 +256,7 @@ export async function createPools(
   existingPools: Set<string>,
   config: IConfig,
   poolsService: PoolsService,
+  manager: EntityManager
 ) {
   const createdPools: Pools[] = [];
 
@@ -216,7 +282,6 @@ export async function createPools(
     }
 
     try {
-      // 4. Прямая передача объекта в сервис без создания лишних переменных
       const savedPool = await poolsService.create({
         token0: token0Id,
         token1: token1Id,
@@ -225,15 +290,16 @@ export async function createPools(
         version: config.version ?? 'v4',
         dexId: config.dexId,
         chainId: 42161,
-      });
+      }, manager); // ОБЯЗАТЕЛЬНО передаем manager здесь
+
       createdPools.push(savedPool);
     } catch (e) {
-      logger.error(`Error creating pool ${poolAddress}: ${e instanceof Error ? e.message : e}`);
+      logger.error(`Failed to save pool ${poolAddress}: ${e.message}`);
     }
   }
-
   return createdPools;
 }
+
 
 
 export async function setReserves(
@@ -241,8 +307,9 @@ export async function setReserves(
   getV2ReservesHelper: GetV2ReservesHelper,
   getV3ReservesHelper: GetV3ReservesHelper,
   configData: IConfig,
+  manager: EntityManager,
 ) {
-  const allPools = await poolsService.findAll();
+  const allPools = await poolsService.findAll(manager);
 
   const filteredPools = allPools.filter(p =>
     p.version === configData.version && (p.reserve0 === null || p.reserve1 === null)
@@ -275,6 +342,5 @@ export async function setReserves(
   }
 
   console.log('Reserves received:', reserves.length);
-  await poolsService.updateReserves(reserves);
+  await poolsService.updateReserves(reserves, manager);
 }
-

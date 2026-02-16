@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PoolDto, UpdateReservesDto } from '../dtos/pools-dto/pool.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, EntityManager } from 'typeorm'; // Добавили EntityManager
 import { Pools } from '../entities/entities/Pools';
 import { TokensService } from '../tokens/tokens.service';
 import { ChainsService } from '../chains/chains.service';
@@ -17,13 +17,17 @@ export class PoolsService {
     private dexesService: DexesService,
   ) {}
 
-  async create(poolDto: PoolDto) {
-    const chain = await this.chainsService.findOne(poolDto.chainId);
-    const token0 = await this.tokensService.findOne(poolDto.token0);
-    const token1 = await this.tokensService.findOne(poolDto.token1);
-    const dex = await this.dexesService.findOne(poolDto.dexId);
+  async create(poolDto: PoolDto, manager?: EntityManager) {
+    // 1. Выбираем репозиторий
+    const repo = manager ? manager.getRepository(Pools) : this.poolRepository;
 
-    const pool = this.poolRepository.create({
+    // 2. ВАЖНО: Передаем manager во все зависимости
+    const chain = await this.chainsService.findOne(poolDto.chainId, manager);
+    const token0 = await this.tokensService.findOne(poolDto.token0, manager);
+    const token1 = await this.tokensService.findOne(poolDto.token1, manager);
+    const dex = await this.dexesService.findOne(poolDto.dexId, manager);
+
+    const pool = repo.create({
       chain,
       token0,
       token1,
@@ -33,11 +37,13 @@ export class PoolsService {
       poolAddress: poolDto.poolAddress,
     });
 
-    return await this.poolRepository.save(pool);
+    return await repo.save(pool);
   }
 
-  async findAll() {
-    return await this.poolRepository.find({
+  async findAll(manager?: EntityManager) {
+    const repo = manager ? manager.getRepository(Pools) : this.poolRepository;
+
+    return await repo.find({
       relations: {
         chain: true,
         dex: true,
@@ -62,8 +68,10 @@ export class PoolsService {
     });
   }
 
-  async findOne(id: number) {
-    const item = await this.poolRepository.findOne({
+  async findOne(id: number, manager?: EntityManager) {
+    const repo = manager ? manager.getRepository(Pools) : this.poolRepository;
+
+    const item = await repo.findOne({
       where: { poolId: id },
       relations: ['token0', 'token1', 'chain', 'dex'],
     });
@@ -73,10 +81,13 @@ export class PoolsService {
     return item;
   }
 
-  async updateReserves(reserves: UpdateReservesDto[]) {
+  async updateReserves(reserves: UpdateReservesDto[], manager?: EntityManager) {
+    const repo = manager ? manager.getRepository(Pools) : this.poolRepository;
+
     const poolsMap = new Map<string, Pools>();
     const poolAddresses = reserves.map((r) => r.address);
-    const pools = await this.poolRepository.find({
+
+    const pools = await repo.find({
       where: { poolAddress: In(poolAddresses) },
       relations: ['token0', 'token1'],
     });
@@ -87,8 +98,15 @@ export class PoolsService {
       const pool = poolsMap.get(dto.address);
       if (!pool) continue;
 
-      const token0 = await this.tokensService.findOneByAddress(dto.token0);
-      const token1 = await this.tokensService.findOneByAddress(dto.token1);
+      // Передаем manager в tokensService
+      const token0 = await this.tokensService.findOneByAddress(
+        dto.token0,
+        manager,
+      );
+      const token1 = await this.tokensService.findOneByAddress(
+        dto.token1,
+        manager,
+      );
 
       if (!token0 || !token1) continue;
 
@@ -104,9 +122,7 @@ export class PoolsService {
       }
     }
 
-    const updatedPools = await this.poolRepository.save(
-      Array.from(poolsMap.values()),
-    );
+    const updatedPools = await repo.save(Array.from(poolsMap.values()));
     console.log(
       `Reserves update completed. Total pools updated: ${updatedPools.length}`,
     );
