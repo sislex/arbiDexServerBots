@@ -1,23 +1,21 @@
 import { fetchTokensData, getUniqueTokens } from './helpers/getTokensData';
-import { getV2PoolsFromFactory } from './helpers/getV2PoolsFromFactory';
-// import { GetV2ReservesHelper } from './helpers/getV2Reserves';
-// import { GetV3ReservesHelper } from './helpers/getV3Reserves';
-import {
-  // configCreateCamelotV2,
-  // configCreateCamelotV3,
-  // configCreateSushiV2,
-  // configCreateSushiV3,
-  configCreateUniswapV2,
-  // configCreateUniswapV3,
-} from './config';
 import { Tokens } from './helpers/entities/entities/Tokens';
+import { Pools } from './helpers/entities/entities/Pools';
+import { PoolDto, UpdateReservesDto } from './helpers/dtos/pools-dto/pool.dto';
 import { CreateTokenDto } from './helpers/dtos/token-dto/token.dto';
 import { TokensService } from './helpers/tokens/tokens.service';
 import { PoolsService } from './helpers/pools/pools.service';
-import { Pools } from './helpers/entities/entities/Pools';
-import { PoolDto, UpdateReservesDto } from './helpers/dtos/pools-dto/pool.dto';
-import { GetV2ReservesHelper } from './helpers/getV2Reserves';
 import { Logger } from '@nestjs/common';
+
+import { getUniswapV3PoolsFromFactory } from './helpers/getUniswapV3PoolsFromFactory';
+import { getCamelotV3PoolsFromFactory } from './helpers/getCamelotV3PoolsFromFactory';
+import { getV2PoolsFromFactory } from './helpers/getV2PoolsFromFactory';
+
+// functions get Reserves
+import { GetV3ReservesHelper } from './helpers/getV3Reserves';
+import { GetV2ReservesHelper } from './helpers/getV2Reserves';
+
+import { configCreateCamelotV2 } from './config';
 
 export interface IPool {
   pool?: string;
@@ -32,12 +30,15 @@ export interface IConfig {
   version: 'v2' | 'v3' | 'v4';
   dexId: number;
   fee: number;
+  start: number;
+  finish: number | undefined;
+  dexName: string;
 }
 interface IV2ReserveResponse {
   address: string;
   token0: string;
   token1: string;
-  reserve0: bigint | number | string; // зависит от того, что возвращает ваш провайдер
+  reserve0: bigint | number | string;
   reserve1: bigint | number | string;
 }
 
@@ -47,19 +48,27 @@ export async function getPoolsFromFactory(deps: {
   tokensService: TokensService;
   poolsService: PoolsService;
   getV2ReservesHelper: GetV2ReservesHelper;
+  getV3ReservesHelper: GetV3ReservesHelper;
+  configData: IConfig;
 }) {
-  const { tokensService, poolsService, getV2ReservesHelper } = deps;
+  console.debug('getPoolsFromFactory');
+  const { tokensService, poolsService, getV2ReservesHelper, getV3ReservesHelper, configData = configCreateCamelotV2} = deps;
 
-  // меняем configData --- вызываемый метод получения pools --- версию получаемых резервов, сервис и его метод
-  const configData = configCreateUniswapV2;
+  let pools: any;
+  if (configData.dexName === 'camelot' && configData.version === 'v3') {
+    pools = await getCamelotV3PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
+  } else if (configData.dexName === 'sushiswap' && configData.version === 'v3') {
+    pools = await getUniswapV3PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
+  } else if (configData.dexName === 'uniswap' && configData.version === 'v3') {
+    pools = await getUniswapV3PoolsFromFactory(configData.factoryAddress, configData.start, configData.finish);
+  } else if (configData.version === 'v2') {
+    pools = await getV2PoolsFromFactory(
+      configData.factoryAddress,
+      configData.start,
+      configData.finish
+    );
+  }
 
-  // const pools = await getUniswapV3PoolsFromFactory(configData.factoryAddress, 1, );
-  // const pools = await getCamelotV3PoolsFromFactory(configData.factoryAddress, 1,  );
-  const pools = await getV2PoolsFromFactory(
-    configData.factoryAddress,
-    1,
-    220000010,
-  );
 
   const uniqueTokens = getUniqueTokens(pools);
   console.log('uniqueTokens::::', uniqueTokens);
@@ -83,7 +92,8 @@ export async function getPoolsFromFactory(deps: {
 
   await createPools(pools, tokenMap, existingPools, configData, poolsService);
 
-  await setReserves(poolsService, getV2ReservesHelper);
+  await setReserves(poolsService, getV2ReservesHelper, getV3ReservesHelper, configData);
+
 
   return await createPools(
     pools,
@@ -185,91 +195,86 @@ export async function createPools(
   const createdPools: Pools[] = [];
 
   for (const pool of pools) {
-    const poolAddress = pool.pool?.toLowerCase(); // pair/pool для v2/v3
-    const token0Address = pool.token0?.toLowerCase();
-    const token1Address = pool.token1?.toLowerCase();
+    // 1. Компактное получение адреса и токенов
+    const poolAddress = (config.version === 'v2' ? pool.pair : pool.pool)?.toLowerCase();
+    const t0Addr = pool.token0?.toLowerCase();
+    const t1Addr = pool.token1?.toLowerCase();
 
-    if (!poolAddress || !token0Address || !token1Address) {
-      logger.warn(
-        `Skipped pool with empty address or tokens: ${JSON.stringify(pool)}`,
-      );
+    // 2. Единая проверка на существование всех необходимых данных
+    if (!poolAddress || !t0Addr || !t1Addr) {
+      logger.warn(`Skipped pool: missing address or tokens ${JSON.stringify(pool)}`);
       continue;
     }
 
-    if (existingPools.has(poolAddress)) continue;
+    // 3. Быстрая проверка на дубликаты и наличие токенов в мапе
+    const token0Id = tokenMap.get(t0Addr);
+    const token1Id = tokenMap.get(t1Addr);
 
-    const token0Id = tokenMap.get(token0Address);
-    const token1Id = tokenMap.get(token1Address);
-
-    if (!token0Id || !token1Id) {
-      logger.warn(
-        `No tokens found for the pool ${poolAddress}: ` +
-          `token0=${token0Address} (${token0Id}), ` +
-          `token1=${token1Address} (${token1Id})`,
-      );
+    if (existingPools.has(poolAddress) || !token0Id || !token1Id) {
+      if (!token0Id || !token1Id) logger.warn(`Tokens not found for pool ${poolAddress}`);
       continue;
     }
-
-    const poolDto: PoolDto = {
-      token0: token0Id,
-      token1: token1Id,
-      poolAddress,
-      fee: pool.fee ?? config.fee,
-      version: config.version || 'v4',
-      dexId: config.dexId,
-      chainId: 42161,
-    };
 
     try {
-      const savedPool = await poolsService.create(poolDto);
+      // 4. Прямая передача объекта в сервис без создания лишних переменных
+      const savedPool = await poolsService.create({
+        token0: token0Id,
+        token1: token1Id,
+        poolAddress,
+        fee: pool.fee ?? config.fee,
+        version: config.version ?? 'v4',
+        dexId: config.dexId,
+        chainId: 42161,
+      });
       createdPools.push(savedPool);
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      logger.error(`Error creating pool ${poolAddress}: ${errorMessage}`);
+    } catch (e) {
+      logger.error(`Error creating pool ${poolAddress}: ${e instanceof Error ? e.message : e}`);
     }
   }
 
   return createdPools;
 }
 
+
 export async function setReserves(
   poolsService: PoolsService,
   getV2ReservesHelper: GetV2ReservesHelper,
+  getV3ReservesHelper: GetV3ReservesHelper,
+  configData: IConfig,
 ) {
-  const pools = await poolsService.findAll();
+  const allPools = await poolsService.findAll();
 
-  const filteredPools = pools.filter(
-    (pool) =>
-      (pool.reserve0 === null || pool.reserve1 === null) &&
-      pool.version === 'v2',
+  const filteredPools = allPools.filter(p =>
+    p.version === configData.version && (p.reserve0 === null || p.reserve1 === null)
   );
+
+  const fetcher = configData.version === 'v2'
+    ? (addr: string) => getV2ReservesHelper.getV2Reserves(addr as `0x${string}`)
+    : (addr: string) => getV3ReservesHelper.getV3Reserves(addr as `0x${string}`);
+
   const reserves: UpdateReservesDto[] = [];
 
   for (const pool of filteredPools) {
     try {
-      const reserve = (await getV2ReservesHelper.getV2Reserves(
-        pool.poolAddress as `0x${string}`,
-      )) as IV2ReserveResponse | null;
+      if (!pool.poolAddress) continue;
+
+      const reserve = await fetcher(pool.poolAddress) as IV2ReserveResponse | null;
 
       if (!reserve) continue;
 
-      const dto: UpdateReservesDto = {
+      reserves.push({
         address: reserve.address,
-        token0: reserve.token0,
-        token1: reserve.token1,
+        token0: reserve.token0 ?? '',
+        token1: reserve.token1 ?? '',
         reserve0: reserve.reserve0?.toString() ?? '0',
         reserve1: reserve.reserve1?.toString() ?? '0',
-      };
-
-      reserves.push(dto);
+      });
     } catch (error) {
-      console.error(
-        `Error getting reserves for pool ${pool.poolAddress}:`,
-        error,
-      );
+      console.error(`Error getting reserves for pool ${pool.poolAddress}:`, error);
     }
   }
 
-  console.log('Reserves received:', reserves);
+  console.log('Reserves received:', reserves.length);
   await poolsService.updateReserves(reserves);
 }
+

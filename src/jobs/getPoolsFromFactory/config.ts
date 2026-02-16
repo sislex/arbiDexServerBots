@@ -28,6 +28,9 @@ export const configCreateUniswapV2: IConfig = {
   version: 'v2',
   dexId: 1,
   fee: 3000,
+  start: 1,
+  finish: undefined,
+  dexName: 'uniswap',
 };
 
 export const configCreateUniswapV3: IConfig = {
@@ -35,6 +38,9 @@ export const configCreateUniswapV3: IConfig = {
   version: 'v3',
   dexId: 1,
   fee: 0,
+  start: 1,
+  finish: undefined,
+  dexName: 'uniswap',
 };
 
 export const configCreateSushiV2: IConfig = {
@@ -42,6 +48,9 @@ export const configCreateSushiV2: IConfig = {
   version: 'v2',
   dexId: 2,
   fee: 3000,
+  start: 1,
+  finish: undefined,
+  dexName: 'sushiswap',
 };
 
 export const configCreateSushiV3: IConfig = {
@@ -49,6 +58,9 @@ export const configCreateSushiV3: IConfig = {
   version: 'v3',
   dexId: 2,
   fee: 0,
+  start: 1,
+  finish: undefined,
+  dexName: 'sushiswap',
 };
 
 export const configCreateCamelotV2: IConfig = {
@@ -56,6 +68,9 @@ export const configCreateCamelotV2: IConfig = {
   version: 'v2',
   dexId: 3,
   fee: 3000,
+  start: 1,
+  finish: undefined,
+  dexName: 'camelot',
 };
 
 export const configCreateCamelotV3: IConfig = {
@@ -63,4 +78,7 @@ export const configCreateCamelotV3: IConfig = {
   version: 'v3',
   dexId: 3,
   fee: 0,
+  start: 1,
+  finish: undefined,
+  dexName: 'camelot',
 };
