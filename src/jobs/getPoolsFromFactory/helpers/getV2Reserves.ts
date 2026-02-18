@@ -22,7 +22,6 @@ export class GetV2ReservesHelper {
   });
 
   async getV2Reserves(address: `0x${string}`) {
-    console.log(`getV2Reserves from address: ${address}`);
     const contracts = [
       { address, abi: V2_POOL_ABI, functionName: 'getReserves' },
       { address, abi: V2_POOL_ABI, functionName: 'token0' },

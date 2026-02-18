@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Tokens } from '../entities/entities/Tokens';
+import { Tokens } from '../entities/entities';
 import { Repository, EntityManager } from 'typeorm';
 import { CreateTokenDto } from '../dtos/token-dto/token.dto';
-import { Chains } from '../entities/entities/Chains';
+import { Chains } from '../entities/entities';
 
 @Injectable()
 export class TokensService {
@@ -14,10 +14,7 @@ export class TokensService {
     private chainsRepository: Repository<Chains>,
   ) {}
 
-  // Добавляем второй аргумент manager
   async create(tokenDto: CreateTokenDto, manager?: EntityManager) {
-    // Если manager передан, берем репозитории из него.
-    // Если нет — используем стандартные репозитории инжектированные NestJS.
     const tokenRepo = manager
       ? manager.getRepository(Tokens)
       : this.tokensRepository;

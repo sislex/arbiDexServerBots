@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PoolsService } from './pools.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Pools } from '../entities/entities/Pools';
-import { Dexes } from '../entities/entities/Dexes';
-import { Chains } from '../entities/entities/Chains';
-import { Tokens } from '../entities/entities/Tokens';
+import { Pools } from '../entities/entities';
+import { Dexes } from '../entities/entities';
+import { Chains } from '../entities/entities';
+import { Tokens } from '../entities/entities';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Pools, Dexes, Tokens, Chains])],

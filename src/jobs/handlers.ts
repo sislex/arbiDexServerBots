@@ -1,8 +1,13 @@
 import {
   IJobParams,
-  IJobParams_get_Arbitrum_UniswapV3_Quote, IJobParams_get_Arbitrum_Quote_Multi,
+  IJobParams_get_Arbitrum_UniswapV3_Quote,
+  IJobParams_get_Arbitrum_Quote_Multi,
   IJobParams_get_Pool_State,
-  IJobType, IJobParams_resolve_Pools_For_Pairs, IPairToQuote, IJobParams_get_Arbitrum_Arb_Executor_Quotes
+  IJobType,
+  IJobParams_resolve_Pools_For_Pairs,
+  IPairToQuote,
+  IJobParams_get_Arbitrum_Arb_Executor_Quotes,
+  IJobParams_get_Pools_From_Factory,
 } from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
@@ -65,7 +70,7 @@ const handlers = {
       resolvePoolsForPairs(params),
 
   [IJobType.GET_POOLS_FROM_FACTORY]:
-    async (params: any): Promise<any> =>
+    async (params: IJobParams_get_Pools_From_Factory): Promise<any> =>
       getPoolsFromFactory(params),
 } as const;
 

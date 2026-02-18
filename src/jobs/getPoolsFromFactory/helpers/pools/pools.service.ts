@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PoolDto, UpdateReservesDto } from '../dtos/pools-dto/pool.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, EntityManager } from 'typeorm'; // Добавили EntityManager
-import { Pools } from '../entities/entities/Pools';
+import { In, Repository, EntityManager } from 'typeorm';
+import { Pools } from '../entities/entities';
 import { TokensService } from '../tokens/tokens.service';
 import { ChainsService } from '../chains/chains.service';
 import { DexesService } from '../dexes/dexes.service';
@@ -18,10 +18,8 @@ export class PoolsService {
   ) {}
 
   async create(poolDto: PoolDto, manager?: EntityManager) {
-    // 1. Выбираем репозиторий
     const repo = manager ? manager.getRepository(Pools) : this.poolRepository;
 
-    // 2. ВАЖНО: Передаем manager во все зависимости
     const chain = await this.chainsService.findOne(poolDto.chainId, manager);
     const token0 = await this.tokensService.findOne(poolDto.token0, manager);
     const token1 = await this.tokensService.findOne(poolDto.token1, manager);
@@ -98,7 +96,6 @@ export class PoolsService {
       const pool = poolsMap.get(dto.address);
       if (!pool) continue;
 
-      // Передаем manager в tokensService
       const token0 = await this.tokensService.findOneByAddress(
         dto.token0,
         manager,
@@ -123,9 +120,7 @@ export class PoolsService {
     }
 
     const updatedPools = await repo.save(Array.from(poolsMap.values()));
-    console.log(
-      `Reserves update completed. Total pools updated: ${updatedPools.length}`,
-    );
+    console.log(`Total pools updated: ${updatedPools.length}`);
     return updatedPools;
   }
 }

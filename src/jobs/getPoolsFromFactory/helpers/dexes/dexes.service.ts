@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, EntityManager } from 'typeorm'; // Добавили EntityManager
-import { Dexes } from '../entities/entities/Dexes';
+import { Repository, EntityManager } from 'typeorm';
+import { Dexes } from '../entities/entities';
 
 @Injectable()
 export class DexesService {
@@ -10,9 +10,7 @@ export class DexesService {
     private dexesRepository: Repository<Dexes>,
   ) {}
 
-  // Добавляем опциональный manager для поддержки динамических подключений
   async findOne(id: number, manager?: EntityManager) {
-    // Если manager передан, берем репозиторий из него, иначе — стандартный
     const repo = manager ? manager.getRepository(Dexes) : this.dexesRepository;
 
     const dex = await repo.findOne({

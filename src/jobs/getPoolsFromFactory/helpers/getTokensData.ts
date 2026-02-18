@@ -45,7 +45,6 @@ export async function fetchTokensData(
 
     const promises = batch.map(async (addr) => {
       try {
-        console.log('GET TOKEN DATA addr::::', addr);
         const contract = new ethers.Contract(addr, ERC20_ABI, provider);
 
         const [symbol, name, decimals] = await Promise.all([

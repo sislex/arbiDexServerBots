@@ -38,7 +38,7 @@ export async function getV2PoolsFromFactory(
       topics: [topic0],
     });
 
-    console.log(`[V2] blocks ${start} → ${end}, logs: ${logs.length}`);
+    console.log(`[Blocks] ${start} → ${end}, logs: ${logs.length}`);
 
     for (const log of logs) {
       const parsed = v2FactoryIface.parseLog(log);

@@ -183,6 +183,7 @@ export interface IJobParams_get_Pools_From_Factory extends IJobDefaultParams {
 
   rpcUrl: string;
   pairsToQuote: IPairToQuote[];
+  extraSettings?: string;
 }
 
 export interface IPool {

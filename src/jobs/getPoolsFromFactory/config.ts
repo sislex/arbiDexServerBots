@@ -1,27 +1,4 @@
-// import { getUniswapV3PoolsFromFactory } from '../-helpers/getUniswapV3PoolsFromFactory';
-// import { getCamelotV3PoolsFromFactory } from '../-helpers/getCamelotV3PoolsFromFactory';
-
-import { IConfig, IConfigDB } from './getPoolsFromFactory';
-
-// const pools = await getUniswapV3PoolsFromFactory(UNISWAP_V3_FACTORY, 1, );
-// const pools = await getV2PoolsFromFactory(UNISWAP_V2_FACTORY, 1,  );
-
-// const pools = await getUniswapV3PoolsFromFactory(SUSHISWAP_V3_FACTORY, 1,  );
-// const pools = await getV2PoolsFromFactory(SUSHISWAP_V2_FACTORY, 1,  );
-
-// const pools = await getCamelotV3PoolsFromFactory(CAMELOT_V3_FACTORY, 1,  );
-// const n = 1;
-// const pools = await getV2PoolsFromFactory(CAMELOT_V2_FACTORY, n,  n+50000000);
-
-// export const ARBISCAN_RPC = 'https://arb-mainnet.g.alchemy.com/v2/TxHI6ptndQEJi3coISt0BcQZdZg1rnWV';
-// export const ARBISCAN_RPC2 = 'https://arb1.arbitrum.io/rpc';
-// const INFURA_KEY = '6113828fd8e8448f9a9e3fa7962e2cc6';
-//
-// const ERC20_ABI = [
-//   'function name() view returns (string)',
-//   'function symbol() view returns (string)',
-//   'function decimals() view returns (uint8)',
-// ];
+import { IConfig } from './models';
 
 export const configCreateUniswapV2: IConfig = {
   factoryAddress: '0xf1D7CC64Fb4452F05c498126312eBE29f30Fbcf9',
@@ -31,6 +8,7 @@ export const configCreateUniswapV2: IConfig = {
   start: 1,
   finish: undefined,
   dexName: 'uniswap',
+  chainId: 42161,
 };
 
 export const configCreateUniswapV3: IConfig = {
@@ -41,6 +19,7 @@ export const configCreateUniswapV3: IConfig = {
   start: 1,
   finish: undefined,
   dexName: 'uniswap',
+  chainId: 42161,
 };
 
 export const configCreateSushiV2: IConfig = {
@@ -51,6 +30,7 @@ export const configCreateSushiV2: IConfig = {
   start: 1,
   finish: undefined,
   dexName: 'sushiswap',
+  chainId: 42161,
 };
 
 export const configCreateSushiV3: IConfig = {
@@ -61,6 +41,7 @@ export const configCreateSushiV3: IConfig = {
   start: 1,
   finish: undefined,
   dexName: 'sushiswap',
+  chainId: 42161,
 };
 
 export const configCreateCamelotV2: IConfig = {
@@ -69,8 +50,9 @@ export const configCreateCamelotV2: IConfig = {
   dexId: 3,
   fee: 3000,
   start: 1,
-  finish: undefined,
+  finish: 40000002,
   dexName: 'camelot',
+  chainId: 42161,
 };
 
 export const configCreateCamelotV3: IConfig = {
@@ -81,13 +63,5 @@ export const configCreateCamelotV3: IConfig = {
   start: 1,
   finish: undefined,
   dexName: 'camelot',
-};
-
-export const DB: IConfigDB = {
-  type: 'postgres',
-  host: 'localhost', // из DB_HOST
-  port: 5432, // из DB_PORT
-  username: 'user_secret', // из POSTGRES_USER
-  password: 'pass_secret', // из POSTGRES_PASSWORD
-  database: 'config_info_db_2', // из POSTGRES_DB
+  chainId: 42161,
 };
