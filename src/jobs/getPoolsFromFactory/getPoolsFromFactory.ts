@@ -105,7 +105,7 @@ export async function getPoolsFromFactory(deps: {
       tokensService,
       manager,
     );
-
+    console.log('[newTokenAddresses] ::: ', newTokenAddresses);
     const tokensData = await fetchTokensData(newTokenAddresses);
     const tokensToSave = tokensData.map((t) => ({ ...t, chainId: 42161 }));
 
@@ -124,7 +124,7 @@ export async function getPoolsFromFactory(deps: {
 
     const v2Helper = new GetV2ReservesHelper();
     const v3Helper = new GetV3ReservesHelper();
-
+    console.log('[setReserves] ::: ', setReserves);
     await setReserves(
       poolsService,
       v2Helper,
