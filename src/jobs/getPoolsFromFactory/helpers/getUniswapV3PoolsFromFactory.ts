@@ -16,9 +16,11 @@ export async function getUniswapV3PoolsFromFactory(
   const endBlock = toBlock ?? latest;
 
   const topic0 = ethers.id('PoolCreated(address,address,uint24,int24,address)');
-  const step = 10_000_000;
+  const step = 100_000;
 
   const pools: any[] = [];
+
+  let lastProcessedBlock = fromBlock;
 
   for (let start = fromBlock; start <= endBlock; start += step + 1) {
     const end = Math.min(endBlock, start + step);
@@ -45,7 +47,8 @@ export async function getUniswapV3PoolsFromFactory(
         });
       }
     }
+    lastProcessedBlock = end;
   }
 
-  return pools;
+  return { pools, latestBlock: lastProcessedBlock };
 }

@@ -11,3 +11,4 @@ export * from './RpcUrls';
 export * from './Servers';
 export * from './SwapRate';
 export * from './Tokens';
+export * from './LastBlockNumberDex';

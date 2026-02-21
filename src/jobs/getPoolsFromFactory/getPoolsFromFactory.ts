@@ -18,6 +18,8 @@ import { DBConnector } from './dbConnector';
 import { ChainsService } from './helpers/chains/chains.service';
 import { DexesService } from './helpers/dexes/dexes.service';
 import { IConfig, IConfigDB, IPool, IV2ReserveResponse } from './models';
+import { LastBlockNumberDexService } from './helpers/lastBlockNumberDex/lastBlockNumberDex.service';
+import { LastBlockNumberDex } from './helpers/entities/entities';
 
 const logger = new Logger('BlockchainLogic');
 
@@ -59,44 +61,63 @@ export async function getPoolsFromFactory(deps: {
   try {
     dataSource = await DBConnector.create(configDB as DataSourceOptions);
     const manager = dataSource.manager;
+
     const tokensService = new TokensService(
       manager.getRepository(Tokens),
       manager.getRepository(Chains),
     );
-
     const chainsService = new ChainsService(manager.getRepository(Chains));
     const dexesService = new DexesService(manager.getRepository(Dexes));
-
     const poolsService = new PoolsService(
       manager.getRepository(Pools),
       tokensService,
       chainsService,
       dexesService,
     );
+    const lastBlockNumberDexService = new LastBlockNumberDexService(
+      manager.getRepository(LastBlockNumberDex),
+    );
+
+    const lastBlockNumber = (await lastBlockNumberDexService.findOneByVersionAndDex(configData.version, configData.dexId, manager))?.blockNumber || 1;
 
     let pools: any[] = [];
+    let latestBlock: number = lastBlockNumber;
+
     if (configData.dexName === 'camelot' && configData.version === 'v3') {
-      pools = await getCamelotV3PoolsFromFactory(
+      const { pools: fetchedPools, latestBlock: newLatestBlock }  = await getCamelotV3PoolsFromFactory(
         configData.factoryAddress,
-        configData.start,
+        lastBlockNumber,
         configData.finish,
       );
+      pools = fetchedPools;
+      latestBlock = newLatestBlock;
     } else if ((configData.dexName === 'uniswap' || configData.dexName === 'sushiswap') && configData.version === 'v3') {
-      pools = await getUniswapV3PoolsFromFactory(
+      const { pools: fetchedPools, latestBlock: newLatestBlock }  = await getUniswapV3PoolsFromFactory(
         configData.factoryAddress,
-        configData.start,
+        lastBlockNumber,
         configData.finish,
       );
+      pools = fetchedPools;
+      latestBlock = newLatestBlock;
     } else if (configData.version === 'v2') {
-      pools = await getV2PoolsFromFactory(
+      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getV2PoolsFromFactory(
         configData.factoryAddress,
-        configData.start,
+        lastBlockNumber,
         configData.finish,
       );
+      pools = fetchedPools;
+      latestBlock = newLatestBlock;
     }
 
-    if (!pools || pools.length === 0)
+    if (!pools || pools.length === 0) {
+      await lastBlockNumberDexService.upsert({
+        blockNumber: latestBlock,
+        dex: configData.dexId,
+        version: configData.version
+      }, manager);
+
       return { success: true, message: 'No pools found' };
+    }
 
     const uniqueTokens = getUniqueTokens(pools);
 
@@ -125,6 +146,7 @@ export async function getPoolsFromFactory(deps: {
     const v2Helper = new GetV2ReservesHelper();
     const v3Helper = new GetV3ReservesHelper();
     console.log('[setReserves] ::: ', setReserves);
+
     await setReserves(
       poolsService,
       v2Helper,
@@ -132,6 +154,12 @@ export async function getPoolsFromFactory(deps: {
       configData,
       manager,
     );
+
+    await lastBlockNumberDexService.upsert({
+      blockNumber: latestBlock,
+      dex: configData.dexId,
+      version: configData.version
+    }, manager);
 
     return createdPools;
   } catch (error) {
@@ -231,6 +259,7 @@ export async function getExistingPoolsSet(
       .map((addr) => addr.toLowerCase()),
   );
 }
+
 export async function createPools(
   pools: IPool[],
   tokenMap: Map<string, number>,
