@@ -18,7 +18,7 @@ export async function getCamelotV3PoolsFromFactory(
   const endBlock = toBlock ?? latest;
 
   const topic0 = ethers.id('Pool(address,address,address)');
-  const step = 10_000_000;
+  const step = 100_000;
 
   const pools: {
     token0: string;
@@ -26,6 +26,8 @@ export async function getCamelotV3PoolsFromFactory(
     pool: string;
     blockNumber: number;
   }[] = [];
+
+  let lastProcessedBlock = fromBlock;
 
   for (let start = fromBlock; start <= endBlock; start += step + 1) {
     const end = Math.min(endBlock, start + step);
@@ -50,7 +52,8 @@ export async function getCamelotV3PoolsFromFactory(
         blockNumber: log.blockNumber,
       });
     }
+    lastProcessedBlock = end;
   }
 
-  return pools;
+  return { pools, latestBlock: lastProcessedBlock };
 }
