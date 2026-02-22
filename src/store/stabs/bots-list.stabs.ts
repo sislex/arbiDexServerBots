@@ -391,6 +391,36 @@ export const BotsListReplacedStab: IBotsRule[] = [
 
 export const BotList10: IBotsRule[] = [
   {
+    id: '18',
+    botParams: {
+      botType: IBotType.TEST_BOT,
+      paused: true,
+      isRepeat: true,
+      delayBetweenRepeat: 86400000,
+      maxJobs: 10,
+      maxErrors: 1000,
+      timeoutMs: 15000000,
+    },
+    jobParams: {
+      jobType: IJobType.GET_POOLS_RESERVES,
+      rpcUrl: 'https://arb1.arbitrum.io',
+      pairsToQuote: [],
+      extraSettings: JSON.stringify({
+        configDB: {
+          type: 'postgres',
+          host: 'localhost',
+          port: 5432,
+          username: 'user_secret',
+          password: 'pass_secret',
+          database: 'config_info_db',
+        },
+        configData: {
+          version: 'v3',
+        },
+      }),
+    },
+  },
+  {
     id: '17',
     botParams: {
       botType: IBotType.TEST_BOT,

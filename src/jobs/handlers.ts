@@ -8,6 +8,7 @@ import {
   IPairToQuote,
   IJobParams_get_Arbitrum_Arb_Executor_Quotes,
   IJobParams_get_Pools_From_Factory,
+  IJobParams_get_Pools_Reserves,
 } from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
@@ -20,6 +21,7 @@ import {get_Arbitrum_UniswapV2_Quote_NoMulticall} from './getQuote_Arbitrum_Uni_
 import {resolvePoolsForPairs} from './resolvePoolsForPairs/resolvePoolsForPairs.pools';
 import {getArbExecutorQuotes} from './getQuoteFromArbExecutor/getArbExecutor.quotes';
 import { getPoolsFromFactory } from './getPoolsFromFactory/getPoolsFromFactory';
+import { getPoolsReserves } from './getPoolsReserves/getPoolsReserves';
 
 // базовый результат для всех квот
 export interface BaseQuoteResult {
@@ -72,6 +74,10 @@ const handlers = {
   [IJobType.GET_POOLS_FROM_FACTORY]:
     async (params: IJobParams_get_Pools_From_Factory): Promise<any> =>
       getPoolsFromFactory(params),
+
+  [IJobType.GET_POOLS_RESERVES]:
+    async (params: IJobParams_get_Pools_Reserves): Promise<any> =>
+      getPoolsReserves(params),
 } as const;
 
 // Единая точка входа

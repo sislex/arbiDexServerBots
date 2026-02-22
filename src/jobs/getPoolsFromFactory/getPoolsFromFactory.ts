@@ -1,4 +1,4 @@
-import { DataSource, DataSourceOptions, EntityManager } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { Logger } from '@nestjs/common';
 import { fetchTokensData, getUniqueTokens } from './helpers/getTokensData';
 import { Tokens } from './helpers/entities/entities/Tokens';
@@ -12,14 +12,8 @@ import { getV2PoolsFromFactory } from './helpers/getV2PoolsFromFactory';
 import { GetV3ReservesHelper } from './helpers/getV3Reserves';
 import { GetV2ReservesHelper } from './helpers/getV2Reserves';
 import { UpdateReservesDto } from './helpers/dtos/pools-dto/pool.dto';
-import { Chains } from './helpers/entities/entities/Chains';
-import { Dexes } from './helpers/entities/entities/Dexes';
-import { DBConnector } from './dbConnector';
-import { ChainsService } from './helpers/chains/chains.service';
-import { DexesService } from './helpers/dexes/dexes.service';
-import { IConfig, IConfigDB, IPool, IV2ReserveResponse } from './models';
-import { LastBlockNumberDexService } from './helpers/lastBlockNumberDex/lastBlockNumberDex.service';
-import { LastBlockNumberDex } from './helpers/entities/entities';
+import { IConfig, IPool, IV2ReserveResponse } from './models';
+import { runWithContext } from './utils/run-with-context';
 
 const logger = new Logger('BlockchainLogic');
 
@@ -29,62 +23,20 @@ export async function getPoolsFromFactory(deps: {
   pairsToQuote: any;
   extraSettings?: string;
 }) {
-  const { extraSettings } = deps;
+  return runWithContext(deps.extraSettings, async ({ manager, configData, services }) => {
+    console.log('--- [START] getPoolsFromFactory ---');
 
-  let parsedSettings: any;
-  try {
-    parsedSettings = typeof extraSettings === 'string'
-      ? JSON.parse(extraSettings)
-      : extraSettings;
-  } catch (e) {
-    console.error('!!! Invalid extraSettings JSON', e.message);
-    return { success: false, error: 'Invalid extraSettings JSON' };
-  }
-
-  const configData = parsedSettings.configData;
-  const configDB: IConfigDB = parsedSettings.configDB;
-
-  if (!configDB) {
-    console.error('!!! No configDB provided');
-    return { success: false, error: 'No configDB provided' };
-  }
-
-  if (!configData) {
-    console.error('!!! No configData provided');
-    return { success: false, error: 'No configData provided' };
-  }
-
-  console.log('--- [START] getPoolsFromFactory ---');
-
-  let dataSource: DataSource | undefined;
-
-  try {
-    dataSource = await DBConnector.create(configDB as DataSourceOptions);
-    const manager = dataSource.manager;
-
-    const tokensService = new TokensService(
-      manager.getRepository(Tokens),
-      manager.getRepository(Chains),
-    );
-    const chainsService = new ChainsService(manager.getRepository(Chains));
-    const dexesService = new DexesService(manager.getRepository(Dexes));
-    const poolsService = new PoolsService(
-      manager.getRepository(Pools),
-      tokensService,
-      chainsService,
-      dexesService,
-    );
-    const lastBlockNumberDexService = new LastBlockNumberDexService(
-      manager.getRepository(LastBlockNumberDex),
-    );
-
-    const lastBlockNumber = (await lastBlockNumberDexService.findOneByVersionAndDex(configData.version, configData.dexId, manager))?.blockNumber || 1;
+    const lastBlockNumber = (await services.lastBlock.findOneByVersionAndDex(
+      configData.version,
+      configData.dexId,
+      manager,
+    ))?.blockNumber || 1;
 
     let pools: any[] = [];
     let latestBlock: number = lastBlockNumber;
 
     if (configData.dexName === 'camelot' && configData.version === 'v3') {
-      const { pools: fetchedPools, latestBlock: newLatestBlock }  = await getCamelotV3PoolsFromFactory(
+      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getCamelotV3PoolsFromFactory(
         configData.factoryAddress,
         lastBlockNumber,
         configData.finish,
@@ -92,7 +44,7 @@ export async function getPoolsFromFactory(deps: {
       pools = fetchedPools;
       latestBlock = newLatestBlock;
     } else if ((configData.dexName === 'uniswap' || configData.dexName === 'sushiswap') && configData.version === 'v3') {
-      const { pools: fetchedPools, latestBlock: newLatestBlock }  = await getUniswapV3PoolsFromFactory(
+      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getUniswapV3PoolsFromFactory(
         configData.factoryAddress,
         lastBlockNumber,
         configData.finish,
@@ -110,7 +62,7 @@ export async function getPoolsFromFactory(deps: {
     }
 
     if (!pools || pools.length === 0) {
-      await lastBlockNumberDexService.upsert({
+      await services.lastBlock.upsert({
         blockNumber: latestBlock,
         dex: configData.dexId,
         version: configData.version
@@ -120,62 +72,50 @@ export async function getPoolsFromFactory(deps: {
     }
 
     const uniqueTokens = getUniqueTokens(pools);
-
     const newTokenAddresses = await filterNewTokenAddresses(
       uniqueTokens,
-      tokensService,
+      services.tokens,
       manager,
     );
-    console.log('[newTokenAddresses] ::: ', newTokenAddresses);
+
     const tokensData = await fetchTokensData(newTokenAddresses);
     const tokensToSave = tokensData.map((t) => ({ ...t, chainId: 42161 }));
 
-    await saveTokensIfNotExist(tokensToSave, tokensService, manager);
-    const tokenMap = await buildTokenMap(tokensService, manager);
-    const existingPools = await getExistingPoolsSet(poolsService, manager);
+    await saveTokensIfNotExist(tokensToSave, services.tokens, manager);
+
+    const tokenMap = await buildTokenMap(services.tokens, manager);
+    const existingPools = await getExistingPoolsSet(services.pools, manager);
 
     const createdPools = await createPools(
       pools,
       tokenMap,
       existingPools,
       configData,
-      poolsService,
+      services.pools,
       manager,
     );
 
     const v2Helper = new GetV2ReservesHelper();
     const v3Helper = new GetV3ReservesHelper();
-    console.log('[setReserves] ::: ', setReserves);
 
     await setReserves(
-      poolsService,
+      services.pools,
       v2Helper,
       v3Helper,
       configData,
       manager,
     );
 
-    await lastBlockNumberDexService.upsert({
+    await services.lastBlock.upsert({
       blockNumber: latestBlock,
       dex: configData.dexId,
       version: configData.version
     }, manager);
 
-    return createdPools;
-  } catch (error) {
-    console.error(
-      '!!! ERROR IN getPoolsFromFactory:',
-      error.message,
-    );
-    console.error(error.stack);
-    throw error;
-  } finally {
-    if (dataSource) {
-      await DBConnector.close(dataSource);
-      console.debug('--- [FINALLY] Connection closed via DBConnector. ---');
-    }
-  }
+    return { success: true, createdCount: createdPools.length };
+  });
 }
+
 
 export async function filterNewTokenAddresses(
   tokenAddresses: string[],

@@ -38,6 +38,13 @@ export class Pools {
   @Column('numeric', { name: 'reserve1', nullable: true })
   reserve1: string | null;
 
+  @Column({
+    type: 'timestamp with time zone',
+    nullable: true,
+    name: 'reserves_updated_at',
+  })
+  reserves_updated_at: Date;
+
   @OneToMany(() => Pairs, (pairs) => pairs.pool)
   pairs: Pairs[];
 

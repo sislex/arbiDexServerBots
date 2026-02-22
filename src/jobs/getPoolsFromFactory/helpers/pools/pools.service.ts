@@ -66,6 +66,43 @@ export class PoolsService {
     });
   }
 
+  async findOldestReserves(
+    version: string,
+    limit: number = 1000,
+    manager?: EntityManager,
+  ) {
+    const repo = manager ? manager.getRepository(Pools) : this.poolRepository;
+
+    return await repo.find({
+      where: {
+        version: version,
+      },
+      relations: {
+        chain: true,
+        dex: true,
+        token0: true,
+        token1: true,
+      },
+      select: {
+        poolId: true,
+        poolAddress: true,
+        reserve0: true,
+        reserve1: true,
+        version: true,
+        fee: true,
+        reserves_updated_at: true,
+        chain: { chainId: true },
+        dex: { dexId: true },
+        token0: { tokenId: true },
+        token1: { tokenId: true },
+      },
+      order: {
+        reserves_updated_at: 'ASC',
+      },
+      take: limit,
+    });
+  }
+
   async findOne(id: number, manager?: EntityManager) {
     const repo = manager ? manager.getRepository(Pools) : this.poolRepository;
 
@@ -117,6 +154,8 @@ export class PoolsService {
         pool.reserve0 = dto.reserve1;
         pool.reserve1 = dto.reserve0;
       }
+
+      pool.reserves_updated_at = new Date();
     }
 
     const updatedPools = await repo.save(Array.from(poolsMap.values()));
