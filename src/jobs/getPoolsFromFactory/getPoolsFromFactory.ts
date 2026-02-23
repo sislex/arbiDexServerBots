@@ -35,7 +35,7 @@ export async function getPoolsFromFactory(deps: {
     let pools: any[] = [];
     let latestBlock: number = lastBlockNumber;
 
-    console.log('--- [GET POOLS FROM BLOCK] ---', lastBlockNumber);
+    console.log('--- [GET POOLS FROM BLOCK] ---', lastBlockNumber, '---', configData.finish);
 
     if (configData.dexName === 'camelot' && configData.version === 'v3') {
       const { pools: fetchedPools, latestBlock: newLatestBlock } = await getCamelotV3PoolsFromFactory(

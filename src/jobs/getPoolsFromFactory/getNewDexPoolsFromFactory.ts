@@ -7,7 +7,6 @@ export async function getNewDexPoolsFromFactory(deps: {
   pairsToQuote: any;
   extraSettings?: string;
 }) {
-  // 1. Заходим в контекст, чтобы один раз узнать текущий блок из БД
   await runWithContext(
     deps.extraSettings,
     async ({ manager, services, configData }) => {
@@ -20,13 +19,10 @@ export async function getNewDexPoolsFromFactory(deps: {
           )
         )?.blockNumber || 1;
 
-      // 2. Парсим и патчим настройки
       const settings = JSON.parse(deps.extraSettings || '{}');
       settings.configData.start = lastBlock;
-      settings.configData.finish = lastBlock + 1000;
+      settings.configData.finish = lastBlock + settings.configData.plus;
 
-      // 3. Вызываем основную функцию с обновленным JSON
-      console.log('---START?---', settings)
       await getPoolsFromFactory({
         ...deps,
         extraSettings: JSON.stringify(settings),
