@@ -60,7 +60,7 @@ export async function fetchTokensData(
           decimals: Number(decimals),
         } as TokenData;
       } catch (err) {
-        console.warn('Error fetching token', addr, err);
+        // console.warn('Error fetching token', addr, err);
         return null;
       }
     });

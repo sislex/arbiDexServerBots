@@ -159,7 +159,7 @@ export class PoolsService {
     }
 
     const updatedPools = await repo.save(Array.from(poolsMap.values()));
-    console.log(`Total pools updated: ${updatedPools.length}`);
+    // console.log(`Total pools updated: ${updatedPools.length}`);
     return updatedPools;
   }
 }

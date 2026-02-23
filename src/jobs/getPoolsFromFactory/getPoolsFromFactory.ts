@@ -35,6 +35,8 @@ export async function getPoolsFromFactory(deps: {
     let pools: any[] = [];
     let latestBlock: number = lastBlockNumber;
 
+    console.log('--- [GET POOLS FROM BLOCK] ---', lastBlockNumber);
+
     if (configData.dexName === 'camelot' && configData.version === 'v3') {
       const { pools: fetchedPools, latestBlock: newLatestBlock } = await getCamelotV3PoolsFromFactory(
         configData.factoryAddress,
@@ -68,20 +70,32 @@ export async function getPoolsFromFactory(deps: {
         version: configData.version
       }, manager);
 
+      console.log('--- [New pools] ---', pools.length);
+
       return { success: true, message: 'No pools found' };
     }
 
     const uniqueTokens = getUniqueTokens(pools);
+
+    console.log('--- [Unique Tokens] ---', uniqueTokens.length);
+
     const newTokenAddresses = await filterNewTokenAddresses(
       uniqueTokens,
       services.tokens,
       manager,
     );
 
+    console.log('--- [New Tokens] ---', newTokenAddresses.length);
+
     const tokensData = await fetchTokensData(newTokenAddresses);
+
+    console.log('--- [Tokens Data received] ---', tokensData.length);
+
     const tokensToSave = tokensData.map((t) => ({ ...t, chainId: 42161 }));
 
     await saveTokensIfNotExist(tokensToSave, services.tokens, manager);
+
+    console.log('--- [Tokens saved] ---');
 
     const tokenMap = await buildTokenMap(services.tokens, manager);
     const existingPools = await getExistingPoolsSet(services.pools, manager);
@@ -95,6 +109,8 @@ export async function getPoolsFromFactory(deps: {
       manager,
     );
 
+    console.log('--- [Pools saved] ---');
+
     const v2Helper = new GetV2ReservesHelper();
     const v3Helper = new GetV3ReservesHelper();
 
@@ -106,11 +122,15 @@ export async function getPoolsFromFactory(deps: {
       manager,
     );
 
+    console.log('--- [Added Reserves] ---');
+
     await services.lastBlock.upsert({
       blockNumber: latestBlock,
       dex: configData.dexId,
       version: configData.version
     }, manager);
+
+    console.log('--- [Last block update to] ---', latestBlock);
 
     return { success: true, createdCount: createdPools.length };
   });

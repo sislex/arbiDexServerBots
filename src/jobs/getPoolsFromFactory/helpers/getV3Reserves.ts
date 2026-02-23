@@ -31,7 +31,7 @@ export class GetV3ReservesHelper {
   });
 
   async getV3Reserves(address: any) {
-    console.log('getV3Reserves::::', address);
+    // console.log('getV3Reserves::::', address);
     try {
       const tokens = await this.getPoolTokens(address);
       if (!tokens) {

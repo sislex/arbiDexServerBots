@@ -39,7 +39,7 @@ export async function getCamelotV3PoolsFromFactory(
       topics: [topic0],
     });
 
-    console.log(`[Camelot V3] blocks ${start} → ${end}, logs: ${logs.length}`);
+    // console.log(`[Camelot V3] blocks ${start} → ${end}, logs: ${logs.length}`);
 
     for (const log of logs) {
       const parsed = camelotV3FactoryIface.parseLog(log);

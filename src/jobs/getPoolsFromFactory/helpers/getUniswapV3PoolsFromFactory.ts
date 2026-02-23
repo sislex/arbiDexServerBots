@@ -32,7 +32,7 @@ export async function getUniswapV3PoolsFromFactory(
       topics: [topic0],
     });
 
-    console.log('Fetched logs from blocks', start, 'to', end, ':', logs.length);
+    // console.log('Fetched logs from blocks', start, 'to', end, ':', logs.length);
 
     for (const log of logs) {
       const parsed = v3FactoryIface.parseLog(log);
