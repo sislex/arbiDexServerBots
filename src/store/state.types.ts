@@ -41,6 +41,7 @@ export enum IJobType {
   GET_ARB_EXECUTOR_QUOTES = 'getArbExecutorQuotes',
   GET_POOLS_FROM_FACTORY = 'get_Pools_From_Factory',
   GET_POOLS_RESERVES = 'get_Pools_Reserves',
+  GET_NEW_DEX_POOLS_RESERVES = 'get_New_Dex_Pools_From_Factory',
 }
 
 export interface IJobDefaultParams { jobType: IJobType; }
@@ -188,6 +189,14 @@ export interface IJobParams_get_Pools_From_Factory extends IJobDefaultParams {
 }
 
 export interface IJobParams_get_Pools_Reserves extends IJobDefaultParams {
+  jobType: IJobType.GET_POOLS_RESERVES;
+
+  rpcUrl: string;
+  pairsToQuote: IPairToQuote[];
+  extraSettings?: string;
+}
+
+export interface IJobParams_get_New_Dex_Pools_Reserves extends IJobDefaultParams {
   jobType: IJobType.GET_POOLS_RESERVES;
 
   rpcUrl: string;

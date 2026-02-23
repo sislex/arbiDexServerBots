@@ -109,7 +109,7 @@ export async function getPoolsFromFactory(deps: {
       manager,
     );
 
-    console.log('--- [Pools saved] ---');
+    console.log('--- [Pools saved] ---', createdPools.length);
 
     const v2Helper = new GetV2ReservesHelper();
     const v3Helper = new GetV3ReservesHelper();

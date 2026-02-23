@@ -9,6 +9,7 @@ import {
   IJobParams_get_Arbitrum_Arb_Executor_Quotes,
   IJobParams_get_Pools_From_Factory,
   IJobParams_get_Pools_Reserves,
+  IJobParams_get_New_Dex_Pools_Reserves,
 } from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
@@ -77,6 +78,10 @@ const handlers = {
 
   [IJobType.GET_POOLS_RESERVES]:
     async (params: IJobParams_get_Pools_Reserves): Promise<any> =>
+      getPoolsReserves(params),
+
+  [IJobType.GET_NEW_DEX_POOLS_RESERVES]:
+    async (params: IJobParams_get_New_Dex_Pools_Reserves): Promise<any> =>
       getPoolsReserves(params),
 } as const;
 
