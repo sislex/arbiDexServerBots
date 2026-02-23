@@ -23,6 +23,7 @@ import {resolvePoolsForPairs} from './resolvePoolsForPairs/resolvePoolsForPairs.
 import {getArbExecutorQuotes} from './getQuoteFromArbExecutor/getArbExecutor.quotes';
 import { getPoolsFromFactory } from './getPoolsFromFactory/getPoolsFromFactory';
 import { getPoolsReserves } from './getPoolsReserves/getPoolsReserves';
+import { getNewDexPoolsFromFactory } from './getPoolsFromFactory/getNewDexPoolsFromFactory';
 
 // базовый результат для всех квот
 export interface BaseQuoteResult {
@@ -82,7 +83,7 @@ const handlers = {
 
   [IJobType.GET_NEW_DEX_POOLS_RESERVES]:
     async (params: IJobParams_get_New_Dex_Pools_Reserves): Promise<any> =>
-      getPoolsReserves(params),
+      getNewDexPoolsFromFactory(params),
 } as const;
 
 // Единая точка входа
