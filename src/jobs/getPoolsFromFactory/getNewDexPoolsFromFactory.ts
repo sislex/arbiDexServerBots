@@ -26,12 +26,11 @@ export async function getNewDexPoolsFromFactory(deps: {
       settings.configData.finish = lastBlock + 1000;
 
       // 3. Вызываем основную функцию с обновленным JSON
+      console.log('---START?---', settings)
       await getPoolsFromFactory({
         ...deps,
         extraSettings: JSON.stringify(settings),
       });
     },
   );
-
-  return null;
 }
