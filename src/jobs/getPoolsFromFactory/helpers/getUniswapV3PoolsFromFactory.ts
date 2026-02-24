@@ -14,7 +14,7 @@ export async function getUniswapV3PoolsFromFactory(
   const factory = ethers.getAddress(factoryAddress.toLowerCase());
   const latest = await provider.getBlockNumber();
   const endBlock = toBlock ?? latest;
-
+  console.log('===latest===', latest);
   const topic0 = ethers.id('PoolCreated(address,address,uint24,int24,address)');
   const step = 100_000;
 

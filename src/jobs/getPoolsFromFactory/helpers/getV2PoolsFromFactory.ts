@@ -17,6 +17,7 @@ export async function getV2PoolsFromFactory(
 
   const latest = await provider.getBlockNumber();
   const endBlock = toBlock ?? latest;
+  console.log('===latest===', latest);
 
   const topic0 = ethers.id('PairCreated(address,address,address,uint256)');
   const step = 100_000;
@@ -56,5 +57,5 @@ export async function getV2PoolsFromFactory(
     lastProcessedBlock = end;
   }
 
-  return { pools, latestBlock: lastProcessedBlock };
+  return { pools, latestBlock: endBlock };
 }
