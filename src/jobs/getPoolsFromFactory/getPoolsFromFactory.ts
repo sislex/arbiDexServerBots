@@ -64,16 +64,18 @@ export async function getPoolsFromFactory(deps: {
     }
 
     if (!pools || pools.length === 0) {
+      console.log('--- [Last block update to] ---', latestBlock);
+
       await services.lastBlock.upsert({
         blockNumber: latestBlock,
         dex: configData.dexId,
         version: configData.version
       }, manager);
 
-      console.log('--- [New pools] ---', pools.length);
-
       return { success: true, message: 'No pools found' };
     }
+
+    console.log('--- [New pools] ---', pools.length);
 
     const uniqueTokens = getUniqueTokens(pools);
 
