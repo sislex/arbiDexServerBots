@@ -16,8 +16,10 @@ export async function getV2PoolsFromFactory(
   const factory = ethers.getAddress(factoryAddress.toLowerCase());
 
   const latest = await provider.getBlockNumber();
-  const endBlock = toBlock ?? latest;
-  console.log('===latest===', latest);
+  const endBlock = Math.min(toBlock ?? latest, latest);
+
+  console.log('=== Real network latest ===', latest);
+  console.log('=== We will scan up to ===', endBlock);
 
   const topic0 = ethers.id('PairCreated(address,address,address,uint256)');
   const step = 100_000;
@@ -29,7 +31,6 @@ export async function getV2PoolsFromFactory(
     blockNumber: number;
   }[] = [];
 
-  let lastProcessedBlock = fromBlock;
 
   for (let start = fromBlock; start <= endBlock; start += step + 1) {
     const end = Math.min(endBlock, start + step);
@@ -54,7 +55,6 @@ export async function getV2PoolsFromFactory(
         blockNumber: log.blockNumber,
       });
     }
-    lastProcessedBlock = end;
   }
 
   return { pools, latestBlock: endBlock };
