@@ -50,5 +50,5 @@ export async function getUniswapV3PoolsFromFactory(
     lastProcessedBlock = end;
   }
 
-  return { pools, latestBlock: lastProcessedBlock };
+  return { pools, latestBlock: endBlock };
 }
