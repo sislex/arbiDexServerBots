@@ -15,6 +15,7 @@ export async function getNewDexPoolsFromFactory(deps: {
           await services.lastBlock.findOneByVersionAndDex(
             configData.version,
             configData.dexId,
+            configData.chainId,
             manager,
           )
         )?.blockNumber || 1;

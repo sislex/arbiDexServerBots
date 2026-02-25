@@ -1,17 +1,16 @@
 import { ethers } from 'ethers';
 
-export const ARBISCAN_RPC2 = 'https://arb1.arbitrum.io/rpc';
-
 const camelotV3FactoryIface = new ethers.Interface([
   'event Pool(address indexed token0, address indexed token1, address pool)',
 ]);
 
 export async function getCamelotV3PoolsFromFactory(
+  rpc: string,
   factoryAddress: string,
   fromBlock = 0,
   toBlock?: number,
 ) {
-  const provider = new ethers.JsonRpcProvider(ARBISCAN_RPC2);
+  const provider = new ethers.JsonRpcProvider(rpc);
 
   const factory = ethers.getAddress(factoryAddress.toLowerCase());
   const latest = await provider.getBlockNumber();

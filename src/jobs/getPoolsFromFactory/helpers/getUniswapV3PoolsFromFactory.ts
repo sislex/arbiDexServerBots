@@ -1,16 +1,16 @@
 import { ethers } from 'ethers';
-export const ARBISCAN_RPC = 'https://arb1.arbitrum.io/rpc';
 
 const v3FactoryIface = new ethers.Interface([
   'event PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool)',
 ]);
 
 export async function getUniswapV3PoolsFromFactory(
+  rpc: string,
   factoryAddress: string,
   fromBlock = 0,
   toBlock?: number,
 ) {
-  const provider = new ethers.JsonRpcProvider(ARBISCAN_RPC);
+  const provider = new ethers.JsonRpcProvider(rpc);
   const factory = ethers.getAddress(factoryAddress.toLowerCase());
   const latest = await provider.getBlockNumber();
   const endBlock = Math.min(toBlock ?? latest, latest);

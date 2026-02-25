@@ -29,9 +29,10 @@ export async function getPoolsFromFactory(deps: {
     const lastBlockNumber = (await services.lastBlock.findOneByVersionAndDex(
       configData.version,
       configData.dexId,
+      configData.chainId,
       manager,
     ))?.blockNumber || 1;
-
+    const { rpcUrl } = deps;
     let pools: any[] = [];
     let latestBlock: number = lastBlockNumber;
 
@@ -39,14 +40,16 @@ export async function getPoolsFromFactory(deps: {
 
     if (configData.dexName === 'camelot' && configData.version === 'v3') {
       const { pools: fetchedPools, latestBlock: newLatestBlock } = await getCamelotV3PoolsFromFactory(
+        rpcUrl,
         configData.factoryAddress,
         lastBlockNumber,
         configData.finish,
       );
       pools = fetchedPools;
       latestBlock = newLatestBlock;
-    } else if ((configData.dexName === 'uniswap' || configData.dexName === 'sushiswap') && configData.version === 'v3') {
+    } else if ((configData.dexName === 'uniswap' || configData.dexName === 'sushiswap' || configData.dexName === 'pancake') && configData.version === 'v3') {
       const { pools: fetchedPools, latestBlock: newLatestBlock } = await getUniswapV3PoolsFromFactory(
+        rpcUrl,
         configData.factoryAddress,
         lastBlockNumber,
         configData.finish,
@@ -55,6 +58,7 @@ export async function getPoolsFromFactory(deps: {
       latestBlock = newLatestBlock;
     } else if (configData.version === 'v2') {
       const { pools: fetchedPools, latestBlock: newLatestBlock } = await getV2PoolsFromFactory(
+        rpcUrl,
         configData.factoryAddress,
         lastBlockNumber,
         configData.finish,
@@ -69,7 +73,8 @@ export async function getPoolsFromFactory(deps: {
       await services.lastBlock.upsert({
         blockNumber: latestBlock,
         dex: configData.dexId,
-        version: configData.version
+        version: configData.version,
+        chainId: configData.chainId
       }, manager);
 
       return { success: true, message: 'No pools found' };
@@ -93,7 +98,7 @@ export async function getPoolsFromFactory(deps: {
 
     console.log('--- [Tokens Data received] ---', tokensData.length);
 
-    const tokensToSave = tokensData.map((t) => ({ ...t, chainId: 42161 }));
+    const tokensToSave = tokensData.map((t) => ({ ...t, chainId: configData.chain }));
 
     await saveTokensIfNotExist(tokensToSave, services.tokens, manager);
 
@@ -129,7 +134,8 @@ export async function getPoolsFromFactory(deps: {
     await services.lastBlock.upsert({
       blockNumber: latestBlock,
       dex: configData.dexId,
-      version: configData.version
+      version: configData.version,
+      chainId: configData.chainId
     }, manager);
 
     console.log('--- [Last block update to] ---', latestBlock);
@@ -233,6 +239,7 @@ export async function createPools(
   const createdPools: Pools[] = [];
 
   for (const pool of pools) {
+
     const poolAddress = (
       config.version === 'v2' ? pool.pair : pool.pool
     )?.toLowerCase();
@@ -252,6 +259,9 @@ export async function createPools(
     if (existingPools.has(poolAddress) || !token0Id || !token1Id) {
       if (!token0Id || !token1Id)
         logger.warn(`Tokens not found for pool ${poolAddress}`);
+
+      if (existingPools.has(poolAddress)) logger.warn(`Duplicate Pool ${poolAddress}`);
+
       continue;
     }
 

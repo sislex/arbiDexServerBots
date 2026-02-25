@@ -197,7 +197,7 @@ export interface IJobParams_get_Pools_Reserves extends IJobDefaultParams {
 }
 
 export interface IJobParams_get_New_Dex_Pools_Reserves extends IJobDefaultParams {
-  jobType: IJobType.GET_POOLS_RESERVES;
+  jobType: IJobType.GET_NEW_DEX_POOLS_RESERVES;
 
   rpcUrl: string;
   pairsToQuote: IPairToQuote[];
@@ -275,7 +275,8 @@ export type IJobParams =
   | IJobParams_get_Arbitrum_UniswapV2_Quote
   | IJobParams_resolve_Pools_For_Pairs
   | IJobParams_get_Pools_From_Factory
-  | IJobParams_get_Pools_Reserves;
+  | IJobParams_get_Pools_Reserves
+  | IJobParams_get_New_Dex_Pools_Reserves;
 
 
 export interface IJobTypeAndDescription {
