@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Tokens } from '../entities/entities';
-import { Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager, In } from 'typeorm';
 import { CreateTokenDto } from '../dtos/token-dto/token.dto';
 import { Chains } from '../entities/entities';
 
@@ -101,5 +101,27 @@ export class TokensService {
 
     if (!token) throw new Error(`Token with address ${tokenAddress} not found`);
     return token;
+  }
+
+  async findExistingByAddresses(
+    addresses: string[],
+    chainId: number,
+    manager?: EntityManager,
+  ): Promise<string[]> {
+    const repo = manager
+      ? manager.getRepository(Tokens)
+      : this.tokensRepository;
+
+    const normalizedAddresses = addresses.map((addr) => addr.toLowerCase());
+
+    const existing = await repo.find({
+      where: {
+        address: In(normalizedAddresses),
+        chain: { chainId: chainId },
+      },
+      select: ['address'],
+    });
+
+    return existing.map((t) => t.address.toLowerCase());
   }
 }

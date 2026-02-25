@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 import { Logger } from '@nestjs/common';
-import { fetchTokensData, getUniqueTokens } from './helpers/getTokensData';
+import { fetchTokensData, getUniqueTokens, setProvider } from './helpers/getTokensData';
 import { Tokens } from './helpers/entities/entities/Tokens';
 import { Pools } from './helpers/entities/entities/Pools';
 import { CreateTokenDto } from './helpers/dtos/token-dto/token.dto';
@@ -88,17 +88,19 @@ export async function getPoolsFromFactory(deps: {
 
     const newTokenAddresses = await filterNewTokenAddresses(
       uniqueTokens,
+      configData.chainId,
       services.tokens,
       manager,
     );
 
     console.log('--- [New Tokens] ---', newTokenAddresses.length);
 
-    const tokensData = await fetchTokensData(newTokenAddresses);
+    const provider = await setProvider(rpcUrl, configData.chainId);
+    const tokensData = await fetchTokensData(provider, newTokenAddresses);
 
     console.log('--- [Tokens Data received] ---', tokensData.length);
 
-    const tokensToSave = tokensData.map((t) => ({ ...t, chainId: configData.chain }));
+    const tokensToSave = tokensData.map((t) => ({ ...t, chainId: configData.chainId }));
 
     await saveTokensIfNotExist(tokensToSave, services.tokens, manager);
 
@@ -147,25 +149,29 @@ export async function getPoolsFromFactory(deps: {
 
 export async function filterNewTokenAddresses(
   tokenAddresses: string[],
+  chainId: number,
   tokensService: TokensService,
   manager: EntityManager,
 ): Promise<string[]> {
-  const existingTokens = await tokensService.findAll(manager);
-  const existingAddresses = new Set(
-    existingTokens.map((t) => t.address.toLowerCase()),
+  if (tokenAddresses.length === 0) return [];
+
+  const existingInDb = await tokensService.findExistingByAddresses(
+    tokenAddresses,
+    chainId,
+    manager
   );
 
+  const existingSet = new Set(existingInDb);
   const result: string[] = [];
 
   for (const addr of tokenAddresses) {
     const normalized = addr.toLowerCase();
-
-    if (!existingAddresses.has(normalized)) {
+    if (!existingSet.has(normalized)) {
       result.push(normalized);
     }
   }
 
-  return result;
+  return [...new Set(result)];
 }
 
 export async function saveTokensIfNotExist(
