@@ -282,6 +282,7 @@ export async function createPools(
           dexId: config.dexId,
           chainId: config.chainId,
         },
+        config.chainId,
         manager,
       );
 
@@ -300,47 +301,47 @@ export async function setReserves(
   configData: IConfig,
   manager: EntityManager,
 ) {
-  const allPools = await poolsService.findAll(manager);
+  const allPools = await poolsService.findEmptyReserves(configData.version, 1000, manager);
+
+  console.log('---[Empty reserves]---', allPools.length);
 
   const filteredPools = allPools.filter(
     (p) =>
       p.version === configData.version &&
-      (p.reserve0 === null || p.reserve1 === null),
+      (p.reserve0 === null || p.reserve1 === null) &&
+      p.poolAddress
   );
 
-  const fetcher =
-    configData.version === 'v2'
-      ? (addr: string) =>
-        getV2ReservesHelper.getV2Reserves(addr as `0x${string}`)
-      : (addr: string) =>
-        getV3ReservesHelper.getV3Reserves(addr as `0x${string}`);
+  if (filteredPools.length === 0) return;
 
-  const reserves: UpdateReservesDto[] = [];
+  const poolAddresses = filteredPools.map(p => p.poolAddress as `0x${string}`);
 
-  for (const pool of filteredPools) {
-    try {
-      if (!pool.poolAddress) continue;
+  console.log('---[Created pool addresses array and start check reserves]---', poolAddresses.length);
 
-      const reserve = (await fetcher(
-        pool.poolAddress,
-      )) as IV2ReserveResponse | null;
+  const fetchedResults = configData.version === 'v2'
+    ? await getV2ReservesHelper.getV2Reserves(configData.chainId, poolAddresses)
+    : await getV3ReservesHelper.getV3Reserves(configData.chainId, poolAddresses);
 
-      if (!reserve) continue;
+  console.log('---[Reserve check completed]---', fetchedResults.length);
 
-      reserves.push({
-        address: reserve.address,
-        token0: reserve.token0 ?? '',
-        token1: reserve.token1 ?? '',
-        reserve0: reserve.reserve0?.toString() ?? '0',
-        reserve1: reserve.reserve1?.toString() ?? '0',
-      });
-    } catch (error) {
-      console.error(
-        `Error getting reserves for pool ${pool.poolAddress}:`,
-        error,
-      );
-    }
+  const reserves: UpdateReservesDto[] = fetchedResults
+    .filter((res): res is NonNullable<typeof res> => res !== null)
+    .map((reserve) => ({
+      address: reserve.address,
+      chainId: configData.chainId,
+      token0: reserve.token0 ?? '',
+      token1: reserve.token1 ?? '',
+      reserve0: reserve.reserve0,
+      reserve1: reserve.reserve1,
+    }));
+
+  console.log('---[Reserves converted for conservation]---', reserves.length);
+
+
+  if (reserves.length > 0) {
+    await poolsService.updateReserves(reserves, manager);
+    console.log(`Updated ${reserves.length} empty pools via multicall`);
   }
 
-  await poolsService.updateReserves(reserves, manager);
+  console.log('---[Reserves saved]---');
 }

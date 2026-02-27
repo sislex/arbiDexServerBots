@@ -35,12 +35,10 @@ export class LastBlockNumberDexService {
       ? manager.getRepository(LastBlockNumberDex)
       : this.lastBlockNumberDexRepository;
 
-    // Обязательная проверка перед БД, чтобы поймать ошибку в коде
     if (!dto.chainId) {
       throw new Error('chainId is required for LastBlockNumberDex upsert');
     }
 
-    // Postgres сделает: INSERT ... ON CONFLICT (dex, version, chain_id) DO UPDATE
     await repo.upsert(
       {
         dex: dto.dex,

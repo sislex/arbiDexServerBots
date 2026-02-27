@@ -6,13 +6,14 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { Pairs } from './Pairs';
 import { Chains } from './Chains';
 import { Dexes } from './Dexes';
 import { Tokens } from './Tokens';
 
-@Index('unique_pool_address', ['poolAddress'], { unique: true })
+@Unique('unique_pool_address_chain', ['poolAddress', 'chain'])
 @Index('pools_pkey', ['poolId'], { unique: true })
 @Entity('pools', { schema: 'public' })
 export class Pools {
@@ -28,7 +29,7 @@ export class Pools {
   @Column('character varying', {
     name: 'pool_address',
     nullable: true,
-    unique: true,
+    unique: false,
   })
   poolAddress: string | null;
 
