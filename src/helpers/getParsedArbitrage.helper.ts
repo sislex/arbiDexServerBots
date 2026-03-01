@@ -3,25 +3,27 @@ import {IArbitrage, IPairToQuote, IParsedArbitrage, ITokenInfo} from '../store/s
 export const getParsedArbitrage = (
   arbitrageList: IArbitrage[]
 ): IParsedArbitrage[] => {
-  const parsed: IParsedArbitrage[] = [];
+  const parsed: any[] = [];
 
   for (const arbitrage of arbitrageList) {
     const { createdAt, blockNumber } = arbitrage;
 
     for (const group of arbitrage.groups) {
+      // console.log('group', group);
       parsed.push({
         createdAt,
-        blockNumber,
+        blockNumber: group.blockNumber,
 
-        tokenIn: group.bestArbitrage.bestBuy?.pair.tokenIn,
-        tokenOut: group.bestArbitrage.bestBuy?.pair.tokenOut,
+        tokenIn: group.tokenIn,
+        tokenOut: group.tokenOut,
 
-        amountIn: group.bestArbitrage.bestBuy?.pair.amount,
+        amountIn: String(group.amountIn),
 
-        spread_pct: group.spread_pct,
+        spread_pct: group.profitPct,
 
-        bestBuyPool: group.bestArbitrage.bestBuy?.pair ?? null,
-        bestSellPool: group.bestArbitrage.bestSell?.pair ?? null,
+        bestBuyPool: group.pool0?? null,
+        bestSellPool: group.pool1 ?? null,
+        gas: String(group.gas) ?? null,
       });
     }
   }

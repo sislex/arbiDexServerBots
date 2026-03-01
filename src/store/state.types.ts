@@ -323,12 +323,12 @@ export interface IGroupedQuotes {
 
 export interface IBestBuySellArbitrage {
   hasArbitrage: boolean;
-  groups: IGroupedQuotes[];
+  groups: any[];
 }
 
 export interface IArbitrage extends IBestBuySellArbitrage {
   createdAt: string;   // UTC ISO
-  blockNumber: number;
+  blockNumber?: number;
 }
 
 export enum SwapKind {
@@ -392,5 +392,14 @@ export interface IQuoteResult {
   simulationStepsLogs?: ISimulationStepsLogs[];
   error?: string;
   message?: string;
+}
+
+export interface IQuoteStepsResults {
+  quoteStep: IContractStep[],
+  simulationStepsLogs?: ISimulationStepsLogs[],
+  quoteLog?: ISimulationStepsLogs,
+  profitBase?: bigint,
+  profitPct?: number,
+  gas?: bigint,
 }
 

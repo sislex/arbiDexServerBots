@@ -1,5 +1,4 @@
-import {IQuoteResult} from '../../../store/state.types';
-import {IQuoteStepsResults} from './getQuotesFromLastStep';
+import {IQuoteStepsResults} from '../../../store/state.types';
 function compareBigIntAsc(a: bigint, b: bigint): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
