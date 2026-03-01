@@ -1,25 +1,27 @@
 import { ethers } from 'ethers';
 
-export const ARBISCAN_RPC2 = 'https://arb1.arbitrum.io/rpc';
-
 const v2FactoryIface = new ethers.Interface([
   'event PairCreated(address indexed token0, address indexed token1, address pair, uint256)',
 ]);
 
 export async function getV2PoolsFromFactory(
+  rpc: string,
   factoryAddress: string,
   fromBlock = 0,
   toBlock?: number,
 ) {
-  const provider = new ethers.JsonRpcProvider(ARBISCAN_RPC2);
+  const provider = new ethers.JsonRpcProvider(rpc);
 
   const factory = ethers.getAddress(factoryAddress.toLowerCase());
 
   const latest = await provider.getBlockNumber();
-  const endBlock = toBlock ?? latest;
+  const endBlock = Math.min(toBlock ?? latest, latest);
+
+  console.log('=== Real network latest ===', latest);
+  console.log('=== We will scan up to ===', endBlock);
 
   const topic0 = ethers.id('PairCreated(address,address,address,uint256)');
-  const step = 20_000_000;
+  const step = 100_000;
 
   const pools: {
     token0: string;
@@ -27,6 +29,7 @@ export async function getV2PoolsFromFactory(
     pair: string;
     blockNumber: number;
   }[] = [];
+
 
   for (let start = fromBlock; start <= endBlock; start += step + 1) {
     const end = Math.min(endBlock, start + step);
@@ -38,7 +41,7 @@ export async function getV2PoolsFromFactory(
       topics: [topic0],
     });
 
-    console.log(`[Blocks] ${start} → ${end}, logs: ${logs.length}`);
+    // console.log(`[Blocks] ${start} → ${end}, logs: ${logs.length}`);
 
     for (const log of logs) {
       const parsed = v2FactoryIface.parseLog(log);
@@ -53,5 +56,5 @@ export async function getV2PoolsFromFactory(
     }
   }
 
-  return pools;
+  return { pools, latestBlock: endBlock };
 }

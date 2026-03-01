@@ -40,6 +40,8 @@ export enum IJobType {
   RESOLVE_POOLS_FOR_PAIRS = 'resolve_pools_for_pairs',
   GET_ARB_EXECUTOR_QUOTES = 'getArbExecutorQuotes',
   GET_POOLS_FROM_FACTORY = 'get_Pools_From_Factory',
+  GET_POOLS_RESERVES = 'get_Pools_Reserves',
+  GET_NEW_DEX_POOLS_RESERVES = 'get_New_Dex_Pools_From_Factory',
 }
 
 export interface IJobDefaultParams { jobType: IJobType; }
@@ -186,6 +188,22 @@ export interface IJobParams_get_Pools_From_Factory extends IJobDefaultParams {
   extraSettings?: string;
 }
 
+export interface IJobParams_get_Pools_Reserves extends IJobDefaultParams {
+  jobType: IJobType.GET_POOLS_RESERVES;
+
+  rpcUrl: string;
+  pairsToQuote: IPairToQuote[];
+  extraSettings?: string;
+}
+
+export interface IJobParams_get_New_Dex_Pools_Reserves extends IJobDefaultParams {
+  jobType: IJobType.GET_NEW_DEX_POOLS_RESERVES;
+
+  rpcUrl: string;
+  pairsToQuote: IPairToQuote[];
+  extraSettings?: string;
+}
+
 export interface IPool {
   dex: DexId;
   version: PoolVersion;
@@ -256,7 +274,9 @@ export type IJobParams =
   | IJobParams_get_Arbitrum_Quote_Multi
   | IJobParams_get_Arbitrum_UniswapV2_Quote
   | IJobParams_resolve_Pools_For_Pairs
-  | IJobParams_get_Pools_From_Factory;
+  | IJobParams_get_Pools_From_Factory
+  | IJobParams_get_Pools_Reserves
+  | IJobParams_get_New_Dex_Pools_Reserves;
 
 
 export interface IJobTypeAndDescription {

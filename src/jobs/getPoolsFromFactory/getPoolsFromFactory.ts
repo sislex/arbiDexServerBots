@@ -1,6 +1,6 @@
-import { DataSource, DataSourceOptions, EntityManager } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { Logger } from '@nestjs/common';
-import { fetchTokensData, getUniqueTokens } from './helpers/getTokensData';
+import { fetchTokensData, getUniqueTokens, setProvider } from './helpers/getTokensData';
 import { Tokens } from './helpers/entities/entities/Tokens';
 import { Pools } from './helpers/entities/entities/Pools';
 import { CreateTokenDto } from './helpers/dtos/token-dto/token.dto';
@@ -12,12 +12,8 @@ import { getV2PoolsFromFactory } from './helpers/getV2PoolsFromFactory';
 import { GetV3ReservesHelper } from './helpers/getV3Reserves';
 import { GetV2ReservesHelper } from './helpers/getV2Reserves';
 import { UpdateReservesDto } from './helpers/dtos/pools-dto/pool.dto';
-import { Chains } from './helpers/entities/entities/Chains';
-import { Dexes } from './helpers/entities/entities/Dexes';
-import { DBConnector } from './dbConnector';
-import { ChainsService } from './helpers/chains/chains.service';
-import { DexesService } from './helpers/dexes/dexes.service';
-import { IConfig, IConfigDB, IPool, IV2ReserveResponse } from './models';
+import { IConfig, IPool, IV2ReserveResponse } from './models';
+import { runWithContext } from './utils/run-with-context';
 
 const logger = new Logger('BlockchainLogic');
 
@@ -27,149 +23,155 @@ export async function getPoolsFromFactory(deps: {
   pairsToQuote: any;
   extraSettings?: string;
 }) {
-  const { extraSettings } = deps;
+  return runWithContext(deps.extraSettings, async ({ manager, configData, services }) => {
+    console.log('--- [START] getPoolsFromFactory ---');
 
-  let parsedSettings: any;
-  try {
-    parsedSettings = typeof extraSettings === 'string'
-      ? JSON.parse(extraSettings)
-      : extraSettings;
-  } catch (e) {
-    console.error('!!! Invalid extraSettings JSON', e.message);
-    return { success: false, error: 'Invalid extraSettings JSON' };
-  }
-
-  const configData = parsedSettings.configData;
-  const configDB: IConfigDB = parsedSettings.configDB;
-
-  if (!configDB) {
-    console.error('!!! No configDB provided');
-    return { success: false, error: 'No configDB provided' };
-  }
-
-  if (!configData) {
-    console.error('!!! No configData provided');
-    return { success: false, error: 'No configData provided' };
-  }
-
-  console.log('--- [START] getPoolsFromFactory ---');
-
-  let dataSource: DataSource | undefined;
-
-  try {
-    dataSource = await DBConnector.create(configDB as DataSourceOptions);
-    const manager = dataSource.manager;
-    const tokensService = new TokensService(
-      manager.getRepository(Tokens),
-      manager.getRepository(Chains),
-    );
-
-    const chainsService = new ChainsService(manager.getRepository(Chains));
-    const dexesService = new DexesService(manager.getRepository(Dexes));
-
-    const poolsService = new PoolsService(
-      manager.getRepository(Pools),
-      tokensService,
-      chainsService,
-      dexesService,
-    );
-
+    const lastBlockNumber = (await services.lastBlock.findOneByVersionAndDex(
+      configData.version,
+      configData.dexId,
+      configData.chainId,
+      manager,
+    ))?.blockNumber || 1;
+    const { rpcUrl } = deps;
     let pools: any[] = [];
+    let latestBlock: number = lastBlockNumber;
+
+    console.log('--- [GET POOLS FROM BLOCK] ---', lastBlockNumber, '---', configData.finish);
+
     if (configData.dexName === 'camelot' && configData.version === 'v3') {
-      pools = await getCamelotV3PoolsFromFactory(
+      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getCamelotV3PoolsFromFactory(
+        rpcUrl,
         configData.factoryAddress,
-        configData.start,
+        lastBlockNumber,
         configData.finish,
       );
-    } else if ((configData.dexName === 'uniswap' || configData.dexName === 'sushiswap') && configData.version === 'v3') {
-      pools = await getUniswapV3PoolsFromFactory(
+      pools = fetchedPools;
+      latestBlock = newLatestBlock;
+    } else if ((configData.dexName === 'uniswap' || configData.dexName === 'sushiswap' || configData.dexName === 'pancake') && configData.version === 'v3') {
+      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getUniswapV3PoolsFromFactory(
+        rpcUrl,
         configData.factoryAddress,
-        configData.start,
+        lastBlockNumber,
         configData.finish,
       );
+      pools = fetchedPools;
+      latestBlock = newLatestBlock;
     } else if (configData.version === 'v2') {
-      pools = await getV2PoolsFromFactory(
+      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getV2PoolsFromFactory(
+        rpcUrl,
         configData.factoryAddress,
-        configData.start,
+        lastBlockNumber,
         configData.finish,
       );
+      pools = fetchedPools;
+      latestBlock = newLatestBlock;
     }
 
-    if (!pools || pools.length === 0)
+    if (!pools || pools.length === 0) {
+      console.log('--- [Last block update to] ---', latestBlock);
+
+      await services.lastBlock.upsert({
+        blockNumber: latestBlock,
+        dex: configData.dexId,
+        version: configData.version,
+        chainId: configData.chainId
+      }, manager);
+
       return { success: true, message: 'No pools found' };
+    }
+
+    console.log('--- [New pools] ---', pools.length);
 
     const uniqueTokens = getUniqueTokens(pools);
 
+    console.log('--- [Unique Tokens] ---', uniqueTokens.length);
+
     const newTokenAddresses = await filterNewTokenAddresses(
       uniqueTokens,
-      tokensService,
+      configData.chainId,
+      services.tokens,
       manager,
     );
-    console.log('[newTokenAddresses] ::: ', newTokenAddresses);
-    const tokensData = await fetchTokensData(newTokenAddresses);
-    const tokensToSave = tokensData.map((t) => ({ ...t, chainId: 42161 }));
 
-    await saveTokensIfNotExist(tokensToSave, tokensService, manager);
-    const tokenMap = await buildTokenMap(tokensService, manager);
-    const existingPools = await getExistingPoolsSet(poolsService, manager);
+    console.log('--- [New Tokens] ---', newTokenAddresses.length);
+
+    const provider = await setProvider(rpcUrl, configData.chainId);
+    const tokensData = await fetchTokensData(provider, newTokenAddresses);
+
+    console.log('--- [Tokens Data received] ---', tokensData.length);
+
+    const tokensToSave = tokensData.map((t) => ({ ...t, chainId: configData.chainId }));
+
+    await saveTokensIfNotExist(tokensToSave, services.tokens, manager);
+
+    console.log('--- [Tokens saved] ---');
+
+    const tokenMap = await buildTokenMap(services.tokens, manager);
+    const existingPools = await getExistingPoolsSet(services.pools, manager);
 
     const createdPools = await createPools(
       pools,
       tokenMap,
       existingPools,
       configData,
-      poolsService,
+      services.pools,
       manager,
     );
 
+    console.log('--- [Pools saved] ---', createdPools.length);
+
     const v2Helper = new GetV2ReservesHelper();
     const v3Helper = new GetV3ReservesHelper();
-    console.log('[setReserves] ::: ', setReserves);
+
     await setReserves(
-      poolsService,
+      services.pools,
       v2Helper,
       v3Helper,
       configData,
       manager,
     );
 
-    return createdPools;
-  } catch (error) {
-    console.error(
-      '!!! ERROR IN getPoolsFromFactory:',
-      error.message,
-    );
-    console.error(error.stack);
-    throw error;
-  } finally {
-    if (dataSource) {
-      await DBConnector.close(dataSource);
-      console.debug('--- [FINALLY] Connection closed via DBConnector. ---');
-    }
-  }
+    console.log('--- [Added Reserves] ---');
+
+    await services.lastBlock.upsert({
+      blockNumber: latestBlock,
+      dex: configData.dexId,
+      version: configData.version,
+      chainId: configData.chainId
+    }, manager);
+
+    console.log('--- [Last block update to] ---', latestBlock);
+
+    return { success: true, createdCount: createdPools.length };
+  });
 }
+
 
 export async function filterNewTokenAddresses(
   tokenAddresses: string[],
+  chainId: number,
   tokensService: TokensService,
   manager: EntityManager,
 ): Promise<string[]> {
-  const existingTokens = await tokensService.findAll(manager);
-  const existingAddresses = new Set(
-    existingTokens.map((t) => t.address.toLowerCase()),
+  if (tokenAddresses.length === 0) return [];
+
+  const existingInDb = await tokensService.findExistingByAddresses(
+    tokenAddresses,
+    chainId,
+    manager
   );
 
+  const existingSet = new Set(existingInDb);
   const result: string[] = [];
 
   for (const addr of tokenAddresses) {
     const normalized = addr.toLowerCase();
-
-    if (!existingAddresses.has(normalized)) {
+    if (!existingSet.has(normalized)) {
       result.push(normalized);
     }
   }
 
-  return result;
+  return [...new Set(result)];
 }
 
 export async function saveTokensIfNotExist(
@@ -231,6 +233,7 @@ export async function getExistingPoolsSet(
       .map((addr) => addr.toLowerCase()),
   );
 }
+
 export async function createPools(
   pools: IPool[],
   tokenMap: Map<string, number>,
@@ -242,6 +245,7 @@ export async function createPools(
   const createdPools: Pools[] = [];
 
   for (const pool of pools) {
+
     const poolAddress = (
       config.version === 'v2' ? pool.pair : pool.pool
     )?.toLowerCase();
@@ -261,6 +265,9 @@ export async function createPools(
     if (existingPools.has(poolAddress) || !token0Id || !token1Id) {
       if (!token0Id || !token1Id)
         logger.warn(`Tokens not found for pool ${poolAddress}`);
+
+      if (existingPools.has(poolAddress)) logger.warn(`Duplicate Pool ${poolAddress}`);
+
       continue;
     }
 
@@ -275,6 +282,7 @@ export async function createPools(
           dexId: config.dexId,
           chainId: config.chainId,
         },
+        config.chainId,
         manager,
       );
 
@@ -293,47 +301,47 @@ export async function setReserves(
   configData: IConfig,
   manager: EntityManager,
 ) {
-  const allPools = await poolsService.findAll(manager);
+  const allPools = await poolsService.findEmptyReserves(configData.version, 1000, manager);
+
+  console.log('---[Empty reserves]---', allPools.length);
 
   const filteredPools = allPools.filter(
     (p) =>
       p.version === configData.version &&
-      (p.reserve0 === null || p.reserve1 === null),
+      (p.reserve0 === null || p.reserve1 === null) &&
+      p.poolAddress
   );
 
-  const fetcher =
-    configData.version === 'v2'
-      ? (addr: string) =>
-        getV2ReservesHelper.getV2Reserves(addr as `0x${string}`)
-      : (addr: string) =>
-        getV3ReservesHelper.getV3Reserves(addr as `0x${string}`);
+  if (filteredPools.length === 0) return;
 
-  const reserves: UpdateReservesDto[] = [];
+  const poolAddresses = filteredPools.map(p => p.poolAddress as `0x${string}`);
 
-  for (const pool of filteredPools) {
-    try {
-      if (!pool.poolAddress) continue;
+  console.log('---[Created pool addresses array and start check reserves]---', poolAddresses.length);
 
-      const reserve = (await fetcher(
-        pool.poolAddress,
-      )) as IV2ReserveResponse | null;
+  const fetchedResults = configData.version === 'v2'
+    ? await getV2ReservesHelper.getV2Reserves(configData.chainId, poolAddresses)
+    : await getV3ReservesHelper.getV3Reserves(configData.chainId, poolAddresses);
 
-      if (!reserve) continue;
+  console.log('---[Reserve check completed]---', fetchedResults.length);
 
-      reserves.push({
-        address: reserve.address,
-        token0: reserve.token0 ?? '',
-        token1: reserve.token1 ?? '',
-        reserve0: reserve.reserve0?.toString() ?? '0',
-        reserve1: reserve.reserve1?.toString() ?? '0',
-      });
-    } catch (error) {
-      console.error(
-        `Error getting reserves for pool ${pool.poolAddress}:`,
-        error,
-      );
-    }
+  const reserves: UpdateReservesDto[] = fetchedResults
+    .filter((res): res is NonNullable<typeof res> => res !== null)
+    .map((reserve) => ({
+      address: reserve.address,
+      chainId: configData.chainId,
+      token0: reserve.token0 ?? '',
+      token1: reserve.token1 ?? '',
+      reserve0: reserve.reserve0,
+      reserve1: reserve.reserve1,
+    }));
+
+  console.log('---[Reserves converted for conservation]---', reserves.length);
+
+
+  if (reserves.length > 0) {
+    await poolsService.updateReserves(reserves, manager);
+    console.log(`Updated ${reserves.length} empty pools via multicall`);
   }
 
-  await poolsService.updateReserves(reserves, manager);
+  console.log('---[Reserves saved]---');
 }

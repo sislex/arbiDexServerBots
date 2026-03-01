@@ -1,22 +1,25 @@
 import { ethers } from 'ethers';
-export const ARBISCAN_RPC = 'https://arb1.arbitrum.io/rpc';
 
 const v3FactoryIface = new ethers.Interface([
   'event PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool)',
 ]);
 
 export async function getUniswapV3PoolsFromFactory(
+  rpc: string,
   factoryAddress: string,
   fromBlock = 0,
   toBlock?: number,
 ) {
-  const provider = new ethers.JsonRpcProvider(ARBISCAN_RPC);
+  const provider = new ethers.JsonRpcProvider(rpc);
   const factory = ethers.getAddress(factoryAddress.toLowerCase());
   const latest = await provider.getBlockNumber();
-  const endBlock = toBlock ?? latest;
+  const endBlock = Math.min(toBlock ?? latest, latest);
+
+  console.log('=== Real network latest ===', latest);
+  console.log('=== We will scan up to ===', endBlock);
 
   const topic0 = ethers.id('PoolCreated(address,address,uint24,int24,address)');
-  const step = 10_000_000;
+  const step = 100_000;
 
   const pools: any[] = [];
 
@@ -30,7 +33,7 @@ export async function getUniswapV3PoolsFromFactory(
       topics: [topic0],
     });
 
-    console.log('Fetched logs from blocks', start, 'to', end, ':', logs.length);
+    // console.log('Fetched logs from blocks', start, 'to', end, ':', logs.length);
 
     for (const log of logs) {
       const parsed = v3FactoryIface.parseLog(log);
@@ -47,5 +50,5 @@ export async function getUniswapV3PoolsFromFactory(
     }
   }
 
-  return pools;
+  return { pools, latestBlock: endBlock };
 }

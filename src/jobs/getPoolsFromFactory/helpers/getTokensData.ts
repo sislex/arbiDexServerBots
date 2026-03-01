@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
 
-export const ARBISCAN_RPC2 = 'https://arb1.arbitrum.io/rpc';
 
 const ERC20_ABI = [
   'function name() view returns (string)',
@@ -18,7 +17,8 @@ type TokenData = {
 type Pool = {
   token0: string;
   token1: string;
-  pair: string; //pair/pool в зависимости от фабрики
+  pool?: string; //pair/pool в зависимости от фабрики
+  pair?: string; //pair/pool в зависимости от фабрики
   blockNumber: number;
 };
 
@@ -33,10 +33,15 @@ export function getUniqueTokens(pools: Pool[]): string[] {
   return Array.from(tokenSet);
 }
 
+
+export async function setProvider(rpc: string, chainId: number) {
+  return new ethers.JsonRpcProvider(rpc, { chainId, name: chainId.toString() }, { staticNetwork: true });
+}
+
 export async function fetchTokensData(
+  provider: any,
   tokenAddresses: string[],
 ): Promise<TokenData[]> {
-  const provider = new ethers.JsonRpcProvider(ARBISCAN_RPC2);
   const results: TokenData[] = [];
 
   const CONCURRENCY = 1;
@@ -60,7 +65,7 @@ export async function fetchTokensData(
           decimals: Number(decimals),
         } as TokenData;
       } catch (err) {
-        console.warn('Error fetching token', addr, err);
+        // console.warn('Error fetching token', addr, err);
         return null;
       }
     });

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Tokens } from '../entities/entities';
-import { Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager, In, Raw } from 'typeorm';
 import { CreateTokenDto } from '../dtos/token-dto/token.dto';
 import { Chains } from '../entities/entities';
 
@@ -18,9 +18,6 @@ export class TokensService {
     const tokenRepo = manager
       ? manager.getRepository(Tokens)
       : this.tokensRepository;
-    const chainRepo = manager
-      ? manager.getRepository(Chains)
-      : this.chainsRepository;
 
     const existingToken = await tokenRepo.findOne({
       where: {
@@ -31,15 +28,9 @@ export class TokensService {
 
     if (existingToken) return existingToken;
 
-    const chain = await chainRepo.findOne({
-      where: { chainId: tokenDto.chainId },
-    });
-
-    if (!chain) throw new Error(`Chain с id ${tokenDto.chainId} не найден`);
-
     const token = tokenRepo.create({
       ...tokenDto,
-      chain,
+      chain: { chainId: tokenDto.chainId }, // Передаем ID как объект
       decimals: +tokenDto.decimals,
     });
 
@@ -56,6 +47,10 @@ export class TokensService {
         chain: true,
       },
       select: {
+        tokenId: true,
+        address: true,
+        symbol: true,
+        decimals: true,
         chain: {
           chainId: true,
         },
@@ -66,40 +61,48 @@ export class TokensService {
     });
   }
 
-  async findOne(id: number, manager?: EntityManager) {
+  async findOneByAddress(
+    tokenAddress: string,
+    chainId: number,
+    manager?: EntityManager,
+  ) {
     const repo = manager
       ? manager.getRepository(Tokens)
       : this.tokensRepository;
 
     const token = await repo.findOne({
-      where: { tokenId: id },
+      where: {
+        address: Raw((alias) => `LOWER(${alias}) = LOWER(:address)`, {
+          address: tokenAddress,
+        }),
+        chain: { chainId: chainId },
+      },
       relations: ['chain'],
     });
 
-    if (!token) {
-      throw new Error(`Token with id ${id} not found`);
-    }
+    if (!token) throw new Error(`Token ${tokenAddress} not found`);
     return token;
   }
 
-  async findOneByAddress(tokenAddress: string, manager?: EntityManager) {
-    const tokenRepo = manager
+  async findExistingByAddresses(
+    addresses: string[],
+    chainId: number,
+    manager?: EntityManager,
+  ): Promise<string[]> {
+    const repo = manager
       ? manager.getRepository(Tokens)
       : this.tokensRepository;
 
-    // ВАЖНО: Если используете QueryBuilder с динамическим менеджером:
-    const query = manager
-      ? manager.createQueryBuilder(Tokens, 'token')
-      : tokenRepo.createQueryBuilder('token');
+    const normalizedAddresses = addresses.map((addr) => addr.toLowerCase());
 
-    const token = await query
-      .leftJoinAndSelect('token.chain', 'chain')
-      .where('LOWER(token.address) = LOWER(:address)', {
-        address: tokenAddress,
-      })
-      .getOne();
+    const existing = await repo.find({
+      where: {
+        address: In(normalizedAddresses),
+        chain: { chainId: chainId },
+      },
+      select: ['address'],
+    });
 
-    if (!token) throw new Error(`Token with address ${tokenAddress} not found`);
-    return token;
+    return existing.map((t) => t.address.toLowerCase());
   }
 }

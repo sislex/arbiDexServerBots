@@ -26,6 +26,7 @@ export class UpdatePoolDto {
 
 export class UpdateReservesDto {
   address: string;
+  chainId: number;
   token0: string;
   token1: string;
   reserve0: string;
