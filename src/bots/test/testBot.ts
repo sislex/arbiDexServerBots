@@ -23,7 +23,7 @@ interface ITestBotState {
   lastAnalyticsTimeFinish: Date | null;
   lastAnalyticsLatency: number | null;
   analyticsLatency: number;
-  lastAnalyticsResult: IBestBuySellArbitrage | null;
+  lastAnalyticsResult: any;
 
   arbitrageList: IArbitrage[],
 
@@ -113,7 +113,7 @@ export class TestBot implements ITestBot {
   }
 
   async analytics(): Promise<void> {
-    this.botState.lastAnalyticsResult = bestBuySellArbitrage(this.botState.lastJobResult.result, true);
+    this.botState.lastAnalyticsResult = this.botState.lastJobResult.result;
     // console.log('this.botState.lastAnalyticsResult ', this.botState.lastAnalyticsResult);
     // console.log('this.botState.lastAnalyticsResult.groups[0] ', this.botState.lastAnalyticsResult.groups[0]);
   }
@@ -140,17 +140,14 @@ export class TestBot implements ITestBot {
       this.botState.analyticsLatency = Math.round(avg + (this.botState.lastAnalyticsLatency - avg) / n);
     }
 
-    if (this.botState.lastAnalyticsResult?.hasArbitrage) {
-      const lastAnalyticsResult: IBestBuySellArbitrage = this.botState.lastAnalyticsResult;
-      if (lastAnalyticsResult.hasArbitrage) {
-        const arbitrage: IArbitrage = createArbitrage({
-          blockNumber: this.botState.lastJobResult.blockNumber,
-          ...lastAnalyticsResult,
-        });
+    if (this.botState.lastAnalyticsResult?.length || true) {
+      const lastAnalyticsResult: any[] = this.botState.lastAnalyticsResult;
+      const arbitrage: IArbitrage = createArbitrage();
 
-        this.pushArbitrage({...arbitrage, groups: [arbitrage.groups[0]]}); // сохраняем только первую группу для теста
-        this.startSwaps(arbitrage);
-      }
+      this.pushArbitrage({...arbitrage, groups: lastAnalyticsResult});
+      // console.log('lastAnalyticsResult', lastAnalyticsResult);
+      // console.log('this.botState.arbitrageList', this.botState.arbitrageList);
+      // this.startSwaps(arbitrage);
     }
   }
 
@@ -239,8 +236,6 @@ export class TestBot implements ITestBot {
             this.botState.lastJobResult = jobResult;
             const result: IQuoteResult[] = jobResult.result;
             // console.log('result:', result);
-            // const readableResult = result.map((quoteResult: IQuoteResult) => pairQuoteToHuman(quoteResult));
-            // console.log('readableResult: ', readableResult[0], readableResult[1]);
           } else {
             const error = createBotError({
               errorCode: `JOB: ${jobResult.error}`,
@@ -305,6 +300,8 @@ export class TestBot implements ITestBot {
       this.botState.lastLatency =
         this.botState.lastJobTimeFinish.getTime() -
         this.botState.lastJobTimeStart.getTime();
+
+      console.log('this.botState.lastLatency', this.botState.lastLatency);
     } else {
       this.botState.lastLatency = null;
     }
@@ -323,7 +320,7 @@ export class TestBot implements ITestBot {
       this.botState.latency = Math.round(avg + (this.botState.lastLatency - avg) / n);
     }
 
-    // this.startAnalytics();
+    this.startAnalytics();
   }
 
   async job(jobParams: IJobParams = this.jobParams): Promise<any> {

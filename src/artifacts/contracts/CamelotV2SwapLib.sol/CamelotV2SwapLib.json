@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "CamelotV2SwapLib",
+  "sourceName": "contracts/CamelotV2SwapLib.sol",
+  "abi": [],
+  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea2646970667358221220a7ef43897b8fab2f126741f0756a224e26a0b4c74d12f22b19aeaa99c1bc160b64736f6c634300081c0033",
+  "deployedBytecode": "0x600080fdfea2646970667358221220a7ef43897b8fab2f126741f0756a224e26a0b4c74d12f22b19aeaa99c1bc160b64736f6c634300081c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -1,25 +1,15 @@
 import {
-  IContractStep,
-  IQuote,
-  IQuoteResult, ISimulationStepsLogs, SwapKind
+  IContractStep, IQuoteStepsResults,
+  ISimulationStepsLogs
 } from '../../../store/state.types';
 import {QuoteResultMulti} from '../../handlers';
 import {ethers} from 'ethers';
-import {configToStep} from './configToStep';
-
-export interface IQuoteStepsResults {
-  quoteStep: IContractStep[],
-  simulationStepsLogs?: ISimulationStepsLogs[],
-  quoteLog?: ISimulationStepsLogs,
-  profitBase?: bigint,
-  profitPct?: number,
-  gas?: bigint,
-}
 
 export async function getQuotesFromLastStep(
   quoteSteps: IContractStep[][],
   vault: ethers.Contract,
   provider: ethers.JsonRpcProvider,
+  isSimulation = true,
 ): Promise<QuoteResultMulti> {
 
   const startedAt = Date.now();

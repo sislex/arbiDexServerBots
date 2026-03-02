@@ -4,16 +4,31 @@ import {ethers} from 'ethers';
 export async function swap(
   swapSteps: IContractStep[],
   vault: ethers.Contract,
+  isSimulation = true
 ): Promise<ISimulationStepsLogs[]> {
-  console.log('swapSteps', swapSteps);
-
+  // console.log('swapSteps', swapSteps);
+  let simulationSummary, simulationLogs;
   try {
-    const [simulationSummary, simulationLogs] = await vault.executeSwaps.staticCall(
-      swapSteps,
-      swapSteps[0].tokenOut,
-      false,
-      false,
-    );
+    if (isSimulation) {
+      [simulationSummary, simulationLogs] = await vault.executeSwaps.staticCall(
+        swapSteps,
+        swapSteps[0].tokenOut,
+        false,
+        false,
+      );
+    } else {
+      [simulationSummary, simulationLogs] = await vault.executeSwaps(
+        swapSteps,
+        swapSteps[0].tokenOut,
+        true,
+        false,
+        {
+          gasLimit: 400_000n,
+        }
+      );
+
+    }
+
 
     let simulationStepsLogs: ISimulationStepsLogs[] = simulationLogs.map((log: ethers.Contract | null) => ({
       poolAddress: log![2],
@@ -29,7 +44,7 @@ export async function swap(
 
     return simulationStepsLogs;
   } catch (e: any) {
-    console.log('error', e);
+    console.log('error function swap');
     return [];
   }
 }

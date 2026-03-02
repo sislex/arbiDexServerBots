@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "AlgebraSwapLib",
+  "sourceName": "contracts/AlgebraSwapLib.sol",
+  "abi": [],
+  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea2646970667358221220f4d675cc842ec4f5f70ba3c0fa0c4c5c2a9461ed2d07e772592c0b16c3f5787464736f6c634300081c0033",
+  "deployedBytecode": "0x600080fdfea2646970667358221220f4d675cc842ec4f5f70ba3c0fa0c4c5c2a9461ed2d07e772592c0b16c3f5787464736f6c634300081c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

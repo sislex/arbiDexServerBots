@@ -2,8 +2,9 @@
 import { Action } from './actions';
 import {AppState, IJobType, IBotType} from './state.types';
 import {ApiStabs} from './stabs/api.stabs';
-import {BotRuleListStab} from './stabs/bot-rule-list.stabs';
-import {BotList10, BotsListReplacedStab, BotsListSourceStab, BotsListStab} from './stabs/bots-list.stabs';
+import {
+  BotListFiltered,
+} from './stabs/bots-list.stabs';
 
 const ERROR_CAP = 1000;
 
@@ -21,7 +22,7 @@ export const initialState: AppState = {
   ],
   // botsRulesList: BotRuleListStab,
   // botsRulesList: BotsListReplacedStab,
-  botsRulesList: BotList10,
+  botsRulesList: BotListFiltered,
   // botsRulesList: [],
   botsList: [],
   errorList: [],
