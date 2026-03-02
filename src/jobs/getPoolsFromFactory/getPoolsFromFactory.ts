@@ -49,7 +49,7 @@ export async function getPoolsFromFactory(deps: {
       );
       pools = fetchedPools;
       latestBlock = newLatestBlock;
-    } else if ((configData.dexName === 'uniswap' || configData.dexName === 'sushiswap' || configData.dexName === 'pancake') && configData.version === 'v3') {
+    } else if (!(configData.dexName === 'camelot') && configData.version === 'v3') {
       const { pools: fetchedPools, latestBlock: newLatestBlock } = await getUniswapV3PoolsFromFactory(
         rpcUrl,
         configData.factoryAddress,

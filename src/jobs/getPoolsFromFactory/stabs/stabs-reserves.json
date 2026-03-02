@@ -1,0 +1,43 @@
+// ФУНКЦИЯ - get_Pools_Reserves
+
+// НАСТРОЙКИ БОТА
+{
+  "botParams": {
+    "paused": true,
+    "isRepeat": true,
+    "delayBetweenRepeat": 600000,
+    "maxJobs": 999999999,
+    "maxErrors": 10,
+    "timeoutMs": 400000
+  }
+}
+
+//========================[Резервы V3]===========================
+{
+"configDB": {
+"type": "postgres",
+"host": "45.135.182.251",
+"port": 5432,
+"username": "user_secret",
+"password": "pass_secret",
+"database": "config_info_db_2"
+},
+"configData": {
+"version": "v3"
+}
+}
+
+//========================[Резервы V2]===========================
+{
+"configDB": {
+"type": "postgres",
+"host": "45.135.182.251",
+"port": 5432,
+"username": "user_secret",
+"password": "pass_secret",
+"database": "config_info_db_2"
+},
+"configData": {
+"version": "v2"
+}
+}
