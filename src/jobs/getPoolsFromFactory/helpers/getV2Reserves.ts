@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Chain, createPublicClient, http, parseAbi } from 'viem';
-import { arbitrum } from 'viem/chains';
+import { parseAbi } from 'viem';
 import { getBlockchainClient } from './blockchain-client.factory';
+import { ChainDto } from './dtos/chains-dto/chain.dto';
 
 const V2_POOL_ABI = parseAbi([
   'function getReserves() view returns (uint112 reserve0, uint112 reserve1, uint32)',
@@ -12,18 +12,9 @@ const V2_POOL_ABI = parseAbi([
 
 @Injectable()
 export class GetV2ReservesHelper {
-  // private client = createPublicClient({
-  //   chain: arbitrum,
-  //   transport: http(
-  //     'https://arb-mainnet.g.alchemy.com/v2/TxHI6ptndQEJi3coISt0BcQZdZg1rnWV',
-  //     {
-  //       batch: true,
-  //     },
-  //   ),
-  // });
 
-  async getV2Reserves(chain: number, addresses: `0x${string}`[]) {
-    const client = getBlockchainClient(chain);
+  async getV2Reserves(chain: ChainDto, rpcUrl: string, addresses: `0x${string}`[]) {
+    const client = getBlockchainClient(chain, rpcUrl);
 
     const contracts = addresses.flatMap((address) => [
       { address, abi: V2_POOL_ABI, functionName: 'getReserves' },
@@ -46,7 +37,7 @@ export class GetV2ReservesHelper {
       const t1Res = results[offset + 2];
 
       if (reservesRes.status === 'failure') {
-        console.error(`Failed reserves for ${address}`);
+        console.error(`Failed reserves for ${address}`, reservesRes.error);
         return null;
       }
 

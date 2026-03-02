@@ -12,8 +12,9 @@ import { getV2PoolsFromFactory } from './helpers/getV2PoolsFromFactory';
 import { GetV3ReservesHelper } from './helpers/getV3Reserves';
 import { GetV2ReservesHelper } from './helpers/getV2Reserves';
 import { UpdateReservesDto } from './helpers/dtos/pools-dto/pool.dto';
-import { IConfig, IPool, IV2ReserveResponse } from './models';
+import { IConfig, IPool } from './models';
 import { runWithContext } from './utils/run-with-context';
+import { ChainDto } from './helpers/dtos/chains-dto/chain.dto';
 
 const logger = new Logger('BlockchainLogic');
 
@@ -25,6 +26,7 @@ export async function getPoolsFromFactory(deps: {
 }) {
   return runWithContext(deps.extraSettings, async ({ manager, configData, services }) => {
     console.log('--- [START] getPoolsFromFactory ---');
+    const chain = await services.chains.findOne(configData.chainId);
 
     const lastBlockNumber = (await services.lastBlock.findOneByVersionAndDex(
       configData.version,
@@ -129,6 +131,8 @@ export async function getPoolsFromFactory(deps: {
       v3Helper,
       configData,
       manager,
+      chain,
+      rpcUrl
     );
 
     console.log('--- [Added Reserves] ---');
@@ -300,6 +304,8 @@ export async function setReserves(
   getV3ReservesHelper: GetV3ReservesHelper,
   configData: IConfig,
   manager: EntityManager,
+  chain: ChainDto,
+  rpcUrl: string,
 ) {
   const allPools = await poolsService.findEmptyReserves(configData.version, 1000, manager);
 
@@ -319,8 +325,8 @@ export async function setReserves(
   console.log('---[Created pool addresses array and start check reserves]---', poolAddresses.length);
 
   const fetchedResults = configData.version === 'v2'
-    ? await getV2ReservesHelper.getV2Reserves(configData.chainId, poolAddresses)
-    : await getV3ReservesHelper.getV3Reserves(configData.chainId, poolAddresses);
+    ? await getV2ReservesHelper.getV2Reserves(chain, rpcUrl, poolAddresses)
+    : await getV3ReservesHelper.getV3Reserves(chain, rpcUrl, poolAddresses);
 
   console.log('---[Reserve check completed]---', fetchedResults.length);
 

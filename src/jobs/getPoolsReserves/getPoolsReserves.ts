@@ -5,13 +5,15 @@ import { GetV3ReservesHelper } from '../getPoolsFromFactory/helpers/getV3Reserve
 import { IConfig } from '../getPoolsFromFactory/models';
 import { UpdateReservesDto } from '../getPoolsFromFactory/helpers/dtos/pools-dto/pool.dto';
 import { runWithContext } from '../getPoolsFromFactory/utils/run-with-context';
+import { ChainDto } from '../getPoolsFromFactory/helpers/dtos/chains-dto/chain.dto';
 
-export async function getPoolsReserves(deps: { extraSettings?: string }) {
+export async function getPoolsReserves(deps: {rpcUrl: string, extraSettings?: string }) {
   return runWithContext(
     deps.extraSettings,
-    async ({ manager, configData, services }) => {
+    async ({ manager, configData, services  }) => {
       const v2Helper = new GetV2ReservesHelper();
       const v3Helper = new GetV3ReservesHelper();
+      const chain = await services.chains.findOne(configData.chainId);
 
       await setReserves(
         services.pools,
@@ -19,7 +21,9 @@ export async function getPoolsReserves(deps: { extraSettings?: string }) {
         v3Helper,
         configData,
         manager,
-      );
+        chain,
+        deps.rpcUrl,
+    );
 
       return { success: true };
     },
@@ -31,6 +35,8 @@ export async function setReserves(
   getV3ReservesHelper: GetV3ReservesHelper,
   configData: IConfig,
   manager: EntityManager,
+  chain: ChainDto,
+  rpcUrl: string,
 ) {
   const filteredPools = await poolsService.findOldestReserves(
     configData.version,
@@ -48,8 +54,8 @@ export async function setReserves(
 
   const fetchedReserves =
     configData.version === 'v2'
-      ? await getV2ReservesHelper.getV2Reserves(configData.chainId, poolAddresses)
-      : await getV3ReservesHelper.getV3Reserves(configData.chainId, poolAddresses);
+      ? await getV2ReservesHelper.getV2Reserves(chain, rpcUrl, poolAddresses)
+      : await getV3ReservesHelper.getV3Reserves(chain, rpcUrl, poolAddresses);
 
   const reserves: UpdateReservesDto[] = fetchedReserves
     .filter((reserve): reserve is NonNullable<typeof reserve> => !!reserve) // Явная проверка на null
