@@ -40,7 +40,7 @@ export async function getPoolsFromFactory(deps: {
 
     console.log('--- [GET POOLS FROM BLOCK] ---', lastBlockNumber, '---', configData.finish);
 
-    if (configData.dexName.Lowercase() === 'camelot' && configData.version === 'v3') {
+    if (configData.dexName === 'Camelot' && configData.version === 'v3') {
       const { pools: fetchedPools, latestBlock: newLatestBlock } = await getCamelotV3PoolsFromFactory(
         rpcUrl,
         configData.factoryAddress,
@@ -49,7 +49,7 @@ export async function getPoolsFromFactory(deps: {
       );
       pools = fetchedPools;
       latestBlock = newLatestBlock;
-    } else if (!(configData.dexName.Lowercase() === 'camelot') && configData.version === 'v3') {
+    } else if (!(configData.dexName === 'Camelot') && configData.version === 'v3') {
       const { pools: fetchedPools, latestBlock: newLatestBlock } = await getUniswapV3PoolsFromFactory(
         rpcUrl,
         configData.factoryAddress,
