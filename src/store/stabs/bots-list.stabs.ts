@@ -8,13 +8,13 @@ export const BotList10: IBotsRule[] = [
       "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 100,
-      maxJobs: 1,
+      maxJobs: 10000,
       maxErrors: 100,
       timeoutMs: 3000,
     },
     "jobParams": {
       "jobType": IJobType.GET_ARB_EXECUTOR_QUOTES,
-      "rpcUrl": "https://arb1.arbitrum.io/rpc",
+      "rpcUrl": "https://arb-mainnet.g.alchemy.com/v2/_T_Qkk4fOdQ7jQbGjSW2F",
       "stepPrefundPct": 2,
       "pairsToQuote": [
         {
@@ -230,33 +230,6 @@ export const BotList10: IBotsRule[] = [
           "quoteSource": "quoteBothBase"
         },
 
-
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "token0": {
-            "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-            "decimals": 18
-          },
-          "token1": {
-            "address": "0xddb46999f8891663a8f2828d25298f70416d7610",
-            "decimals": 18
-          },
-          "poolAddress": "0x8701e62c7fa59cba162d269b07b411581f1d2fc1",
-          "feePpm": 3000,
-          "tokenIn": {
-            "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-            "decimals": 18
-          },
-          "tokenOut": {
-            "address": "0xddb46999f8891663a8f2828d25298f70416d7610",
-            "decimals": 18
-          },
-          "side": "exactIn",
-          "amount": "30000000000000000",
-          "blockTag": "latest",
-          "quoteSource": "quoteBothBase"
-        },
 
 
 
@@ -1644,7 +1617,60 @@ export const BotList10: IBotsRule[] = [
           "amount": "30000000000000000",
           "blockTag": "latest",
           "quoteSource": "quoteBothBase"
-        }
+        },
+
+        {
+          "dex": "camelot",
+          "version": "v2",
+          "token0": {
+            "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+            "decimals": 18
+          },
+          "token1": {
+            "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+            "decimals": 6
+          },
+          "poolAddress": "0x54b26faf3671677c19f70c4b879a6f7b898f732c",
+          "feePpm": 3000,
+          "tokenIn": {
+            "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+            "decimals": 18
+          },
+          "tokenOut": {
+            "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+            "decimals": 6
+          },
+          "side": "exactIn",
+          "amount": "30000000000000000",
+          "blockTag": "latest",
+          "quoteSource": "quoteBothBase"
+        },
+        {
+          "dex": "camelot",
+          "version": "v3",
+          "token0": {
+            "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+            "decimals": 18
+          },
+          "token1": {
+            "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+            "decimals": 6
+          },
+          "poolAddress": "0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526",
+          "feePpm": 3000,
+          "tokenIn": {
+            "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+            "decimals": 18
+          },
+          "tokenOut": {
+            "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+            "decimals": 6
+          },
+          "side": "exactIn",
+          "amount": "30000000000000000",
+          "blockTag": "latest",
+          "quoteSource": "quoteBothBase"
+        },
       ]
     }
   }
@@ -1659,10 +1685,9 @@ export const BotListFiltered: IBotsRule[] =  BotList10.map((bot:IBotsRule) => {
   }
 
   if (botFiltered.jobParams.jobType === IJobType.GET_ARB_EXECUTOR_QUOTES) {
-    botFiltered.jobParams.pairsToQuote = botFiltered.jobParams.pairsToQuote.filter((pair: IPairToQuote) => {
 
-      // console.log('pair.poolAddress: ', pair.poolAddress);
-
+    // Step 1: убираем проблемные пулы (revert, огромный газ и т.д.)
+    const  _blacklistFiltered = botFiltered.jobParams.pairsToQuote.filter((pair: IPairToQuote) => {
       return !(
         pair.poolAddress!.toLowerCase() === '0x8e1881dc184a93e36be6b79ca0de22e5db779b54'.toLowerCase()
         || pair.poolAddress!.toLowerCase() === '0xd49ab568db5721afe8e86811ff4d0d5f5afea300'.toLowerCase()
@@ -1696,6 +1721,20 @@ export const BotListFiltered: IBotsRule[] =  BotList10.map((bot:IBotsRule) => {
         || pair.poolAddress!.toLowerCase() === '0x55A7E0ab34038D75d0E2118254Fd84FdedCd4E65'.toLowerCase()
       );
     });
+
+    // Step 2: убираем пары tokenIn/tokenOut которые встречаются только 1 раз (для арбитража нужно минимум 2 пула в паре)
+    const _pairCount = new Map<string, number>();
+    for (const p of _blacklistFiltered) {
+      const key = p.tokenIn.address.toLowerCase() + '-' + p.tokenOut.address.toLowerCase();
+      _pairCount.set(key, (_pairCount.get(key) || 0) + 1);
+    }
+
+    botFiltered.jobParams.pairsToQuote = _blacklistFiltered.filter((p) => {
+      const key = p.tokenIn.address.toLowerCase() + '-' + p.tokenOut.address.toLowerCase();
+      return (_pairCount.get(key) || 0) >= 2;
+    });
+
+
 
     // botFiltered.jobParams.pairsToQuote = [
     //   ...botFiltered.jobParams.pairsToQuote,

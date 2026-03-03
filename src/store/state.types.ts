@@ -423,3 +423,16 @@ export interface IQuoteStepsResults {
   gas?: bigint,
 }
 
+// ── маппинг sell-результата в единый формат ──────────────────
+export interface ArbResult {
+  buyIndex: number;
+  sellIndex: number;
+  buyPair?: string;
+  sellPair?: string;
+  profit: string;
+  buyAmountOut: string;
+  sellAmountOut: string;
+  gasUsed: string;
+  success: boolean;
+}
+
