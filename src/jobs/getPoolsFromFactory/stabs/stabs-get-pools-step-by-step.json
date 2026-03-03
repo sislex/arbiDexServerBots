@@ -1,0 +1,573 @@
+// ФУНКЦИЯ - get_New_Dex_Pools_From_Factory
+
+// НАСТРОЙКИ БОТА
+{
+  "botParams": {
+    "paused": true,
+    "isRepeat": true,
+    "delayBetweenRepeat": 5000,
+    "maxJobs": 999999999,
+    "maxErrors": 10,
+    "timeoutMs": 999999999
+  }
+}
+
+//========================[СЕТЬ ARBITRUM]===========================
+
+//========================[Обменник Pancake - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865",
+    "version": "v3",
+    "dexId": 4,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "pancake",
+    "chainId": 42161,
+    "plus": 1000000
+  }
+}
+
+//========================[Обменник Pancake - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x02a84c1b3BBD7401a5f7fa98a384EBC70bB5749E",
+    "version": "v2",
+    "dexId": 4,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "pancake",
+    "chainId": 42161,
+    "plus": 1000000
+  }
+}
+
+//========================[Обменник Uniswap - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xf1D7CC64Fb4452F05c498126312eBE29f30Fbcf9",
+    "version": "v2",
+    "dexId": 1,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "uniswap",
+    "chainId": 42161,
+    "plus": 1000000
+  }
+}
+
+//========================[Обменник Uniswap - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xf1D7CC64Fb4452F05c498126312eBE29f30Fbcf9",
+    "version": "v2",
+    "dexId": 1,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "uniswap",
+    "chainId": 42161,
+    "plus": 1000000
+  }
+}
+
+//========================[Обменник Sushi - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x1Af415A1EbA07A4986A52B6F2E7DE7003d82231E",
+    "version": "v3",
+    "dexId": 2,
+    "fee": 0,
+    "start": 1,
+    "finish": 2,
+    "dexName": "sushiswap",
+    "chainId": 42161,
+    "plus": 1000000
+  }
+}
+
+//========================[Обменник Sushi - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xc35dadb65012ec5796536bd9864ed8773abc74c4",
+    "version": "v2",
+    "dexId": 2,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "sushiswap",
+    "chainId": 42161,
+    "plus": 1000000
+  }
+}
+
+//========================[Обменник Camelot - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x1a3C9B1d2F0529D97f2AfC5136Cc23E58f1FD35B",
+    "version": "v3",
+    "dexId": 3,
+    "fee": 0,
+    "start": 1,
+    "finish": 2,
+    "dexName": "camelot",
+    "chainId": 42161,
+    "plus": 1000000
+  }
+}
+
+//========================[Обменник Camelot - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x6EcCab422D763AC031210895C81787E87B43A652",
+    "version": "v2",
+    "dexId": 3,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "camelot",
+    "chainId": 42161,
+    "plus": 1000000
+  }
+}
+
+//========================[СЕТЬ ETHEREUM]===========================
+
+//========================[Обменник Pancake - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865",
+    "version": "v3",
+    "dexId": 4,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "pancake",
+    "chainId": 1,
+    "plus": 5000
+  }
+}
+
+//========================[Обменник Pancake - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x1097053Fd2ea711dad45caCcc45EfF7548fCB362",
+    "version": "v2",
+    "dexId": 4,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "pancake",
+    "chainId": 1,
+    "plus": 5000
+  }
+}
+
+//========================[Обменник Uniswap - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    "version": "v3",
+    "dexId": 1,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "uniswap",
+    "chainId": 1,
+    "plus": 5000
+  }
+}
+
+//========================[Обменник Uniswap - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+    "version": "v2",
+    "dexId": 1,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "uniswap",
+    "chainId": 1,
+    "plus": 5000
+  }
+}
+
+//========================[Обменник Sushi - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xbAcee8076F0548d98215bb6223df088C11144638",
+    "version": "v3",
+    "dexId": 2,
+    "fee": 0,
+    "start": 1,
+    "finish": 2,
+    "dexName": "sushiswap",
+    "chainId": 1,
+    "plus": 5000
+  }
+}
+
+//========================[Обменник Sushi - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac",
+    "version": "v2",
+    "dexId": 2,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "sushiswap",
+    "chainId": 1,
+    "plus": 5000
+  }
+}
+
+////========================[Обменник Curve Finance - V3]===========================
+//{
+//  "configDB": {
+//    "type": "postgres",
+//    "host": "45.135.182.251",
+//    "port": 5432,
+//    "username": "user_secret",
+//    "password": "pass_secret",
+//    "database": "config_info_db_2"
+//  },
+//  "configData": {
+//    "factoryAddress": "0xeCd56e25D422bB87023849503468579483329188",   Lending-ng (v3) а не factory - другой подход!!!!!!!!!
+//    "version": "v3",
+//    "dexId": 5,
+//    "fee": 0,
+//    "start": 1,
+//    "finish": 2,
+//    "dexName": "Curve Finance",
+//    "chainId": 1,
+//    "plus": 5000
+//  }
+//}
+//
+////========================[Обменник Curve Finance - V2]===========================
+//{
+//  "configDB": {
+//    "type": "postgres",
+//    "host": "45.135.182.251",
+//    "port": 5432,
+//    "username": "user_secret",
+//    "password": "pass_secret",
+//    "database": "config_info_db_2"
+//  },
+//  "configData": {
+//    "factoryAddress": "0xF18056Bbd7917da1335502732297448CC1739b00", CryptoSwap (v2) а не factory - другой подход!!!!!!!!!
+//    "version": "v2",
+//    "dexId": 5,
+//    "fee": 3000,
+//    "start": 1,
+//    "finish": 2,
+//    "dexName": "Curve Finance",
+//    "chainId": 1,
+//    "plus": 5000
+//  }
+//}
+
+////========================[Обменник Balancer - V2]===========================
+//{
+//  "configDB": {
+//    "type": "postgres",
+//    "host": "45.135.182.251",
+//    "port": 5432,
+//    "username": "user_secret",
+//    "password": "pass_secret",
+//    "database": "config_info_db_2"
+//  },
+//  "configData": {
+//    "factoryAddress": "0xBA12222222228d8Ba445958a75a0704d566BF2C8", Vault (V2) а не factory - другой подход!!!!!!!!!
+//    "version": "v2",
+//    "dexId": 6,
+//    "fee": 0,
+//    "start": 1,
+//    "finish": 2,
+//    "dexName": "Balancer",
+//    "chainId": 1,
+//    "plus": 5000
+//  }
+//}
+
+////========================[Обменник Aave - V3]===========================
+//{
+//  "configDB": {
+//    "type": "postgres",
+//    "host": "45.135.182.251",
+//    "port": 5432,
+//    "username": "user_secret",
+//    "password": "pass_secret",
+//    "database": "config_info_db_2"
+//  },
+//  "configData": {
+//    "factoryAddress": "0x87870B27F338C21c64634Db15c1578F16524b01B", Lending Pool (V3) а не factory - другой подход!!!!!!!!!
+//    "version": "v3",
+//    "dexId": 7,
+//    "fee": 0,
+//    "start": 1,
+//    "finish": 2,
+//    "dexName": "Aave",
+//    "chainId": 1,
+//    "plus": 5000
+//  }
+//}
+
+////========================[Обменник KyberSwap - V2]===========================
+//{
+//  "configDB": {
+//    "type": "postgres",
+//    "host": "45.135.182.251",
+//    "port": 5432,
+//    "username": "user_secret",
+//    "password": "pass_secret",
+//    "database": "config_info_db_2"
+//  },
+//  "configData": {
+//    "factoryAddress": "0x5F1dddbf348aC257C9333912161A417937A08643", Elastic (v2) а не factory - другой подход!!!!!!!!!
+//    "version": "v2",
+//    "dexId": 8,
+//    "fee": 0,
+//    "start": 1,
+//    "finish": 2,
+//    "dexName": "KyberSwap",
+//    "chainId": 1,
+//    "plus": 5000
+//  }
+//}
+
+
+//========================[СЕТЬ Optimism]===========================
+
+//========================[Обменник Velodrome - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xF1046053aa369aeC4A4554eb5daDeF2C49b27f1c",
+    "version": "v2",
+    "dexId": 9,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "Velodrome",
+    "chainId": 10,
+    "plus": 5000
+  },
+  //Нюанс: В функции getPool нужен флаг stable (true/false).  + Работает не на ALGEBRA или Uni а на Solidity
+}
+
+//========================[Обменник Uniswap - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    "version": "v3",
+    "dexId": 1,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "uniswap",
+    "chainId": 10,
+    "plus": 5000
+  }
+}
+
+//========================[Обменник PancakeSwap - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865",
+    "version": "v3",
+    "dexId": 4,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "PancakeSwap",
+    "chainId": 10,
+    "plus": 5000
+  }
+}
+
+//========================[Обменник Sushiswap - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
+    "version": "v3",
+    "dexId": 2,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "Sushiswap",
+    "chainId": 10,
+    "plus": 5000
+  }
+}
+
+//========================[Обменник Sushiswap - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x7653a99264E7a4E40EDbF2aC95029D81b61f88A4",
+    "version": "v2",
+    "dexId": 2,
+    "fee": 3000,
+    "start": 1,
+    "finish": 2,
+    "dexName": "Sushiswap",
+    "chainId": 10,
+    "plus": 5000
+  }
+}

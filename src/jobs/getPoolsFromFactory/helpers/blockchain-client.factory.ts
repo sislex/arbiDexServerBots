@@ -1,23 +1,22 @@
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, Chain } from 'viem';
 import { mainnet, arbitrum, polygon } from 'viem/chains';
+import { ChainDto } from './dtos/chains-dto/chain.dto';
 
-const RPC_URLS: Record<number, string> = {
-  [mainnet.id]: 'https://eth-mainnet.g.alchemy.com',
-  [arbitrum.id]: 'https://arb-mainnet.g.alchemy.com',
-  [polygon.id]: 'https://polygon-mainnet.g.alchemy.com',
+const CHAINS: Record<number, Chain> = {
+  [mainnet.id]: mainnet,
+  [arbitrum.id]: arbitrum,
+  [polygon.id]: polygon,
 };
 
-export const getBlockchainClient = (chainId: number) => {
-  const chain = mainnet;
+export const getBlockchainClient = (dto: ChainDto, rpcUrl: string) => {
+  const chain = CHAINS[dto.chainId];
 
-  const rpcUrl = RPC_URLS[chain.id];
-
-  if (!rpcUrl) {
-    throw new Error(`RPC URL для сети ${chain.name} не настроен`);
+  if (!chain) {
+    throw new Error(`Сеть для ID ${dto.chainId} не настроены`);
   }
 
   return createPublicClient({
-    chain,
+    chain: chain,
     transport: http(rpcUrl, { batch: true }),
   });
 };

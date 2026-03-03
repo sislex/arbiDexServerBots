@@ -1,0 +1,191 @@
+// ФУНКЦИЯ - get_Pools_From_Factory
+
+// НАСТРОЙКИ БОТА
+{
+  "botParams": {
+    "paused": true,
+    "isRepeat": true,
+    "delayBetweenRepeat": 86400000,
+    "maxJobs": 1000,
+    "maxErrors": 10,
+    "timeoutMs": 28800000
+  }
+}
+
+//========================[СЕТЬ ARBITRUM]===========================
+
+//========================[Обменник Pancake - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865",
+    "version": "v3",
+    "dexId": 4,
+    "fee": 3000,
+    "start": 1,
+    "finish": null,
+    "dexName": "pancake",
+    "chainId": 42161
+  }
+}
+
+//========================[Обменник Pancake - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x02a84c1b3BBD7401a5f7fa98a384EBC70bB5749E",
+    "version": "v2",
+    "dexId": 4,
+    "fee": 3000,
+    "start": 1,
+    "finish": null,
+    "dexName": "pancake",
+    "chainId": 42161
+  }
+}
+
+//========================[Обменник Uniswap - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xf1D7CC64Fb4452F05c498126312eBE29f30Fbcf9",
+    "version": "v2",
+    "dexId": 1,
+    "fee": 3000,
+    "start": 1,
+    "finish": null,
+    "dexName": "uniswap",
+    "chainId": 42161
+  }
+}
+
+//========================[Обменник Uniswap - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xf1D7CC64Fb4452F05c498126312eBE29f30Fbcf9",
+    "version": "v2",
+    "dexId": 1,
+    "fee": 3000,
+    "start": 1,
+    "finish": null,
+    "dexName": "uniswap",
+    "chainId": 42161
+  }
+}
+
+//========================[Обменник Sushi - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x1Af415A1EbA07A4986A52B6F2E7DE7003d82231E",
+    "version": "v3",
+    "dexId": 2,
+    "fee": 0,
+    "start": 1,
+    "finish": null,
+    "dexName": "sushiswap",
+    "chainId": 42161
+  }
+}
+
+//========================[Обменник Sushi - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0xc35dadb65012ec5796536bd9864ed8773abc74c4",
+    "version": "v2",
+    "dexId": 2,
+    "fee": 3000,
+    "start": 1,
+    "finish": null,
+    "dexName": "sushiswap",
+    "chainId": 42161
+  }
+}
+
+//========================[Обменник Camelot - V3]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x1a3C9B1d2F0529D97f2AfC5136Cc23E58f1FD35B",
+    "version": "v3",
+    "dexId": 3,
+    "fee": 0,
+    "start": 1,
+    "finish": null,
+    "dexName": "camelot",
+    "chainId": 42161
+  }
+}
+
+//========================[Обменник Camelot - V2]===========================
+{
+  "configDB": {
+    "type": "postgres",
+    "host": "45.135.182.251",
+    "port": 5432,
+    "username": "user_secret",
+    "password": "pass_secret",
+    "database": "config_info_db_2"
+  },
+  "configData": {
+    "factoryAddress": "0x6EcCab422D763AC031210895C81787E87B43A652",
+    "version": "v2",
+    "dexId": 3,
+    "fee": 3000,
+    "start": 1,
+    "finish": null,
+    "dexName": "camelot",
+    "chainId": 42161
+  }
+}
