@@ -6,11 +6,13 @@ import { IConfig } from '../getPoolsFromFactory/models';
 import { UpdateReservesDto } from '../getPoolsFromFactory/helpers/dtos/pools-dto/pool.dto';
 import { runWithContext } from '../getPoolsFromFactory/utils/run-with-context';
 import { ChainDto } from '../getPoolsFromFactory/helpers/dtos/chains-dto/chain.dto';
+import { initServices } from '../getPoolsFromFactory/utils/init-services';
 
 export async function getPoolsReserves(deps: {rpcUrl: string, extraSettings?: string }) {
   return runWithContext(
     deps.extraSettings,
-    async ({ manager, configData, services  }) => {
+    initServices,
+    async ({ manager, services, configData }) => {
       const v2Helper = new GetV2ReservesHelper();
       const v3Helper = new GetV3ReservesHelper();
       const chain = await services.chains.findOne(configData.chainId);

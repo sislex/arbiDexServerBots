@@ -15,6 +15,7 @@ import { UpdateReservesDto } from './helpers/dtos/pools-dto/pool.dto';
 import { IConfig, IPool } from './models';
 import { runWithContext } from './utils/run-with-context';
 import { ChainDto } from './helpers/dtos/chains-dto/chain.dto';
+import { initServices } from './utils/init-services';
 
 const logger = new Logger('BlockchainLogic');
 
@@ -24,54 +25,122 @@ export async function getPoolsFromFactory(deps: {
   pairsToQuote: any;
   extraSettings?: string;
 }) {
-  return runWithContext(deps.extraSettings, async ({ manager, configData, services }) => {
-    console.log('--- [START] getPoolsFromFactory ---');
-    const chain = await services.chains.findOne(configData.chainId);
+  return runWithContext(
+    deps.extraSettings,
+    initServices,
+    async ({ manager, services, configData }) => {
+      console.log('--- [START] getPoolsFromFactory ---');
+      const chain = await services.chains.findOne(configData.chainId);
 
-    const lastBlockNumber = (await services.lastBlock.findOneByVersionAndDex(
-      configData.version,
-      configData.dexId,
-      configData.chainId,
-      manager,
-    ))?.blockNumber || 1;
-    const { rpcUrl } = deps;
-    let pools: any[] = [];
-    let latestBlock: number = lastBlockNumber;
+      const lastBlockNumber = (await services.lastBlock.findOneByVersionAndDex(
+        configData.version,
+        configData.dexId,
+        configData.chainId,
+        manager,
+      ))?.blockNumber || 1;
+      const { rpcUrl } = deps;
+      let pools: any[] = [];
+      let latestBlock: number = lastBlockNumber;
 
-    console.log('--- [GET POOLS FROM BLOCK] ---', lastBlockNumber, '---', configData.finish);
-    console.log('--- [DEX-version] ---', configData.dexName, '-', configData.version);
+      console.log('--- [GET POOLS FROM BLOCK] ---', lastBlockNumber, '---', configData.finish);
+      console.log('--- [DEX-version] ---', configData.dexName, '-', configData.version);
 
-    if (configData.dexName === 'Camelot' && configData.version === 'v3') {
-      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getCamelotV3PoolsFromFactory(
-        rpcUrl,
-        configData.factoryAddress,
-        lastBlockNumber,
-        configData.finish,
+      if (configData.dexName === 'Camelot' && configData.version === 'v3') {
+        const { pools: fetchedPools, latestBlock: newLatestBlock } = await getCamelotV3PoolsFromFactory(
+          rpcUrl,
+          configData.factoryAddress,
+          lastBlockNumber,
+          configData.finish,
+        );
+        pools = fetchedPools;
+        latestBlock = newLatestBlock;
+      } else if (!(configData.dexName === 'Camelot') && configData.version === 'v3') {
+        const { pools: fetchedPools, latestBlock: newLatestBlock } = await getUniswapV3PoolsFromFactory(
+          rpcUrl,
+          configData.factoryAddress,
+          lastBlockNumber,
+          configData.finish,
+        );
+        pools = fetchedPools;
+        latestBlock = newLatestBlock;
+      } else if (configData.version === 'v2') {
+        const { pools: fetchedPools, latestBlock: newLatestBlock } = await getV2PoolsFromFactory(
+          rpcUrl,
+          configData.factoryAddress,
+          lastBlockNumber,
+          configData.finish,
+        );
+        pools = fetchedPools;
+        latestBlock = newLatestBlock;
+      }
+
+      if (!pools || pools.length === 0) {
+        console.log('--- [Last block update to] ---', latestBlock);
+
+        await services.lastBlock.upsert({
+          blockNumber: latestBlock,
+          dex: configData.dexId,
+          version: configData.version,
+          chainId: configData.chainId
+        }, manager);
+
+        return { success: true, message: 'No pools found' };
+      }
+
+      console.log('--- [New pools] ---', pools.length);
+
+      const uniqueTokens = getUniqueTokens(pools);
+
+      console.log('--- [Unique Tokens] ---', uniqueTokens.length);
+
+      const newTokenAddresses = await filterNewTokenAddresses(
+        uniqueTokens,
+        configData.chainId,
+        services.tokens,
+        manager,
       );
-      pools = fetchedPools;
-      latestBlock = newLatestBlock;
-    } else if (!(configData.dexName === 'Camelot') && configData.version === 'v3') {
-      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getUniswapV3PoolsFromFactory(
-        rpcUrl,
-        configData.factoryAddress,
-        lastBlockNumber,
-        configData.finish,
-      );
-      pools = fetchedPools;
-      latestBlock = newLatestBlock;
-    } else if (configData.version === 'v2') {
-      const { pools: fetchedPools, latestBlock: newLatestBlock } = await getV2PoolsFromFactory(
-        rpcUrl,
-        configData.factoryAddress,
-        lastBlockNumber,
-        configData.finish,
-      );
-      pools = fetchedPools;
-      latestBlock = newLatestBlock;
-    }
 
-    if (!pools || pools.length === 0) {
-      console.log('--- [Last block update to] ---', latestBlock);
+      console.log('--- [New Tokens] ---', newTokenAddresses.length);
+
+      const provider = await setProvider(rpcUrl, configData.chainId);
+      const tokensData = await fetchTokensData(provider, newTokenAddresses);
+
+      console.log('--- [Tokens Data received] ---', tokensData.length);
+
+      const tokensToSave = tokensData.map((t) => ({ ...t, chainId: configData.chainId }));
+
+      await saveTokensIfNotExist(tokensToSave, services.tokens, manager);
+
+      console.log('--- [Tokens saved] ---');
+
+      const tokenMap = await buildTokenMap(services.tokens, manager);
+      const existingPools = await getExistingPoolsSet(services.pools, manager);
+
+      const createdPools = await createPools(
+        pools,
+        tokenMap,
+        existingPools,
+        configData,
+        services.pools,
+        manager,
+      );
+
+      console.log('--- [Pools saved] ---', createdPools.length);
+
+      const v2Helper = new GetV2ReservesHelper();
+      const v3Helper = new GetV3ReservesHelper();
+
+      await setReserves(
+        services.pools,
+        v2Helper,
+        v3Helper,
+        configData,
+        manager,
+        chain,
+        rpcUrl
+      );
+
+      console.log('--- [Added Reserves] ---');
 
       await services.lastBlock.upsert({
         blockNumber: latestBlock,
@@ -80,75 +149,10 @@ export async function getPoolsFromFactory(deps: {
         chainId: configData.chainId
       }, manager);
 
-      return { success: true, message: 'No pools found' };
-    }
+      console.log('--- [Last block update to] ---', latestBlock);
 
-    console.log('--- [New pools] ---', pools.length);
-
-    const uniqueTokens = getUniqueTokens(pools);
-
-    console.log('--- [Unique Tokens] ---', uniqueTokens.length);
-
-    const newTokenAddresses = await filterNewTokenAddresses(
-      uniqueTokens,
-      configData.chainId,
-      services.tokens,
-      manager,
-    );
-
-    console.log('--- [New Tokens] ---', newTokenAddresses.length);
-
-    const provider = await setProvider(rpcUrl, configData.chainId);
-    const tokensData = await fetchTokensData(provider, newTokenAddresses);
-
-    console.log('--- [Tokens Data received] ---', tokensData.length);
-
-    const tokensToSave = tokensData.map((t) => ({ ...t, chainId: configData.chainId }));
-
-    await saveTokensIfNotExist(tokensToSave, services.tokens, manager);
-
-    console.log('--- [Tokens saved] ---');
-
-    const tokenMap = await buildTokenMap(services.tokens, manager);
-    const existingPools = await getExistingPoolsSet(services.pools, manager);
-
-    const createdPools = await createPools(
-      pools,
-      tokenMap,
-      existingPools,
-      configData,
-      services.pools,
-      manager,
-    );
-
-    console.log('--- [Pools saved] ---', createdPools.length);
-
-    const v2Helper = new GetV2ReservesHelper();
-    const v3Helper = new GetV3ReservesHelper();
-
-    await setReserves(
-      services.pools,
-      v2Helper,
-      v3Helper,
-      configData,
-      manager,
-      chain,
-      rpcUrl
-    );
-
-    console.log('--- [Added Reserves] ---');
-
-    await services.lastBlock.upsert({
-      blockNumber: latestBlock,
-      dex: configData.dexId,
-      version: configData.version,
-      chainId: configData.chainId
-    }, manager);
-
-    console.log('--- [Last block update to] ---', latestBlock);
-
-    return { success: true, createdCount: createdPools.length };
-  });
+      return { success: true, createdCount: createdPools.length };
+    });
 }
 
 

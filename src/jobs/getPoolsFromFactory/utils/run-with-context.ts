@@ -1,45 +1,37 @@
 import { DataSource, DataSourceOptions, EntityManager } from 'typeorm';
-import { TokensService } from '../helpers/tokens/tokens.service';
-import { ChainsService } from '../helpers/chains/chains.service';
-import { DexesService } from '../helpers/dexes/dexes.service';
-import { LastBlockNumberDexService } from '../helpers/lastBlockNumberDex/lastBlockNumberDex.service';
-import { PoolsService } from '../helpers/pools/pools.service';
-import { DBConnector } from '../dbConnector';
-import {
-  Chains,
-  Dexes,
-  LastBlockNumberDex,
-  Pools,
-  Tokens,
-} from '../helpers/entities/entities';
+import { DBConnector } from '../../getPoolsFromFactory/dbConnector';
 
-interface JobContext {
-  manager: EntityManager;
-  configData: any;
-  services: {
-    tokens: TokensService;
-    chains: ChainsService;
-    dexes: DexesService;
-    pools: PoolsService;
-    lastBlock: LastBlockNumberDexService;
-  };
+interface ExtraSettings {
+  configData: Record<string, any>;
+  configDB: DataSourceOptions;
 }
 
-export async function runWithContext(
-  extraSettings: string | undefined,
-  callback: (ctx: JobContext) => Promise<any>,
-) {
-  let parsedSettings: any;
+export async function runWithContext<T, R>(
+  extraSettings: string | ExtraSettings | undefined,
+  initServices: (manager: EntityManager) => T,
+  callback: (ctx: {
+    manager: EntityManager;
+    configData: any;
+    services: T;
+  }) => Promise<R>,
+): Promise<R | { success: false; error: string }> {
+  let parsedSettings: ExtraSettings;
+
   try {
-    parsedSettings =
-      typeof extraSettings === 'string'
-        ? JSON.parse(extraSettings)
-        : extraSettings;
+    if (typeof extraSettings === 'string') {
+      parsedSettings = JSON.parse(extraSettings) as ExtraSettings;
+    } else if (extraSettings && typeof extraSettings === 'object') {
+      parsedSettings = extraSettings;
+    } else {
+      throw new Error('Settings are missing');
+    }
+
     if (!parsedSettings?.configData || !parsedSettings?.configDB) {
       throw new Error('Missing configData or configDB');
     }
   } catch (e) {
-    console.error('!!! Invalid extraSettings JSON', e.message);
+    const message = e instanceof Error ? e.message : 'Unknown error';
+    console.error('!!! Invalid extraSettings JSON', message);
     return { success: false, error: 'Invalid extraSettings JSON' };
   }
 
@@ -47,37 +39,22 @@ export async function runWithContext(
   let dataSource: DataSource | undefined;
 
   try {
-    dataSource = await DBConnector.create(configDB as DataSourceOptions);
+    dataSource = await DBConnector.create(configDB);
     const manager = dataSource.manager;
-
-    const tokens = new TokensService(
-      manager.getRepository(Tokens),
-      manager.getRepository(Chains),
-    );
-    const chains = new ChainsService(manager.getRepository(Chains));
-    const dexes = new DexesService(manager.getRepository(Dexes));
-    const pools = new PoolsService(
-      manager.getRepository(Pools),
-      tokens,
-      chains,
-      dexes,
-    );
-    const lastBlock = new LastBlockNumberDexService(
-      manager.getRepository(LastBlockNumberDex),
-    );
+    const services = initServices(manager);
 
     return await callback({
       manager,
       configData,
-      services: { tokens, chains, dexes, pools, lastBlock },
+      services,
     });
   } catch (error) {
-    console.error('!!! EXECUTION ERROR:', error.message);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('!!! EXECUTION ERROR:', message);
     throw error;
   } finally {
     if (dataSource) {
       await DBConnector.close(dataSource);
-      console.debug('--- [FINALLY] Connection closed. ---');
     }
   }
 }
