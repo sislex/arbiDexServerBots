@@ -7,12 +7,12 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Chains } from './Chains';
+import { GraphChains } from './Chains';
 
 @Unique('unique_token_address_chain', ['address', 'chain'])
 @Index('tokens_pkey', ['id'], { unique: true })
 @Entity('tokens', { schema: 'public' })
-export class Tokens {
+export class GraphTokens {
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
 
@@ -41,10 +41,10 @@ export class Tokens {
   @Column('boolean', { name: 'balance', nullable: true })
   balance: boolean | null;
 
-  @ManyToOne(() => Chains, (chains) => chains.tokens, {
+  @ManyToOne(() => GraphChains, (chains) => chains.tokens, {
     onDelete: 'RESTRICT',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn([{ name: 'chain_id', referencedColumnName: 'chainId' }])
-  chain: Chains;
+  @JoinColumn([{ name: 'chain_id', referencedColumnName: 'id' }])
+  chain: GraphChains;
 }

@@ -6,8 +6,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Chains } from './Chains';
-import { Tokens } from './Tokens';
+import { GraphChains } from './Chains';
+import { GraphTokens } from './Tokens';
 
 @Index('quotes_graph_pkey', ['id'], { unique: true })
 @Entity('quotes_graph')
@@ -18,30 +18,40 @@ export class QuotesGraph {
   @Column({ name: 'chain_id', type: 'integer' })
   chainId: number;
 
-  @ManyToOne(() => Chains, { onDelete: 'CASCADE' })
+  @ManyToOne(() => GraphChains, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'chain_id' })
-  chain: Chains;
+  chain: GraphChains;
 
   @Column({ type: 'timestamp' })
   timestamp: Date;
 
-  @Column({ name: 'cost_buy', type: 'bigint' })
+  @Column({
+    name: 'cost_buy',
+    type: 'numeric',
+    precision: 40,
+    scale: 0,
+  })
   costBuy: string;
 
-  @Column({ name: 'cost_sell', type: 'bigint' })
+  @Column({
+    name: 'cost_sell',
+    type: 'numeric',
+    precision: 40,
+    scale: 0,
+  })
   costSell: string;
 
   @Column({ name: 'token0', type: 'integer' })
   token0Id: number;
 
-  @ManyToOne(() => Tokens, { onDelete: 'CASCADE' })
+  @ManyToOne(() => GraphTokens, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'token0' })
-  token0: Tokens;
+  token0: GraphTokens;
 
   @Column({ name: 'token1', type: 'integer' })
   token1Id: number;
 
-  @ManyToOne(() => Tokens, { onDelete: 'CASCADE' })
+  @ManyToOne(() => GraphTokens, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'token1' })
-  token1: Tokens;
+  token1: GraphTokens;
 }

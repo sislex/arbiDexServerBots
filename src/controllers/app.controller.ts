@@ -55,6 +55,12 @@ export class AppController {
     return convertBigIntToString(rulesList);
   }
 
+  // @Get('graph/get-quotes-all')
+  // async getQuotesGraphAll() {
+  //   const rulesList: IBotsRule[] = await firstValueFrom(this.store.select$(selectBotsRulesList));
+  //   return convertBigIntToString(rulesList);
+  // }
+
   @Get('getPoolsByFactoryUniswapV3')
   async getPools() {
     const pools = await getV3PoolsFromFactory(UNISWAP_V3_FACTORY, 0, 426085324);

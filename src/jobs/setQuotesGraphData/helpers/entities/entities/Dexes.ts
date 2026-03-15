@@ -1,14 +1,9 @@
-import {
-  Column,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Index('dexes_pkey', ['id'], { unique: true })
 @Index('unique_dex_name', ['name'], { unique: true })
 @Entity('dexes', { schema: 'public' })
-export class Dexes {
+export class GraphDexes {
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
 

@@ -12,3 +12,7 @@ export * from './Servers';
 export * from './SwapRate';
 export * from './Tokens';
 export * from './LastBlockNumberDex';
+export * from '../../../../setQuotesGraphData/helpers/entities/entities/QuotesGraph';
+export * from '../../../../setQuotesGraphData/helpers/entities/entities/Chains';
+export * from '../../../../setQuotesGraphData/helpers/entities/entities/Tokens';
+export * from '../../../../setQuotesGraphData/helpers/entities/entities/Dexes';
