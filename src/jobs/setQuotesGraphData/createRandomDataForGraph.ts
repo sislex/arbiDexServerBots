@@ -14,13 +14,8 @@ export async function setQuotesGraphData(deps: {
   return runWithContext(
     deps.extraSettings,
     initServices,
-    async ({ manager, services, configData }) => {
-      await setQuotesData(
-        result,
-        services.quotesGraph,
-        manager,
-      );
-
+    async ({ manager, services }) => {
+      await setQuotesData(result, services.quotesGraph, manager);
 
       return { success: true, count: result.length };
     },

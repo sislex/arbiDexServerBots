@@ -23,4 +23,12 @@ export class QuotesGraphService {
 
     return await repo.save(quote);
   }
+
+  async getAll(manager?: EntityManager) {
+    const repo = manager
+      ? manager.getRepository(QuotesGraph)
+      : this.quotesRepository;
+
+    return await repo.find();
+  }
 }
