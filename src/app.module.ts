@@ -6,6 +6,7 @@ import { StoreController } from './controllers/store.controller';
 import { BotRunnerService } from './bots/bot-runner.service';
 import { BotsController } from './controllers/bots.controller';
 import { QuotesGraphController } from './controllers/quotes_graph.controller';
+import { ChatGateway } from './helpers/websocket-gateway';
 
 @Module({
   imports: [StoreModule],
@@ -16,6 +17,6 @@ import { QuotesGraphController } from './controllers/quotes_graph.controller';
     ErrorsController,
     QuotesGraphController,
   ],
-  providers: [BotRunnerService],
+  providers: [BotRunnerService, ChatGateway],
 })
 export class AppModule {}
