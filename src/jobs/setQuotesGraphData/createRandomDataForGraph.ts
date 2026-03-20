@@ -2,6 +2,7 @@ import { generateMockQuotes } from './helpers/generateGraphData';
 import { runWithContext } from '../getPoolsFromFactory/utils/run-with-context';
 import { initServices } from '../getPoolsFromFactory/utils/init-services';
 import { setQuotesData } from './setQuotesGraphData';
+import { quoteEvents } from './helpers/events';
 
 export async function setQuotesGraphData(deps: {
   jobType: string;
@@ -10,7 +11,7 @@ export async function setQuotesGraphData(deps: {
   extraSettings?: string;
 }) {
   const result = generateMockQuotes();
-
+  quoteEvents.emit('quotes_updated', result);
   return runWithContext(
     deps.extraSettings,
     initServices,
