@@ -5,10 +5,10 @@ export const BotList10: IBotsRule[] = [
     id: '17',
     botParams: {
       botType: IBotType.TEST_BOT,
-      paused: false,
+      paused: true,
       isRepeat: true,
       delayBetweenRepeat: 10000,
-      maxJobs: 3,
+      maxJobs: 100,
       maxErrors: 10,
       timeoutMs: 1500,
     },
