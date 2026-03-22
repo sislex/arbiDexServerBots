@@ -24,6 +24,7 @@ export const generateMockQuotes = (): any[] => {
     const price = getPriceForToken(t0Id);
 
     return {
+      chainId: 1,
       token0Id: t0Id,
       token1Id: t1Id,
       costBuy: price,
