@@ -1,0 +1,26 @@
+import 'dotenv/config';
+import { getOkxQuotes } from '../jobs/getOkxQuotes/getOkxQuotes';
+import { IJobParams_get_Okx_Quotes } from '../store/state.types';
+import { BotList10 } from '../store/stabs/bots-list.stabs';
+
+async function main() {
+  const jobParams = BotList10[3].jobParams as IJobParams_get_Okx_Quotes;
+
+  console.log(`\n📋 Конфигурация OKX:`);
+  console.log(`  Symbol: ${jobParams.symbol}`);
+
+  const result = await getOkxQuotes(jobParams);
+
+  if (!result.ok) {
+    console.error(`\n❌ Ошибка: ${result.error}`);
+    process.exit(1);
+  }
+
+  console.log(`\n✅ Готово за ${result.latencyMs} ms`);
+}
+
+main().catch((err) => {
+  console.error('Fatal:', err);
+  process.exit(1);
+});
+

@@ -8,8 +8,8 @@ import {
 } from '../../../store/state.types';
 import {getArbViaFindArb} from '../getArbExecutor.quotes';
 import {getBinanceQuote} from './getBinanceQuote';
-import {getMexcQuote} from './getMexcQuote';
-import {getBybitQuote} from './getBybitQuote';
+import {getMexcQuote} from '../../getMexcQuotes/helpers/getMexcQuote';
+import {getBybitQuote} from '../../getBybitQuotes/helpers/getBybitQuote';
 import {toCexQuote} from './toCexQuote';
 
 const DEFAULT_CEX_WEIGHT: Record<string, number> = {

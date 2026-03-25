@@ -45,6 +45,12 @@ export enum IJobType {
   GET_EXECUTOR_BALANCES = 'get_Executor_Balances',
   GET_BEST_SELL_QUOTES= 'get_Best_Sell_Quotes',
   GET_DEX_QUOTES_BY_ARB_QUOTER= 'get_Dex_Quotes_By_Arb_Quoter',
+  GET_BINANCE_QUOTES= 'get_Binance_Quotes',
+  GET_MEXC_QUOTES= 'get_Mexc_Quotes',
+  GET_BYBIT_QUOTES= 'get_Bybit_Quotes',
+  GET_OKX_QUOTES= 'get_Okx_Quotes',
+  GET_KUCOIN_QUOTES= 'get_Kucoin_Quotes',
+  GET_GATEIO_QUOTES= 'get_Gateio_Quotes',
 }
 
 export interface IJobDefaultParams { jobType: IJobType; }
@@ -231,6 +237,43 @@ export interface IJobParams_get_Executor_Balances extends IJobDefaultParams {
   executorAddress?: string;
 }
 
+export interface IJobParams_get_Binance_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_BINANCE_QUOTES;
+
+  rpcUrl?: string;
+  symbol?: string;
+}
+
+export interface IJobParams_get_Mexc_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_MEXC_QUOTES;
+
+  symbol?: string;
+}
+
+export interface IJobParams_get_Bybit_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_BYBIT_QUOTES;
+
+  symbol?: string;
+}
+
+export interface IJobParams_get_Okx_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_OKX_QUOTES;
+
+  symbol?: string;
+}
+
+export interface IJobParams_get_Kucoin_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_KUCOIN_QUOTES;
+
+  symbol?: string;
+}
+
+export interface IJobParams_get_Gateio_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_GATEIO_QUOTES;
+
+  symbol?: string;
+}
+
 export interface IPool {
   dex: DexId;
   version: PoolVersion;
@@ -306,7 +349,13 @@ export type IJobParams =
   | IJobParams_get_Pools_From_Factory
   | IJobParams_get_Pools_Reserves
   | IJobParams_get_New_Dex_Pools_Reserves
-  | IJobParams_get_Executor_Balances;
+  | IJobParams_get_Executor_Balances
+  | IJobParams_get_Binance_Quotes
+  | IJobParams_get_Mexc_Quotes
+  | IJobParams_get_Bybit_Quotes
+  | IJobParams_get_Okx_Quotes
+  | IJobParams_get_Kucoin_Quotes
+  | IJobParams_get_Gateio_Quotes;
 
 
 export interface IJobTypeAndDescription {

@@ -10,7 +10,13 @@ import {
   IJobParams_get_Pools_From_Factory,
   IJobParams_get_Pools_Reserves,
   IJobParams_get_New_Dex_Pools_Reserves,
-  IJobParams_get_Executor_Balances, IJobParams_get_Best_Sell_Quotes, IJobParams_get_Dex_Quotes_By_Arb_Quoter
+  IJobParams_get_Executor_Balances, IJobParams_get_Best_Sell_Quotes, IJobParams_get_Dex_Quotes_By_Arb_Quoter,
+  IJobParams_get_Binance_Quotes,
+  IJobParams_get_Mexc_Quotes,
+  IJobParams_get_Bybit_Quotes,
+  IJobParams_get_Okx_Quotes,
+  IJobParams_get_Kucoin_Quotes,
+  IJobParams_get_Gateio_Quotes
 } from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
@@ -27,6 +33,18 @@ import { getPoolsReserves } from './getPoolsReserves/getPoolsReserves';
 import { getNewDexPoolsFromFactory } from './getPoolsFromFactory/getNewDexPoolsFromFactory';
 import { getExecutorBalances } from './getExecutorBalances/getExecutorBalances';
 import {getDexQuotesByArbQuoter} from './getDexQuotesByArbQuoter/getDexQuotesByArbQuoter';
+import {getBinanceQuotes} from './getBinanceQuotes/getBinanceQuotes';
+import {BinanceQuotesResult} from './getBinanceQuotes/helpers/types';
+import {getMexcQuotes} from './getMexcQuotes/getMexcQuotes';
+import {MexcQuotesResult} from './getMexcQuotes/helpers/types';
+import {getBybitQuotes} from './getBybitQuotes/getBybitQuotes';
+import {BybitQuotesResult} from './getBybitQuotes/helpers/types';
+import {getOkxQuotes} from './getOkxQuotes/getOkxQuotes';
+import {OkxQuotesResult} from './getOkxQuotes/helpers/types';
+import {getKucoinQuotes} from './getKucoinQuotes/getKucoinQuotes';
+import {KucoinQuotesResult} from './getKucoinQuotes/helpers/types';
+import {getGateioQuotes} from './getGateioQuotes/getGateioQuotes';
+import {GateioQuotesResult} from './getGateioQuotes/helpers/types';
 
 // базовый результат для всех квот
 export interface BaseQuoteResult {
@@ -59,6 +77,18 @@ export interface QuoteResultMulti<T = any> extends BaseQuoteResult {
 
 // Регистрируем хендлеры: каждый принимает *ровно те же params*, что пришли в раннер
 const handlers = {
+  [IJobType.GET_BINANCE_QUOTES]:
+    async (params: IJobParams_get_Binance_Quotes): Promise<BinanceQuotesResult> => getBinanceQuotes(params),
+  [IJobType.GET_MEXC_QUOTES]:
+    async (params: IJobParams_get_Mexc_Quotes): Promise<MexcQuotesResult> => getMexcQuotes(params),
+  [IJobType.GET_BYBIT_QUOTES]:
+    async (params: IJobParams_get_Bybit_Quotes): Promise<BybitQuotesResult> => getBybitQuotes(params),
+  [IJobType.GET_OKX_QUOTES]:
+    async (params: IJobParams_get_Okx_Quotes): Promise<OkxQuotesResult> => getOkxQuotes(params),
+  [IJobType.GET_KUCOIN_QUOTES]:
+    async (params: IJobParams_get_Kucoin_Quotes): Promise<KucoinQuotesResult> => getKucoinQuotes(params),
+  [IJobType.GET_GATEIO_QUOTES]:
+    async (params: IJobParams_get_Gateio_Quotes): Promise<GateioQuotesResult> => getGateioQuotes(params),
   [IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER]:
     async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter): Promise<QuoteResult> => getDexQuotesByArbQuoter(params),
   [IJobType.GET_ARB_EXECUTOR_QUOTES]:
