@@ -1,4 +1,5 @@
 import {ethers} from 'ethers';
+import {IPool} from '../../../store/state.types';
 
 /**
  * Maps dex name → V2 router address on Arbitrum.
@@ -18,6 +19,25 @@ export type PoolConfig = {
   tokenOut: { address: string };
   [key: string]: unknown;
 };
+
+/**
+ * Конвертирует IPool → PoolConfig, определяя направление tokenIn/tokenOut
+ * на основе переданных адресов.
+ */
+export function poolToPoolConfig(
+  pool: IPool,
+  tokenInAddress: string,
+  tokenOutAddress: string,
+): PoolConfig {
+  return {
+    dex: pool.dex,
+    version: pool.version,
+    poolAddress: pool.poolAddress,
+    tokenIn: { address: tokenInAddress },
+    tokenOut: { address: tokenOutAddress },
+    feePpm: pool.feePpm,
+  };
+}
 
 export type StoreSwapStep = {
   kind: number;

@@ -1,6 +1,129 @@
-import {IBotsRule, IBotType, IJobType, IPairToQuote, IQuote} from '../state.types';
+import {IBotsRule, IBotType, IJobType, IPool} from '../state.types';
 
 export const BotList10: IBotsRule[] = [
+  {
+    "id": "1",
+    "botParams": {
+      "botType": IBotType.TEST_BOT,
+      "paused": false,
+      "isRepeat": true,
+      delayBetweenRepeat: 200,
+      maxJobs: 1,
+      maxErrors: 100,
+      timeoutMs: 30000,
+    },
+    "jobParams": {
+      "jobType": IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER,
+      "rpcUrl": "https://arb-mainnet.g.alchemy.com/v2/_T_Qkk4fOdQ7jQbGjSW2F",
+      "stepPrefundPct": 2,
+      "pairsToQuote": [
+        {
+          "dex": "pancake",
+          "version": "v3",
+          "poolAddress": "0xbedb464ef776fe208e3f2b5c0bafbe7983ef49db",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 10000
+        },
+        {
+          "dex": "pancake",
+          "version": "v3",
+          "poolAddress": "0x7fcdc35463e3770c2fb992716cd070b63540b947",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 100
+        },
+        {
+          "dex": "pancake",
+          "version": "v3",
+          "poolAddress": "0xb3d494d53aac707c469318f15cfd5d7857a61388",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 2500
+        },
+        {
+          "dex": "pancake",
+          "version": "v3",
+          "poolAddress": "0xd9e2a1a61b6e61b275cec326465d417e52c1b95c",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 500
+        },
+        {
+          "dex": "camelot",
+          "version": "v3",
+          "poolAddress": "0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 0
+        },
+        {
+          "dex": "sushi",
+          "version": "v3",
+          "poolAddress": "0xb658ee5c63922d2852f24458effa2bfa2cba3574",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 100
+        },
+        {
+          "dex": "sushi",
+          "version": "v3",
+          "poolAddress": "0x0ed17087175a677c05328a37b9795728e9cd8821",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 10000
+        },
+        {
+          "dex": "sushi",
+          "version": "v3",
+          "poolAddress": "0xc96525298419f7e00da8826b733ee52e271662b5",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 3000
+        },
+        {
+          "dex": "sushi",
+          "version": "v3",
+          "poolAddress": "0xf3eb87c1f6020982173c908e7eb31aa66c1f0296",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 500
+        },
+        {
+          "dex": "uniswap",
+          "version": "v3",
+          "poolAddress": "0x42fc852a750ba93d5bf772ecdc857e87a86403a9",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 10000
+        },
+        {
+          "dex": "uniswap",
+          "version": "v3",
+          "poolAddress": "0x6f38e884725a116c9c7fbf208e79fe8828a2595f",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 100
+        },
+        {
+          "dex": "uniswap",
+          "version": "v3",
+          "poolAddress": "0xc6962004f452be9203591991d15f6b388e09e8d0",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 500
+        },
+        {
+          "dex": "uniswap",
+          "version": "v3",
+          "poolAddress": "0xc473e2aee3441bf9240be85eb122abb059a3b57c",
+          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+          "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+          "feePpm": 3000
+        },
+      ] as IPool[]
+    }
+  },
   {
     id: '17',
     botParams: {
@@ -112,10 +235,10 @@ export const BotListFiltered: IBotsRule[] =  BotList10.map((bot:IBotsRule) => {
     }
   }
 
-  if (botFiltered.jobParams.jobType === IJobType.GET_ARB_EXECUTOR_QUOTES) {
+  if (botFiltered.jobParams.jobType === IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER) {
 
     // Step 1: убираем проблемные пулы (revert, огромный газ и т.д.)
-    const  _blacklistFiltered = botFiltered.jobParams.pairsToQuote.filter((pair: IPairToQuote) => {
+    const  _blacklistFiltered = botFiltered.jobParams.pairsToQuote.filter((pair: IPool) => {
       return !(
         pair.poolAddress!.toLowerCase() === '0x8e1881dc184a93e36be6b79ca0de22e5db779b54'.toLowerCase()
         || pair.poolAddress!.toLowerCase() === '0xd49ab568db5721afe8e86811ff4d0d5f5afea300'.toLowerCase()
@@ -150,23 +273,17 @@ export const BotListFiltered: IBotsRule[] =  BotList10.map((bot:IBotsRule) => {
       );
     });
 
-    // Step 2: убираем пары tokenIn/tokenOut которые встречаются только 1 раз (для арбитража нужно минимум 2 пула в паре)
+    // Step 2: убираем пары token0/token1 которые встречаются только 1 раз (для арбитража нужно минимум 2 пула в паре)
     const _pairCount = new Map<string, number>();
     for (const p of _blacklistFiltered) {
-      const key = p.tokenIn.address.toLowerCase() + '-' + p.tokenOut.address.toLowerCase();
+      const key = p.token0.toLowerCase() + '-' + p.token1.toLowerCase();
       _pairCount.set(key, (_pairCount.get(key) || 0) + 1);
     }
 
     botFiltered.jobParams.pairsToQuote = _blacklistFiltered.filter((p) => {
-      const key = p.tokenIn.address.toLowerCase() + '-' + p.tokenOut.address.toLowerCase();
+      const key = p.token0.toLowerCase() + '-' + p.token1.toLowerCase();
       return (_pairCount.get(key) || 0) >= 2;
     });
-
-
-
-    // botFiltered.jobParams.pairsToQuote = [
-    //   ...botFiltered.jobParams.pairsToQuote,
-    // ];
 
 
   }
@@ -174,58 +291,23 @@ export const BotListFiltered: IBotsRule[] =  BotList10.map((bot:IBotsRule) => {
   return botFiltered;
 });
 
-export  const CamelotConfigPools = [
-  {
-    "dex": "camelot",
-    "version": "v2",
-    "token0": {
-      "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
-      "decimals": 6
-    },
-    "poolAddress": "0x54b26faf3671677c19f70c4b879a6f7b898f732c",
-    "feePpm": 3000,
-    "tokenIn": {
-      "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-      "decimals": 18
-    },
-    "tokenOut": {
-      "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
-      "decimals": 6
-    },
-    "side": "exactIn",
-    "amount": "30000000000000000",
-    "blockTag": "latest",
-    "quoteSource": "quoteBothBase"
-  },
-  {
-    "dex": "camelot",
-    "version": "v3",
-    "token0": {
-      "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
-      "decimals": 6
-    },
-    "poolAddress": "0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526",
-    "feePpm": 3000,
-    "tokenIn": {
-      "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-      "decimals": 18
-    },
-    "tokenOut": {
-      "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
-      "decimals": 6
-    },
-    "side": "exactIn",
-    "amount": "30000000000000000",
-    "blockTag": "latest",
-    "quoteSource": "quoteBothBase"
-  },
-];
+export const BotListFilteredUSDC: IBotsRule[] =  BotList10.map((bot:IBotsRule) => {
+  const botFiltered = {
+    ...bot,
+    jobParams: {
+      ...bot.jobParams,
+    }
+  }
+
+  if (botFiltered.jobParams.jobType === IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER) {
+
+    botFiltered.jobParams.pairsToQuote = botFiltered.jobParams.pairsToQuote.filter((pair: IPool) => {
+      return pair.token0.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+        && pair.token1.toLowerCase() === '0xaf88d065e77c8cc2239327c5edb3a432268e5831'.toLowerCase();
+    });
+
+  }
+
+  return botFiltered;
+});
 

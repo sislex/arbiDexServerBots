@@ -42,6 +42,9 @@ export enum IJobType {
   GET_POOLS_FROM_FACTORY = 'get_Pools_From_Factory',
   GET_POOLS_RESERVES = 'get_Pools_Reserves',
   GET_NEW_DEX_POOLS_RESERVES = 'get_New_Dex_Pools_From_Factory',
+  GET_EXECUTOR_BALANCES = 'get_Executor_Balances',
+  GET_BEST_SELL_QUOTES = 'get_Best_Sell_Quotes',
+  GET_DEX_QUOTES_BY_ARB_QUOTER = 'get_Dex_Quotes_By_Arb_Quoter',
   SET_QUOTES_GRAPH_DATA = 'set_Quotes_Graph_Data',
 }
 
@@ -174,6 +177,22 @@ export interface IJobParams_get_Arbitrum_Arb_Executor_Quotes extends IJobDefault
   // };
 }
 
+export interface IJobParams_get_Best_Sell_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_BEST_SELL_QUOTES;
+  rpcUrl: string;
+
+  pairsToQuote: IQuote[];
+  stepPrefundPct?: number;
+}
+
+export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultParams {
+  jobType: IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER;
+  rpcUrl: string;
+
+  pairsToQuote: IPool[];
+  stepPrefundPct?: number;
+}
+
 export interface IJobParams_resolve_Pools_For_Pairs extends IJobDefaultParams {
   jobType: IJobType.RESOLVE_POOLS_FOR_PAIRS;
 
@@ -205,6 +224,14 @@ export interface IJobParams_get_New_Dex_Pools_Reserves extends IJobDefaultParams
   extraSettings?: string;
 }
 
+export interface IJobParams_get_Executor_Balances extends IJobDefaultParams {
+  jobType: IJobType.GET_EXECUTOR_BALANCES;
+
+  rpcUrl?: string;
+  /** Адрес контракта ArbExecutor (по умолчанию из process.env.EXECUTOR_ADDRESS) */
+  executorAddress?: string;
+}
+
 export interface IJobParams_set_Quotes_Graph_Data extends IJobDefaultParams {
   jobType: IJobType.SET_QUOTES_GRAPH_DATA;
 
@@ -217,9 +244,9 @@ export interface IPool {
   dex: DexId;
   version: PoolVersion;
   poolAddress: string;
-  token0: ITokenInfo;
-  token1: ITokenInfo;
-  feePpm: number;
+  token0: Address;
+  token1: Address;
+  feePpm?: number;
 }
 
 export interface IPair extends IPool {
@@ -277,6 +304,8 @@ export interface BuildQuotesParams {
 }
 
 export type IJobParams =
+  | IJobParams_get_Dex_Quotes_By_Arb_Quoter
+  | IJobParams_get_Best_Sell_Quotes
   | IJobParams_get_Arbitrum_Arb_Executor_Quotes
   | IJobParams_get_Pool_State
   | IJobParams_get_Arbitrum_UniswapV3_Quote
@@ -285,8 +314,9 @@ export type IJobParams =
   | IJobParams_resolve_Pools_For_Pairs
   | IJobParams_get_Pools_From_Factory
   | IJobParams_get_Pools_Reserves
-  | IJobParams_set_Quotes_Graph_Data
-  | IJobParams_get_New_Dex_Pools_Reserves;
+  | IJobParams_get_New_Dex_Pools_Reserves
+  | IJobParams_get_Executor_Balances
+  | IJobParams_set_Quotes_Graph_Data;
 
 
 export interface IJobTypeAndDescription {
@@ -364,6 +394,8 @@ export interface IArbitrage extends IBestBuySellArbitrage {
 export enum SwapKind {
   V2_EXACT_IN = 0,
   V3_POOL_EXACT_IN = 1,
+  CAMELOT_V2_EXACT_IN = 2,
+  ALGEBRA_POOL_EXACT_IN = 3,
 }
 
 
@@ -444,5 +476,66 @@ export interface ArbResult {
   sellAmountOut: string;
   gasUsed: string;
   success: boolean;
+}
+
+// ── Общий тип для CEX котировки ──
+export interface CexQuote {
+  name: string;
+  symbol: string;
+  bidPrice: number;      // raw из стакана
+  askPrice: number;      // raw из стакана
+  effectiveBid: number;  // bid × (1 - fee) — реально получишь при продаже
+  effectiveAsk: number;  // ask × (1 + fee) — реально заплатишь при покупке
+  midPrice: number;
+  spread: number;
+  spreadPct: number;
+  takerFeePct: number;
+  latencyMs: number;
+}
+
+// ── Сигнал DEX-CEX ──
+export interface DexCexSignal {
+  cexName: string;
+  buyProfit: number;
+  buyProfitPct: number;
+  buySignal: boolean;
+  sellProfit: number;
+  sellProfitPct: number;
+  sellSignal: boolean;
+}
+
+// ── Результат DEX-CEX сравнения ──
+export interface DexCexComparisonResult {
+  ok: boolean;
+  error?: string;
+  method: 'dexCexComparison';
+  blockNumber: number;
+  latencyMs: number;
+  metrics: { step: string; ms: number }[];
+  // DEX
+  dexBuyPrice: number;
+  dexSellPrice: number;
+  dexMidPrice: number;
+  dexSpread: number;
+  dexSpreadPct: number;
+  bestBuyPool: string;
+  bestBuyIndex: number;
+  bestSellPool: string;
+  bestSellIndex: number;
+  // CEX
+  cexQuotes: CexQuote[];
+  weightedAvgCexMid: number;
+  // Сигналы
+  signals: DexCexSignal[];
+  avgBuyProfit: number;
+  avgBuyPct: number;
+  avgSellProfit: number;
+  avgSellPct: number;
+  // Arb data (для совместимости)
+  groupsCount: number;
+  storeStepsCount: number;
+  resultsCount: number;
+  allResults: ArbResult[];
+  profitableResults: ArbResult[];
 }
 

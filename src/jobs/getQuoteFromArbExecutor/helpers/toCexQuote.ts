@@ -1,0 +1,30 @@
+import {BinanceQuote} from './getBinanceQuote';
+import {MexcQuote} from './getMexcQuote';
+import {BybitQuote} from './getBybitQuote';
+import {CexQuote} from '../../../store/state.types';
+
+// ── CEX taker fees (%) ──
+const CEX_TAKER_FEE: Record<string, number> = {
+  Binance: 0,   // без комиссии
+  MEXC:    0,   // без комиссии
+  Bybit:   0,   // без комиссии
+};
+
+
+export function toCexQuote(name: string, q: BinanceQuote | MexcQuote | BybitQuote): CexQuote {
+  const feePct = CEX_TAKER_FEE[name] ?? 0.10;
+  const feeMulti = feePct / 100;
+  return {
+    name,
+    symbol: q.symbol,
+    bidPrice: q.bidPrice,
+    askPrice: q.askPrice,
+    effectiveBid: q.bidPrice * (1 - feeMulti),
+    effectiveAsk: q.askPrice * (1 + feeMulti),
+    midPrice: q.midPrice,
+    spread: q.spread,
+    spreadPct: q.spreadPct,
+    takerFeePct: feePct,
+    latencyMs: q.latencyMs,
+  };
+}

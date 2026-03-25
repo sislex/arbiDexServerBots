@@ -8,11 +8,11 @@ services:
       - "1001:3000"
     restart: unless-stopped
 
-  arbi-second-server-bots:
-    container_name: arbi-second-server-bots
-    build:
-      context: .
-      dockerfile: ./docker/DockerfileBackend
-    ports:
-      - "1002:3000"
-    restart: unless-stopped
+#  arbi-second-server-bots:
+#    container_name: arbi-second-server-bots
+#    build:
+#      context: .
+#      dockerfile: ./docker/DockerfileBackend
+#    ports:
+#      - "1002:3000"
+#    restart: unless-stopped
