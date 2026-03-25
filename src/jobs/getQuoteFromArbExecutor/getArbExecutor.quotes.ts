@@ -7,6 +7,8 @@ import {poolConfigToStoreStep, StoreSwapStep} from './helpers/poolConfigToStoreS
 import {mapArbResult} from './helpers/mapArbResult';
 import {setup} from './helpers/setup';
 import {printArbResults} from './helpers/printArbResults';
+import {executeArbFromStore} from './helpers/executeArbFromStore';
+import {dexCexComparison} from './helpers/dexCexComparison';
 
 // ══════════════════════════════════════════════════════════════
 // Вариант 1: quoteBuysDirect → группировка на сервере → scanArbPairsDirect
@@ -114,10 +116,6 @@ export async function getArbViaFindArb(
   const metrics: { step: string; ms: number }[] = [];
   const { pairsToQuote, rpcUrl = "https://arb-mainnet.g.alchemy.com/v2/_T_Qkk4fOdQ7jQbGjSW2F" } = params;
 
-
-
-  console.log('rpcUrl:', rpcUrl);
-
   // setup
   let t0 = performance.now();
   const { reader } = setup(rpcUrl);
@@ -185,14 +183,14 @@ export async function getArbViaFindArb(
   }
 
   const profitableResults = printArbResults('findArb', mapped);
-  console.log(`blockNumber: ${blockNumber}, storeStep: ${rawSteps.length}, mapped: ${mapped.length}`);
+  // console.log(`blockNumber: ${blockNumber}, storeStep: ${rawSteps.length}, mapped: ${mapped.length}`);
 
   metrics.push({ step: 'mapResults', ms: performance.now() - t0 });
 
   const totalMs = performance.now() - totalStart;
-  console.log('\n⏱  findArb Metrics:');
-  console.table(metrics.map(m => ({ step: m.step, ms: `${m.ms.toFixed(1)} ms` })));
-  console.log(`findArb Total: ${totalMs.toFixed(1)} ms\n`);
+  // console.log('\n⏱  findArb Metrics:');
+  // console.table(metrics.map(m => ({ step: m.step, ms: `${m.ms.toFixed(1)} ms` })));
+  // console.log(`findArb Total: ${totalMs.toFixed(1)} ms\n`);
 
   return {
     ok: true,
@@ -310,8 +308,8 @@ export async function getArbViaFindArbStore(
   metrics.push({ step: 'mapResults', ms: performance.now() - t0 });
 
   const totalMs = performance.now() - totalStart;
-  console.log('\n⏱  findArbStore Metrics:');
-  console.table(metrics.map(m => ({ step: m.step, ms: `${m.ms.toFixed(1)} ms` })));
+  // console.log('\n⏱  findArbStore Metrics:');
+  // console.table(metrics.map(m => ({ step: m.step, ms: `${m.ms.toFixed(1)} ms` })));
   console.log(`findArbStore Total: ${totalMs.toFixed(1)} ms\n`);
 
   return {
@@ -330,4 +328,4 @@ export async function getArbViaFindArbStore(
 }
 
 // ── backward-compat alias ────────────────────────────────────
-export const getArbExecutorQuotes = getArbViaFindArbStore;
+export const getArbExecutorQuotes = dexCexComparison;

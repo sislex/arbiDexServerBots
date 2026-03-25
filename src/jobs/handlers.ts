@@ -10,6 +10,7 @@ import {
   IJobParams_get_Pools_From_Factory,
   IJobParams_get_Pools_Reserves,
   IJobParams_get_New_Dex_Pools_Reserves,
+  IJobParams_get_Executor_Balances, IJobParams_get_Best_Sell_Quotes, IJobParams_get_Dex_Quotes_By_Arb_Quoter
 } from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
@@ -24,6 +25,8 @@ import {getArbExecutorQuotes} from './getQuoteFromArbExecutor/getArbExecutor.quo
 import { getPoolsFromFactory } from './getPoolsFromFactory/getPoolsFromFactory';
 import { getPoolsReserves } from './getPoolsReserves/getPoolsReserves';
 import { getNewDexPoolsFromFactory } from './getPoolsFromFactory/getNewDexPoolsFromFactory';
+import { getExecutorBalances } from './getExecutorBalances/getExecutorBalances';
+import {getDexQuotesByArbQuoter} from './getDexQuotesByArbQuoter/getDexQuotesByArbQuoter';
 
 // базовый результат для всех квот
 export interface BaseQuoteResult {
@@ -56,6 +59,8 @@ export interface QuoteResultMulti<T = any> extends BaseQuoteResult {
 
 // Регистрируем хендлеры: каждый принимает *ровно те же params*, что пришли в раннер
 const handlers = {
+  [IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER]:
+    async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter): Promise<QuoteResult> => getDexQuotesByArbQuoter(params),
   [IJobType.GET_ARB_EXECUTOR_QUOTES]:
     async (params: IJobParams_get_Arbitrum_Arb_Executor_Quotes): Promise<QuoteResult> => getArbExecutorQuotes(params),
   [IJobType.GET_POOL_STATE]:
@@ -84,6 +89,10 @@ const handlers = {
   [IJobType.GET_NEW_DEX_POOLS_RESERVES]:
     async (params: IJobParams_get_New_Dex_Pools_Reserves): Promise<any> =>
       getNewDexPoolsFromFactory(params),
+
+  [IJobType.GET_EXECUTOR_BALANCES]:
+    async (params: IJobParams_get_Executor_Balances): Promise<any> =>
+      getExecutorBalances(params),
 } as const;
 
 // Единая точка входа

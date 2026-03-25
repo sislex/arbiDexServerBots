@@ -4,33 +4,35 @@ import {ethers} from 'ethers';
 export async function swap(
   swapSteps: IContractStep[],
   vault: ethers.Contract,
-  isSimulation = true
+  isSimulation = true,
+  profitToken?: string,
 ): Promise<ISimulationStepsLogs[]> {
-  // console.log('swapSteps', swapSteps);
-  let simulationSummary, simulationLogs;
+  // profitToken — для замкнутого арбитражного цикла это tokenIn первого шага
+  const token = profitToken ?? swapSteps[0].tokenIn;
+
   try {
+    let simulationSummary, simulationLogs;
+
     if (isSimulation) {
       [simulationSummary, simulationLogs] = await vault.executeSwaps.staticCall(
         swapSteps,
-        swapSteps[0].tokenOut,
-        false,
-        false,
+        token,
+        false,   // revertIfLoss
+        false,   // emitEvents
       );
     } else {
       [simulationSummary, simulationLogs] = await vault.executeSwaps(
         swapSteps,
-        swapSteps[0].tokenOut,
-        true,
-        false,
+        token,
+        true,    // revertIfLoss — для реального свопа revert при убытке
+        true,    // emitEvents — эмитить события для аналитики
         {
-          gasLimit: 400_000n,
+          gasLimit: 1_200_000n,
         }
       );
-
     }
 
-
-    let simulationStepsLogs: ISimulationStepsLogs[] = simulationLogs.map((log: ethers.Contract | null) => ({
+    const simulationStepsLogs: ISimulationStepsLogs[] = simulationLogs.map((log: ethers.Contract | null) => ({
       poolAddress: log![2],
       tokenIn: log![3],
       tokenOut: log![4],
@@ -39,12 +41,9 @@ export async function swap(
       gas: log![7],
     }));
 
-    // console.log('simulationStepsLogs', simulationStepsLogs);
-    // console.log('simulationSummary', simulationSummary);
-
     return simulationStepsLogs;
   } catch (e: any) {
-    console.log('error function swap');
+    console.error('error function swap:', e.reason ?? e.shortMessage ?? e.message);
     return [];
   }
 }
