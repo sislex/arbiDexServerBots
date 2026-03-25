@@ -30,6 +30,40 @@ export const BotList10: IBotsRule[] = [
       }),
     },
   },
+  {
+    id: '18',
+    botParams: {
+      botType: IBotType.TEST_BOT,
+      paused: true,
+      isRepeat: true,
+      delayBetweenRepeat: 1000,
+      maxJobs: 100,
+      maxErrors: 10,
+      timeoutMs: 1500,
+    },
+    jobParams: {
+      jobType: IJobType.SET_QUOTES_GRAPH_DATA,
+      rpcUrl: 'https://arb1.arbitrum.io',
+      pairsToQuote: [],
+      extraSettings: JSON.stringify({
+        configDB: {
+          type: 'postgres',
+          host: 'localhost',
+          port: 6543,
+          username: 'user_secret',
+          password: 'pass_secret',
+          database: 'analytics_db',
+        },
+        configData: {
+          graph: true,
+          pair: {
+            t0Id: 99,
+            t1Id: 105
+          }
+        },
+      }),
+    },
+  },
 
   // {
   //   id: '17',

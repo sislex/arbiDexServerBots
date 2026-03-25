@@ -83,12 +83,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayDisconnect {
         const cid = Number(update.chainId);
         const updateKey = `${Number(update.token0Id)}-${Number(update.token1Id)}`;
         const pairsInChain = clientSub.get(cid);
-
         if (pairsInChain?.has(updateKey) && client.readyState === 1) {
           const message = JSON.stringify(
             { event: 'quotes_update', data: update },
             (_, v) => (typeof v === 'bigint' ? v.toString() : v),
           );
+
           client.send(message);
         }
       });
