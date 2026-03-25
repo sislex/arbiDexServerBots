@@ -8,7 +8,7 @@ export const BotList10: IBotsRule[] = [
       "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 200,
-      maxJobs: 100000,
+      maxJobs: 1,
       maxErrors: 100,
       timeoutMs: 30000,
     },
