@@ -11,7 +11,7 @@ import { priceStore, PricePoint } from '../jobs/shared';
 export class PriceWatcherService implements OnModuleInit {
   onModuleInit() {
     priceStore.onAnyPriceChange((point: PricePoint, key: string) => {
-      console.log(`📈 ${key}  →  ${point.value}  (${new Date(point.timestamp).toISOString()})`);
+      console.log(`📈 ${key}  →  ${point.v}  (${new Date(point.t).toISOString()})`);
     });
 
     console.log('👀 PriceWatcherService: подписка на все изменения цен активна');

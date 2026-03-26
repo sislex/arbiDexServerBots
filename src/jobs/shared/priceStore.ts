@@ -4,8 +4,10 @@ import { UnifiedQuoteResult } from './types';
 // ── Типы ────────────────────────────────────────────────────
 
 export interface PricePoint {
-  timestamp: number;
-  value: number;
+  /** timestamp (ms) */
+  t: number;
+  /** value */
+  v: number;
 }
 
 export type PriceChangeCallback = (point: PricePoint, key: string) => void;
@@ -90,13 +92,13 @@ export class PriceStore {
     }
 
     const last = series.length > 0 ? series[series.length - 1] : null;
-    if (last && last.value === value) return;
+    if (last && last.v === value) return;
 
     if (series.length >= this.maxPoints) {
       series.shift();
     }
 
-    const point: PricePoint = { timestamp, value };
+    const point: PricePoint = { t: timestamp, v: value };
     series.push(point);
 
     this.emitter.emit(`change:${key}`, point, key);
