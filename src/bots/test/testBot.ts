@@ -320,7 +320,7 @@ export class TestBot implements ITestBot {
       this.botState.latency = Math.round(avg + (this.botState.lastLatency - avg) / n);
     }
 
-    this.startAnalytics();
+    // this.startAnalytics();
   }
 
   async job(jobParams: IJobParams = this.jobParams): Promise<any> {
