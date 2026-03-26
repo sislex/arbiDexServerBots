@@ -1,4 +1,5 @@
 import { BinanceQuote } from './getBinanceQuote';
+import { UnifiedQuoteResult } from '../../shared';
 
 /**
  * Опции для отображения Binance-котировок.
@@ -16,6 +17,8 @@ export interface BinanceQuotesResult {
   latencyMs: number;
   error?: string;
   quote: BinanceQuote | null;
+  /** Унифицированный результат */
+  unified?: UnifiedQuoteResult;
 }
 
 

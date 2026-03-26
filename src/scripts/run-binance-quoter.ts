@@ -17,6 +17,7 @@ async function main() {
     process.exit(1);
   }
 
+
   console.log(`\n✅ Готово за ${result.latencyMs} ms`);
 }
 

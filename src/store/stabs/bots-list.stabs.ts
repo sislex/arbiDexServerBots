@@ -1,11 +1,10 @@
 import {IBotsRule, IBotType, IJobType, IPool} from '../state.types';
-
 export const BotList10: IBotsRule[] = [
   {
     "id": "Binance_USDC_WETH",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 200,
       maxJobs: 1000000,
@@ -22,7 +21,7 @@ export const BotList10: IBotsRule[] = [
     "id": "Mexc_USDT_WETH",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 200,
       maxJobs: 1000000,
@@ -38,7 +37,7 @@ export const BotList10: IBotsRule[] = [
     "id": "Bybit_USDT_WETH",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 200,
       maxJobs: 1000000,
@@ -54,7 +53,7 @@ export const BotList10: IBotsRule[] = [
     "id": "OKX_USDT_WETH",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 200,
       maxJobs: 1000000,
@@ -70,7 +69,7 @@ export const BotList10: IBotsRule[] = [
     "id": "KuCoin_USDT_WETH",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 200,
       maxJobs: 1000000,
@@ -86,7 +85,7 @@ export const BotList10: IBotsRule[] = [
     "id": "GateIO_USDT_WETH",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 200,
       maxJobs: 1000000,
@@ -102,7 +101,7 @@ export const BotList10: IBotsRule[] = [
     "id": "Arbitrum_USDC_WETH",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       delayBetweenRepeat: 500,
       maxJobs: 1000000,

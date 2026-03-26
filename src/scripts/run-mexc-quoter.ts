@@ -16,6 +16,7 @@ async function main() {
     process.exit(1);
   }
 
+
   console.log(`\n✅ Готово за ${result.latencyMs} ms`);
 }
 
@@ -23,4 +24,3 @@ main().catch((err) => {
   console.error('Fatal:', err);
   process.exit(1);
 });
-

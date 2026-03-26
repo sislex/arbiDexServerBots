@@ -4,6 +4,7 @@ import {
 import { printQuotesTable } from './helpers/printQuotesTable';
 import { getBinanceQuote } from './helpers/getBinanceQuote';
 import { BinanceQuotesResult } from './helpers/types';
+import {cexToUnified, printUnifiedQuotesTable, priceStore} from '../shared';
 
 // ── Джоба ────────────────────────────────────────────────────
 
@@ -23,8 +24,9 @@ export async function getBinanceQuotes(
       latencyMs: quote.latencyMs,
       quote,
     };
-
-    printQuotesTable(result);
+    result.unified = cexToUnified('binance', result, symbol);
+    priceStore.recordQuote(result.unified);
+    // printUnifiedQuotesTable(result.unified);
 
     return result;
   } catch (err: any) {
@@ -34,6 +36,7 @@ export async function getBinanceQuotes(
       error: err.message ?? String(err),
       quote: null,
     };
+    result.unified = cexToUnified('binance', result, symbol);
 
     printQuotesTable(result);
 

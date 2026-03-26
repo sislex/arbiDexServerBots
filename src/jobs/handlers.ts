@@ -46,6 +46,10 @@ import {KucoinQuotesResult} from './getKucoinQuotes/helpers/types';
 import {getGateioQuotes} from './getGateioQuotes/getGateioQuotes';
 import {GateioQuotesResult} from './getGateioQuotes/helpers/types';
 
+// Реэкспорт общих unified-типов
+export type { UnifiedQuoteResult, QuoteSourceName, QuoteSourceType, PoolBrief } from './shared';
+export { cexToUnified, dexToUnified, printUnifiedQuotesTable } from './shared';
+
 // базовый результат для всех квот
 export interface BaseQuoteResult {
   ok: boolean;

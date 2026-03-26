@@ -1,4 +1,5 @@
 import { BybitQuote } from './getBybitQuote';
+import { UnifiedQuoteResult } from '../../shared';
 
 /**
  * Результат джобы getBybitQuotes.
@@ -8,5 +9,7 @@ export interface BybitQuotesResult {
   latencyMs: number;
   error?: string;
   quote: BybitQuote | null;
+  /** Унифицированный результат */
+  unified?: UnifiedQuoteResult;
 }
 

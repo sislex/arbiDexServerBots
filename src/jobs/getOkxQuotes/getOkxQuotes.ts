@@ -2,6 +2,7 @@ import { IJobParams_get_Okx_Quotes } from '../../store/state.types';
 import { printQuotesTable } from './helpers/printQuotesTable';
 import { getOkxQuote } from './helpers/getOkxQuote';
 import { OkxQuotesResult } from './helpers/types';
+import {cexToUnified, printUnifiedQuotesTable, priceStore} from '../shared';
 
 export async function getOkxQuotes(
   params: IJobParams_get_Okx_Quotes,
@@ -11,10 +12,14 @@ export async function getOkxQuotes(
   try {
     const quote = await getOkxQuote(symbol);
     const result: OkxQuotesResult = { ok: true, latencyMs: quote.latencyMs, quote };
-    printQuotesTable(result);
+    result.unified = cexToUnified('okx', result, symbol);
+    priceStore.recordQuote(result.unified);
+    // printQuotesTable(result);
+    // printUnifiedQuotesTable(result.unified);
     return result;
   } catch (err: any) {
     const result: OkxQuotesResult = { ok: false, latencyMs: 0, error: err.message ?? String(err), quote: null };
+    result.unified = cexToUnified('okx', result, symbol);
     printQuotesTable(result);
     return result;
   }

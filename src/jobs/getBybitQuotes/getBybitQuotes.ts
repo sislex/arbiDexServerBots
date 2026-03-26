@@ -4,6 +4,7 @@ import {
 import { printQuotesTable } from './helpers/printQuotesTable';
 import { getBybitQuote } from './helpers/getBybitQuote';
 import { BybitQuotesResult } from './helpers/types';
+import {cexToUnified, printUnifiedQuotesTable, priceStore} from '../shared';
 
 // ── Джоба ────────────────────────────────────────────────────
 
@@ -22,9 +23,9 @@ export async function getBybitQuotes(
       latencyMs: quote.latencyMs,
       quote,
     };
-
-    printQuotesTable(result);
-
+    result.unified = cexToUnified('bybit', result, symbol);
+    priceStore.recordQuote(result.unified);
+    // printUnifiedQuotesTable(result.unified);
     return result;
   } catch (err: any) {
     const result: BybitQuotesResult = {
@@ -33,6 +34,7 @@ export async function getBybitQuotes(
       error: err.message ?? String(err),
       quote: null,
     };
+    result.unified = cexToUnified('bybit', result, symbol);
 
     printQuotesTable(result);
 

@@ -4,6 +4,7 @@ import {
 import { printQuotesTable } from './helpers/printQuotesTable';
 import { getMexcQuote } from './helpers/getMexcQuote';
 import { MexcQuotesResult } from './helpers/types';
+import {cexToUnified, printUnifiedQuotesTable, priceStore} from '../shared';
 
 // ── Джоба ────────────────────────────────────────────────────
 
@@ -22,9 +23,9 @@ export async function getMexcQuotes(
       latencyMs: quote.latencyMs,
       quote,
     };
-
-    printQuotesTable(result);
-
+    result.unified = cexToUnified('mexc', result, symbol);
+    priceStore.recordQuote(result.unified);
+    // printUnifiedQuotesTable(result.unified);
     return result;
   } catch (err: any) {
     const result: MexcQuotesResult = {
@@ -33,6 +34,7 @@ export async function getMexcQuotes(
       error: err.message ?? String(err),
       quote: null,
     };
+    result.unified = cexToUnified('mexc', result, symbol);
 
     printQuotesTable(result);
 

@@ -301,7 +301,7 @@ export class TestBot implements ITestBot {
         this.botState.lastJobTimeFinish.getTime() -
         this.botState.lastJobTimeStart.getTime();
 
-      console.log('this.botState.lastLatency', this.botState.lastLatency);
+      // console.log('this.botState.lastLatency', this.botState.lastLatency);
     } else {
       this.botState.lastLatency = null;
     }
