@@ -15,13 +15,10 @@ export interface BinanceQuote {
   latencyMs: number;
 }
 
-export async function getBinanceQuote({
-                                        rpcUrl,
-                                        symbol = 'ETHUSDC',
-                                      }): Promise<BinanceQuote> {
+export async function getBinanceQuote(symbol = 'ETHUSDC'): Promise<BinanceQuote> {
   const start = performance.now();
 
-  const url = `${rpcUrl}?symbol=${symbol}`;
+  const url = `https://data-api.binance.vision/api/v3/ticker/bookTicker?symbol=${symbol}`;
   const res = await fetch(url);
 
   if (!res.ok) {

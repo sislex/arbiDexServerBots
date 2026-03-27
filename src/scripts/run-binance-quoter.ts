@@ -7,7 +7,6 @@ async function main() {
   const jobParams = BotList10[0].jobParams as IJobParams_get_Binance_Quotes;
 
   console.log(`\n📋 Конфигурация Binance:`);
-  console.log(`  URL:    ${jobParams.rpcUrl}`);
   console.log(`  Symbol: ${jobParams.symbol}`);
 
   const result = await getBinanceQuotes(jobParams);

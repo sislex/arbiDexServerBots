@@ -12,12 +12,11 @@ export async function getBinanceQuotes(
   params: IJobParams_get_Binance_Quotes,
 ): Promise<BinanceQuotesResult> {
   const {
-    rpcUrl = 'https://data-api.binance.vision/api/v3/ticker/bookTicker',
     symbol = 'ETHUSDC',
   } = params;
 
   try {
-    const quote = await getBinanceQuote({ rpcUrl, symbol });
+    const quote = await getBinanceQuote(symbol);
 
     const result: BinanceQuotesResult = {
       ok: true,

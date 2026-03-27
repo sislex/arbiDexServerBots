@@ -13,7 +13,6 @@ export const BotList10: IBotsRule[] = [
     },
     "jobParams": {
       "jobType": IJobType.GET_BINANCE_QUOTES,
-      "rpcUrl": "https://data-api.binance.vision/api/v3/ticker/bookTicker",
       "symbol": "ETHUSDC",
     }
   },

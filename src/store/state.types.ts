@@ -237,42 +237,27 @@ export interface IJobParams_get_Executor_Balances extends IJobDefaultParams {
   executorAddress?: string;
 }
 
-export interface IJobParams_get_Binance_Quotes extends IJobDefaultParams {
-  jobType: IJobType.GET_BINANCE_QUOTES;
+/** Общий тип для всех CEX-котировочных jobType */
+export type CexJobType =
+  | IJobType.GET_BINANCE_QUOTES
+  | IJobType.GET_MEXC_QUOTES
+  | IJobType.GET_BYBIT_QUOTES
+  | IJobType.GET_OKX_QUOTES
+  | IJobType.GET_KUCOIN_QUOTES
+  | IJobType.GET_GATEIO_QUOTES;
 
-  rpcUrl?: string;
+export interface IJobParams_get_Cex_Quotes<T extends CexJobType = CexJobType> extends IJobDefaultParams {
+  jobType: T;
   symbol?: string;
 }
 
-export interface IJobParams_get_Mexc_Quotes extends IJobDefaultParams {
-  jobType: IJobType.GET_MEXC_QUOTES;
-
-  symbol?: string;
-}
-
-export interface IJobParams_get_Bybit_Quotes extends IJobDefaultParams {
-  jobType: IJobType.GET_BYBIT_QUOTES;
-
-  symbol?: string;
-}
-
-export interface IJobParams_get_Okx_Quotes extends IJobDefaultParams {
-  jobType: IJobType.GET_OKX_QUOTES;
-
-  symbol?: string;
-}
-
-export interface IJobParams_get_Kucoin_Quotes extends IJobDefaultParams {
-  jobType: IJobType.GET_KUCOIN_QUOTES;
-
-  symbol?: string;
-}
-
-export interface IJobParams_get_Gateio_Quotes extends IJobDefaultParams {
-  jobType: IJobType.GET_GATEIO_QUOTES;
-
-  symbol?: string;
-}
+// ── Backward-compatible aliases ──
+export type IJobParams_get_Binance_Quotes = IJobParams_get_Cex_Quotes<IJobType.GET_BINANCE_QUOTES>;
+export type IJobParams_get_Mexc_Quotes   = IJobParams_get_Cex_Quotes<IJobType.GET_MEXC_QUOTES>;
+export type IJobParams_get_Bybit_Quotes  = IJobParams_get_Cex_Quotes<IJobType.GET_BYBIT_QUOTES>;
+export type IJobParams_get_Okx_Quotes    = IJobParams_get_Cex_Quotes<IJobType.GET_OKX_QUOTES>;
+export type IJobParams_get_Kucoin_Quotes = IJobParams_get_Cex_Quotes<IJobType.GET_KUCOIN_QUOTES>;
+export type IJobParams_get_Gateio_Quotes = IJobParams_get_Cex_Quotes<IJobType.GET_GATEIO_QUOTES>;
 
 export interface IPool {
   dex: DexId;
