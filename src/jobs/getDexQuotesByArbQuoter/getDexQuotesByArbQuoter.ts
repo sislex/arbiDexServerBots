@@ -42,7 +42,7 @@ export async function getDexQuotesByArbQuoter(
     quoterAddress: process.env.QUOTER_ADDRESS,
   });
 
-  const symbol = `${tokenPair.tokenOut.symbol}/${tokenPair.tokenIn.symbol}`;
+  const symbol = params.symbol ?? `${tokenPair.tokenOut.symbol}/${tokenPair.tokenIn.symbol}`;
   result.unified = dexToUnified(result, symbol);
   priceStore.recordQuote(result.unified);
 
