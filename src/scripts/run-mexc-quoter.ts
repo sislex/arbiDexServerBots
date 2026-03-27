@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { getMexcQuotes } from '../jobs/getMexcQuotes/getMexcQuotes';
-import { IJobParams_get_Mexc_Quotes } from '../store/state.types';
+import { IJobParams_get_Cex_Quotes } from '../store/state.types';
 import { BotList10 } from '../store/stabs/bots-list.stabs';
 
 async function main() {
-  const jobParams = BotList10[1].jobParams as IJobParams_get_Mexc_Quotes;
+  const jobParams = BotList10[1].jobParams as IJobParams_get_Cex_Quotes;
 
   console.log(`\n📋 Конфигурация MEXC:`);
   console.log(`  Symbol: ${jobParams.symbol}`);

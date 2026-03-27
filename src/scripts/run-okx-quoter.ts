@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { getOkxQuotes } from '../jobs/getOkxQuotes/getOkxQuotes';
-import { IJobParams_get_Okx_Quotes } from '../store/state.types';
+import { IJobParams_get_Cex_Quotes } from '../store/state.types';
 import { BotList10 } from '../store/stabs/bots-list.stabs';
 
 async function main() {
-  const jobParams = BotList10[3].jobParams as IJobParams_get_Okx_Quotes;
+  const jobParams = BotList10[3].jobParams as IJobParams_get_Cex_Quotes;
 
   console.log(`\n📋 Конфигурация OKX:`);
   console.log(`  Symbol: ${jobParams.symbol}`);

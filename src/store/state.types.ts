@@ -45,12 +45,7 @@ export enum IJobType {
   GET_EXECUTOR_BALANCES = 'get_Executor_Balances',
   GET_BEST_SELL_QUOTES= 'get_Best_Sell_Quotes',
   GET_DEX_QUOTES_BY_ARB_QUOTER= 'get_Dex_Quotes_By_Arb_Quoter',
-  GET_BINANCE_QUOTES= 'get_Binance_Quotes',
-  GET_MEXC_QUOTES= 'get_Mexc_Quotes',
-  GET_BYBIT_QUOTES= 'get_Bybit_Quotes',
-  GET_OKX_QUOTES= 'get_Okx_Quotes',
-  GET_KUCOIN_QUOTES= 'get_Kucoin_Quotes',
-  GET_GATEIO_QUOTES= 'get_Gateio_Quotes',
+  GET_CEX_QUOTES= 'get_Cex_Quotes',
 }
 
 export interface IJobDefaultParams { jobType: IJobType; }
@@ -237,27 +232,15 @@ export interface IJobParams_get_Executor_Balances extends IJobDefaultParams {
   executorAddress?: string;
 }
 
-/** Общий тип для всех CEX-котировочных jobType */
-export type CexJobType =
-  | IJobType.GET_BINANCE_QUOTES
-  | IJobType.GET_MEXC_QUOTES
-  | IJobType.GET_BYBIT_QUOTES
-  | IJobType.GET_OKX_QUOTES
-  | IJobType.GET_KUCOIN_QUOTES
-  | IJobType.GET_GATEIO_QUOTES;
+/** Название CEX-источника */
+export type CexSourceName = 'binance' | 'mexc' | 'bybit' | 'okx' | 'kucoin' | 'gateio';
 
-export interface IJobParams_get_Cex_Quotes<T extends CexJobType = CexJobType> extends IJobDefaultParams {
-  jobType: T;
+export interface IJobParams_get_Cex_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_CEX_QUOTES;
+  source: CexSourceName;
   symbol?: string;
 }
 
-// ── Backward-compatible aliases ──
-export type IJobParams_get_Binance_Quotes = IJobParams_get_Cex_Quotes<IJobType.GET_BINANCE_QUOTES>;
-export type IJobParams_get_Mexc_Quotes   = IJobParams_get_Cex_Quotes<IJobType.GET_MEXC_QUOTES>;
-export type IJobParams_get_Bybit_Quotes  = IJobParams_get_Cex_Quotes<IJobType.GET_BYBIT_QUOTES>;
-export type IJobParams_get_Okx_Quotes    = IJobParams_get_Cex_Quotes<IJobType.GET_OKX_QUOTES>;
-export type IJobParams_get_Kucoin_Quotes = IJobParams_get_Cex_Quotes<IJobType.GET_KUCOIN_QUOTES>;
-export type IJobParams_get_Gateio_Quotes = IJobParams_get_Cex_Quotes<IJobType.GET_GATEIO_QUOTES>;
 
 export interface IPool {
   dex: DexId;
@@ -335,12 +318,7 @@ export type IJobParams =
   | IJobParams_get_Pools_Reserves
   | IJobParams_get_New_Dex_Pools_Reserves
   | IJobParams_get_Executor_Balances
-  | IJobParams_get_Binance_Quotes
-  | IJobParams_get_Mexc_Quotes
-  | IJobParams_get_Bybit_Quotes
-  | IJobParams_get_Okx_Quotes
-  | IJobParams_get_Kucoin_Quotes
-  | IJobParams_get_Gateio_Quotes;
+  | IJobParams_get_Cex_Quotes;
 
 
 export interface IJobTypeAndDescription {

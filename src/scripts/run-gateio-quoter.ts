@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { getGateioQuotes } from '../jobs/getGateioQuotes/getGateioQuotes';
-import { IJobParams_get_Gateio_Quotes } from '../store/state.types';
+import { IJobParams_get_Cex_Quotes } from '../store/state.types';
 import { BotList10 } from '../store/stabs/bots-list.stabs';
 
 async function main() {
-  const jobParams = BotList10[5].jobParams as IJobParams_get_Gateio_Quotes;
+  const jobParams = BotList10[5].jobParams as IJobParams_get_Cex_Quotes;
 
   console.log(`\n📋 Конфигурация Gate.io:`);
   console.log(`  Symbol: ${jobParams.symbol}`);

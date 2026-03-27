@@ -12,7 +12,8 @@ export const BotList10: IBotsRule[] = [
       timeoutMs: 30000,
     },
     "jobParams": {
-      "jobType": IJobType.GET_BINANCE_QUOTES,
+      "jobType": IJobType.GET_CEX_QUOTES,
+      "source": "binance",
       "symbol": "ETHUSDC",
     }
   },
@@ -28,7 +29,8 @@ export const BotList10: IBotsRule[] = [
       timeoutMs: 30000,
     },
     "jobParams": {
-      "jobType": IJobType.GET_MEXC_QUOTES,
+      "jobType": IJobType.GET_CEX_QUOTES,
+      "source": "mexc",
       "symbol": "ETHUSDT",
     }
   },
@@ -44,7 +46,8 @@ export const BotList10: IBotsRule[] = [
       timeoutMs: 30000,
     },
     "jobParams": {
-      "jobType": IJobType.GET_BYBIT_QUOTES,
+      "jobType": IJobType.GET_CEX_QUOTES,
+      "source": "bybit",
       "symbol": "ETHUSDT",
     }
   },
@@ -60,7 +63,8 @@ export const BotList10: IBotsRule[] = [
       timeoutMs: 30000,
     },
     "jobParams": {
-      "jobType": IJobType.GET_OKX_QUOTES,
+      "jobType": IJobType.GET_CEX_QUOTES,
+      "source": "okx",
       "symbol": "ETH-USDT",
     }
   },
@@ -76,7 +80,8 @@ export const BotList10: IBotsRule[] = [
       timeoutMs: 30000,
     },
     "jobParams": {
-      "jobType": IJobType.GET_KUCOIN_QUOTES,
+      "jobType": IJobType.GET_CEX_QUOTES,
+      "source": "kucoin",
       "symbol": "ETH-USDT",
     }
   },
@@ -92,7 +97,8 @@ export const BotList10: IBotsRule[] = [
       timeoutMs: 30000,
     },
     "jobParams": {
-      "jobType": IJobType.GET_GATEIO_QUOTES,
+      "jobType": IJobType.GET_CEX_QUOTES,
+      "source": "gateio",
       "symbol": "ETH_USDT",
     }
   },

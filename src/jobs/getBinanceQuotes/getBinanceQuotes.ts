@@ -1,5 +1,5 @@
 import {
-  IJobParams_get_Binance_Quotes,
+  IJobParams_get_Cex_Quotes,
 } from '../../store/state.types';
 import { printQuotesTable } from './helpers/printQuotesTable';
 import { getBinanceQuote } from './helpers/getBinanceQuote';
@@ -9,9 +9,10 @@ import {cexToUnified, printUnifiedQuotesTable, priceStore} from '../shared';
 // ── Джоба ────────────────────────────────────────────────────
 
 export async function getBinanceQuotes(
-  params: IJobParams_get_Binance_Quotes,
+  params: IJobParams_get_Cex_Quotes,
 ): Promise<BinanceQuotesResult> {
   const {
+    source,
     symbol = 'ETHUSDC',
   } = params;
 
@@ -23,7 +24,7 @@ export async function getBinanceQuotes(
       latencyMs: quote.latencyMs,
       quote,
     };
-    result.unified = cexToUnified('binance', result, symbol);
+    result.unified = cexToUnified(source, result, symbol);
     priceStore.recordQuote(result.unified);
     // printUnifiedQuotesTable(result.unified);
 
@@ -35,7 +36,7 @@ export async function getBinanceQuotes(
       error: err.message ?? String(err),
       quote: null,
     };
-    result.unified = cexToUnified('binance', result, symbol);
+    result.unified = cexToUnified(source, result, symbol);
 
     printQuotesTable(result);
 

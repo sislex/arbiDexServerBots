@@ -1,5 +1,5 @@
 import {
-  IJobParams_get_Mexc_Quotes,
+  IJobParams_get_Cex_Quotes,
 } from '../../store/state.types';
 import { printQuotesTable } from './helpers/printQuotesTable';
 import { getMexcQuote } from './helpers/getMexcQuote';
@@ -9,9 +9,10 @@ import {cexToUnified, printUnifiedQuotesTable, priceStore} from '../shared';
 // ── Джоба ────────────────────────────────────────────────────
 
 export async function getMexcQuotes(
-  params: IJobParams_get_Mexc_Quotes,
+  params: IJobParams_get_Cex_Quotes,
 ): Promise<MexcQuotesResult> {
   const {
+    source,
     symbol = 'ETHUSDT',
   } = params;
 
@@ -23,7 +24,7 @@ export async function getMexcQuotes(
       latencyMs: quote.latencyMs,
       quote,
     };
-    result.unified = cexToUnified('mexc', result, symbol);
+    result.unified = cexToUnified(source, result, symbol);
     priceStore.recordQuote(result.unified);
     // printUnifiedQuotesTable(result.unified);
     return result;
@@ -34,7 +35,7 @@ export async function getMexcQuotes(
       error: err.message ?? String(err),
       quote: null,
     };
-    result.unified = cexToUnified('mexc', result, symbol);
+    result.unified = cexToUnified(source, result, symbol);
 
     printQuotesTable(result);
 

@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { getBinanceQuotes } from '../jobs/getBinanceQuotes/getBinanceQuotes';
-import { IJobParams_get_Binance_Quotes } from '../store/state.types';
+import { IJobParams_get_Cex_Quotes } from '../store/state.types';
 import { BotList10 } from '../store/stabs/bots-list.stabs';
 
 async function main() {
-  const jobParams = BotList10[0].jobParams as IJobParams_get_Binance_Quotes;
+  const jobParams = BotList10[0].jobParams as IJobParams_get_Cex_Quotes;
 
   console.log(`\n📋 Конфигурация Binance:`);
   console.log(`  Symbol: ${jobParams.symbol}`);

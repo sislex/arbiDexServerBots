@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { getBybitQuotes } from '../jobs/getBybitQuotes/getBybitQuotes';
-import { IJobParams_get_Bybit_Quotes } from '../store/state.types';
+import { IJobParams_get_Cex_Quotes } from '../store/state.types';
 import { BotList10 } from '../store/stabs/bots-list.stabs';
 
 async function main() {
-  const jobParams = BotList10[2].jobParams as IJobParams_get_Bybit_Quotes;
+  const jobParams = BotList10[2].jobParams as IJobParams_get_Cex_Quotes;
 
   console.log(`\n📋 Конфигурация Bybit:`);
   console.log(`  Symbol: ${jobParams.symbol}`);
