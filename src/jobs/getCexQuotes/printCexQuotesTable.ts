@@ -1,14 +1,17 @@
-import { GateioQuotesResult } from './types';
+import { CexQuotesResult } from './types';
 
-export function printQuotesTable(result: GateioQuotesResult): void {
+/**
+ * Выводит результат CEX-котировки в консоль.
+ */
+export function printCexQuotesTable(source: string, result: CexQuotesResult): void {
   if (!result.ok || !result.quote) {
-    console.error(`\n❌ Gate.io ошибка: ${result.error}`);
+    console.error(`\n❌ ${source} ошибка: ${result.error}`);
     return;
   }
 
   const q = result.quote;
 
-  console.log(`\n📊 Gate.io ticker  |  symbol: ${q.symbol}  |  latency: ${q.latencyMs} ms`);
+  console.log(`\n📊 ${source} bookTicker  |  symbol: ${q.symbol}  |  latency: ${q.latencyMs} ms`);
   console.table([
     { metric: 'Bid (продать)', price: q.bidPrice.toFixed(2), qty: q.bidQty },
     { metric: 'Ask (купить)',  price: q.askPrice.toFixed(2), qty: q.askQty },

@@ -11,7 +11,7 @@ import {
   IJobParams_get_Pools_Reserves,
   IJobParams_get_New_Dex_Pools_Reserves,
   IJobParams_get_Executor_Balances, IJobParams_get_Best_Sell_Quotes, IJobParams_get_Dex_Quotes_By_Arb_Quoter,
-  IJobParams_get_Cex_Quotes, CexSourceName,
+  IJobParams_get_Cex_Quotes,
 } from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
@@ -28,12 +28,7 @@ import { getPoolsReserves } from './getPoolsReserves/getPoolsReserves';
 import { getNewDexPoolsFromFactory } from './getPoolsFromFactory/getNewDexPoolsFromFactory';
 import { getExecutorBalances } from './getExecutorBalances/getExecutorBalances';
 import {getDexQuotesByArbQuoter} from './getDexQuotesByArbQuoter/getDexQuotesByArbQuoter';
-import {getBinanceQuotes} from './getBinanceQuotes/getBinanceQuotes';
-import {getMexcQuotes} from './getMexcQuotes/getMexcQuotes';
-import {getBybitQuotes} from './getBybitQuotes/getBybitQuotes';
-import {getOkxQuotes} from './getOkxQuotes/getOkxQuotes';
-import {getKucoinQuotes} from './getKucoinQuotes/getKucoinQuotes';
-import {getGateioQuotes} from './getGateioQuotes/getGateioQuotes';
+import {getCexQuotes} from './getCexQuotes/getCexQuotes';
 
 // Реэкспорт общих unified-типов
 export type { UnifiedQuoteResult, QuoteSourceName, QuoteSourceType, PoolBrief } from './shared';
@@ -68,24 +63,10 @@ export interface QuoteResultMulti<T = any> extends BaseQuoteResult {
   result?: T;
 }
 
-// ── CEX-квотер: dispatch по source ──
-const cexHandlers: Record<CexSourceName, (params: IJobParams_get_Cex_Quotes) => Promise<any>> = {
-  binance: (p) => getBinanceQuotes(p),
-  mexc:    (p) => getMexcQuotes(p),
-  bybit:   (p) => getBybitQuotes(p),
-  okx:     (p) => getOkxQuotes(p),
-  kucoin:  (p) => getKucoinQuotes(p),
-  gateio:  (p) => getGateioQuotes(p),
-};
-
 // Регистрируем хендлеры: каждый принимает *ровно те же params*, что пришли в раннер
 const handlers = {
   [IJobType.GET_CEX_QUOTES]:
-    async (params: IJobParams_get_Cex_Quotes) => {
-      const fn = cexHandlers[params.source];
-      if (!fn) throw new Error(`Unknown CEX source: ${params.source}`);
-      return fn(params);
-    },
+    async (params: IJobParams_get_Cex_Quotes) => getCexQuotes(params),
   [IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER]:
     async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter): Promise<QuoteResult> => getDexQuotesByArbQuoter(params),
   [IJobType.GET_ARB_EXECUTOR_QUOTES]:

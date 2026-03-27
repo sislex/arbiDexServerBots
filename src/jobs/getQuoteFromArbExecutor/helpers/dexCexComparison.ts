@@ -7,9 +7,9 @@ import {
   IJobType,
 } from '../../../store/state.types';
 import {getArbViaFindArb} from '../getArbExecutor.quotes';
-import {getBinanceQuote} from './getBinanceQuote';
-import {getMexcQuote} from '../../getMexcQuotes/helpers/getMexcQuote';
-import {getBybitQuote} from '../../getBybitQuotes/helpers/getBybitQuote';
+import {getBinanceQuote} from '../../getCexQuotes/helpers/getBinanceQuote';
+import {getMexcQuote} from '../../getCexQuotes/helpers/getMexcQuote';
+import {getBybitQuote} from '../../getCexQuotes/helpers/getBybitQuote';
 import {toCexQuote} from './toCexQuote';
 
 const DEFAULT_CEX_WEIGHT: Record<string, number> = {

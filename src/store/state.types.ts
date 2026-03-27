@@ -187,6 +187,7 @@ export interface IJobParams_get_Best_Sell_Quotes extends IJobDefaultParams {
 
 export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultParams {
   jobType: IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER;
+  source: string;
   rpcUrl: string;
 
   pairsToQuote: IPool[];

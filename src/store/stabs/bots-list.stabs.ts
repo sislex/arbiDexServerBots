@@ -115,6 +115,7 @@ export const BotList10: IBotsRule[] = [
     },
     "jobParams": {
       "jobType": IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER,
+      "source": "dex:arbitrum",
       "rpcUrl": "https://arb-mainnet.g.alchemy.com/v2/_T_Qkk4fOdQ7jQbGjSW2F",
       "stepPrefundPct": 2,
       "pairsToQuote": [

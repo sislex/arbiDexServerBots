@@ -1,15 +1,15 @@
 import 'dotenv/config';
-import { getKucoinQuotes } from '../jobs/getKucoinQuotes/getKucoinQuotes';
+import { getCexQuotes } from '../jobs/getCexQuotes/getCexQuotes';
 import { IJobParams_get_Cex_Quotes } from '../store/state.types';
 import { BotList10 } from '../store/stabs/bots-list.stabs';
 
 async function main() {
   const jobParams = BotList10[4].jobParams as IJobParams_get_Cex_Quotes;
 
-  console.log(`\n📋 Конфигурация KuCoin:`);
+  console.log(`\n📋 Конфигурация ${jobParams.source}:`);
   console.log(`  Symbol: ${jobParams.symbol}`);
 
-  const result = await getKucoinQuotes(jobParams);
+  const result = await getCexQuotes(jobParams);
 
   if (!result.ok) {
     console.error(`\n❌ Ошибка: ${result.error}`);

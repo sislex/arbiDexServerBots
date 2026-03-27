@@ -1,9 +1,4 @@
-import {BinanceQuote} from './getBinanceQuote';
-import {MexcQuote} from '../../getMexcQuotes/helpers/getMexcQuote';
-import {BybitQuote} from '../../getBybitQuotes/helpers/getBybitQuote';
-import {OkxQuote} from '../../getOkxQuotes/helpers/getOkxQuote';
-import {KucoinQuote} from '../../getKucoinQuotes/helpers/getKucoinQuote';
-import {GateioQuote} from '../../getGateioQuotes/helpers/getGateioQuote';
+import {CexQuote as CexQuoteFetched} from '../../getCexQuotes/types';
 import {CexQuote} from '../../../store/state.types';
 
 // ── CEX taker fees (%) ──
@@ -17,7 +12,7 @@ const CEX_TAKER_FEE: Record<string, number> = {
 };
 
 
-export function toCexQuote(name: string, q: BinanceQuote | MexcQuote | BybitQuote | OkxQuote | KucoinQuote | GateioQuote): CexQuote {
+export function toCexQuote(name: string, q: CexQuoteFetched): CexQuote {
   const feePct = CEX_TAKER_FEE[name] ?? 0.10;
   const feeMulti = feePct / 100;
   return {
