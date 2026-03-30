@@ -54,9 +54,8 @@ export async function getCexQuotes(
       quote: null,
     };
     result.unified = cexToUnified(source, result, symbol);
-    printCexQuotesTable(source, result);
+    // printCexQuotesTable(source, result);
 
     return result;
   }
 }
-

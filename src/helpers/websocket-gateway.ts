@@ -22,10 +22,10 @@ interface SubscriptionItem {
 
 export interface IQuoteDataFull {
   chainId: number;
-  token0Id: number;
-  token1Id: number;
-  costBuy: string | bigint;
-  costSell: string | bigint;
+  token0Id: number | string;
+  token1Id: number | string;
+  costBuy: string | bigint | any;
+  costSell: string | bigint  | any;
   timestamp: Date;
 }
 
@@ -39,6 +39,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayDisconnect {
   @SubscribeMessage('subscribe')
   handleSubscribe(@ConnectedSocket() client: WebSocket, @MessageBody() rawData: any) {
     const data: SubscriptionItem[] = rawData.data || rawData;
+
+    console.log( ...rawData)
 
     if (!Array.isArray(data)) {
       console.error('Ошибка: данные подписки не являются массивом', data);
@@ -88,7 +90,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayDisconnect {
             { event: 'quotes_update', data: update },
             (_, v) => (typeof v === 'bigint' ? v.toString() : v),
           );
-
           client.send(message);
         }
       });
@@ -97,6 +98,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
   afterInit() {
     quoteEvents.on('quotes_updated', (data) => {
+      // console.log('122312', data);
+
       this.broadcast(data);
     });
   }

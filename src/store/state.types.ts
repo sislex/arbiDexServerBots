@@ -248,7 +248,9 @@ export interface IJobParams_set_Quotes_Graph_Data extends IJobDefaultParams {
   jobType: IJobType.SET_QUOTES_GRAPH_DATA;
 
   rpcUrl: string;
-  pairsToQuote: IPairToQuote[];
+  pairsToQuote: IPool[];
+  stepPrefundPct?: number;
+
   extraSettings?: string;
 }
 
