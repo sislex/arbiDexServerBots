@@ -5,8 +5,7 @@ import {USDC, WETH} from '../../store/stabs/tokens.stabs';
 import { toAmount } from './helpers/toAmount';
 import { getDexQuotes } from './helpers/getDexQuotes';
 import type { GetDexQuotesByArbQuoterOpts, DexQuotesByArbQuoteResult } from './helpers/types';
-import {printQuotesTable} from './helpers/printQuotesTable';
-import {dexToUnified, printUnifiedQuotesTable, priceStore} from '../shared';
+import {dexToUnified, marketDataClient} from '../shared';
 
 // Реэкспорт
 export type {
@@ -44,7 +43,7 @@ export async function getDexQuotesByArbQuoter(
 
   const symbol = params.symbol ?? `${tokenPair.tokenOut.symbol}/${tokenPair.tokenIn.symbol}`;
   result.unified = dexToUnified(result, symbol);
-  priceStore.recordQuote(result.unified);
+  marketDataClient.writeQuote(result.unified);
 
   // printQuotesTable(dexQuotes, { tokenPair, humanReadable: true });
   // printUnifiedQuotesTable(result.unified);

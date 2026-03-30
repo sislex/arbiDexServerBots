@@ -1,8 +1,8 @@
 {
   "name": "arbiDexServerBots",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Autonomous quote-collection server: 6 CEX + 1 DEX → arbiDexMarketData",
+  "author": "Aliaksei Razhnou",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -40,6 +40,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
     "viem": "^2.45.3"
   },
   "devDependencies": {

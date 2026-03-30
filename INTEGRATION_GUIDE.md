@@ -1,113 +1,128 @@
-# 🤖 Инструкция по интеграции с arbiDexServerBots
+# 🤖 Integration Guide — arbiDexServerBots
 
-> Документ предназначен для AI-агентов / разработчиков, которые хотят программно
-> взаимодействовать с сервером котировок arbiDexServerBots.
+> **Author:** Aliaksei Razhnou  
+> This document is intended for AI agents and developers who want to programmatically
+> interact with the **arbiDexServerBots** quote-collection server.
 
 ---
 
-## 1. Обзор проекта
+## 1. Project Overview
 
-**arbiDexServerBots** — NestJS-сервер (TypeScript), который:
+**arbiDexServerBots** is a NestJS server (TypeScript) that:
 
-1. Параллельно собирает котировки **bid/ask** из **6 CEX-бирж** (Binance, MEXC, Bybit, OKX, KuCoin, Gate.io) и **1 DEX-источника** (Arbitrum on-chain через контракт `ArbQuoter`).
-2. Приводит все котировки к **единому формату** `UnifiedQuoteResult`.
-3. Сохраняет историю цен в in-memory хранилище `PriceStore` (до 100 000 точек на ключ).
-4. Предоставляет **REST API** и **WebSocket** для чтения текущих и исторических цен и подписки на обновления в реальном времени.
+1. Collects **bid/ask** quotes in parallel from **6 CEX exchanges** (Binance, MEXC, Bybit, OKX, KuCoin, Gate.io) and **1 DEX source** (Arbitrum on-chain via the `ArbQuoter` contract).
+2. Normalises all quotes into a **unified format** `UnifiedQuoteResult`.
+3. Forwards every quote to **arbiDexMarketData** — an external time-series microservice — via a single persistent **WebSocket** (Socket.IO).
+4. Exposes a **REST API** for bot management, system status, and rule configuration.
 
-### Стек
+### Stack
 
-| Компонент | Технология |
+| Component | Technology |
 |---|---|
-| Фреймворк | NestJS 11 |
-| Язык | TypeScript (strict) |
+| Framework | NestJS 11 |
+| Language | TypeScript (strict) |
 | Blockchain | ethers.js v6, viem v2 (Arbitrum One) |
-| WebSocket | Socket.IO (через `@nestjs/websockets`) |
-| Контейнеризация | Docker / docker-compose |
+| WebSocket | Socket.IO (via `@nestjs/websockets`) |
+| Market data sink | arbiDexMarketData (Socket.IO client) |
+| Containerisation | Docker / docker-compose |
 
 ---
 
-## 2. Запуск
+## 2. Running the Service
 
 ```bash
-# Установка зависимостей
+# Install dependencies
 npm install
 
-# Запуск сервера (development)
-npm run start          # слушает на порту 3000
+# Start (development)
+npm run start          # listens on port 3000
 
-# Запуск сервера (watch mode)
+# Start (watch mode)
 npm run start:dev
 
-# Запуск в Docker
-npm run start:docker   # docker-compose up --build -d, порт 1001 → 3000
+# Start in Docker
+npm run start:docker   # docker-compose up --build -d, port 1001 → 3000
 ```
 
-### Переменные окружения (`.env`)
+### Environment Variables (`.env`)
 
-| Переменная | Описание |
+| Variable | Description |
 |---|---|
-| `PRIVATE_KEY` | Приватный ключ кошелька (hex) |
-| `ARBITRUM_ALCHEMY_RPC` | RPC-эндпоинт Alchemy для Arbitrum One |
-| `ARBITRUM_RPC` | Публичный RPC Arbitrum |
-| `QUOTER_ADDRESS` | Адрес контракта `ArbQuoter` (on-chain quoter) |
-| `EXECUTOR_ADDRESS` | Адрес контракта `ArbExecutor` |
-| `CONFIG_STORE_ADDRESS` | Адрес контракта ConfigStore |
-| `CALLER_ADDRESS` | Адрес вызывающего |
-| `PORT` | Порт HTTP-сервера (по умолчанию `3000`) |
+| `PRIVATE_KEY` | Wallet private key (hex) |
+| `ARBITRUM_ALCHEMY_RPC` | Alchemy RPC endpoint for Arbitrum One |
+| `ARBITRUM_RPC` | Public Arbitrum RPC |
+| `QUOTER_ADDRESS` | `ArbQuoter` contract address (on-chain quoter) |
+| `EXECUTOR_ADDRESS` | `ArbExecutor` contract address |
+| `CONFIG_STORE_ADDRESS` | ConfigStore contract address |
+| `CALLER_ADDRESS` | Caller address |
+| `PORT` | HTTP server port (default `3000`) |
+| `MARKET_DATA_URL` | arbiDexMarketData base URL (e.g. `http://45.135.182.251:3002`) |
+| `MARKET_DATA_API_KEY` | API key for arbiDexMarketData (leave empty if auth is disabled) |
 
 ---
 
-## 3. REST API
+## 3. API Documentation (Swagger / OpenAPI)
 
-Базовый URL: `http://localhost:3000`
+**Swagger UI:** `http://localhost:3000/api` — interactive API explorer for humans.  
+**OpenAPI JSON:** `http://localhost:3000/api-json` — machine-readable spec for AI agents and code generators.
 
-### 3.1 Системная информация
+All endpoints are fully documented with summaries, descriptions, parameter schemas, request body examples, and response schemas. AI agents can fetch `http://localhost:3000/api-json` to auto-discover the API.
 
-| Метод | URL | Описание |
+---
+
+## 4. REST API
+
+**Base URL:** `http://localhost:3000`
+
+### 4.1 System Information
+
+| Method | URL | Description |
 |---|---|---|
-| `GET` | `/info` | Версия, время старта, кол-во ботов |
-| `GET` | `/info/bots-types-list` | Список типов ботов |
-| `GET` | `/info/apis` | Список всех зарегистрированных API-эндпоинтов |
-| `GET` | `/info/job-type-list` | Список типов джоб |
-| `GET` | `/store` | Полный snapshot состояния приложения |
+| `GET` | `/info` | App version, start time, bot count |
+| `GET` | `/info/bots-types-list` | List of bot types |
+| `GET` | `/info/apis` | All registered API endpoints |
+| `GET` | `/info/job-type-list` | List of job types |
+| `GET` | `/store` | Full application state snapshot |
 
-### 3.2 Управление ботами
+### 4.2 Bot Management
 
-| Метод | URL | Описание |
+| Method | URL | Description |
 |---|---|---|
-| `GET` | `/bots/get-all` | Список всех ботов (id, params) |
-| `GET` | `/bot/:botId/params` | Параметры конкретного бота |
-| `GET` | `/bot/:botId/settings` | Настройки бота (botParams + jobParams) |
-| `PUT` | `/bot/:botId/settings` | Обновить настройки. Body: `{ botParams: string(JSON), jobParams: string(JSON) }` |
-| `GET` | `/bot/:botId/errors` | Список ошибок бота |
-| `POST` | `/bot/:botId/pause` | Пауза/снятие. Body: `{ pause: boolean }` |
-| `POST` | `/bot/:botId/restart` | Перезапуск бота |
-| `GET` | `/bot/:botId/arbitrage` | Список арбитражных результатов |
-| `POST` | `/setBotsRulesList` | Перезаписать полный список правил ботов. Body: `{ botsRulesList: IBotsRule[] }` |
+| `GET` | `/bots/get-all` | List all bots (id, params) |
+| `GET` | `/bot/:botId/params` | Bot parameters |
+| `GET` | `/bot/:botId/settings` | Bot settings (botParams + jobParams) |
+| `PUT` | `/bot/:botId/settings` | Update settings. Body: `{ botParams: string(JSON), jobParams: string(JSON) }` |
+| `GET` | `/bot/:botId/errors` | Bot error list |
+| `POST` | `/bot/:botId/pause` | Pause / resume. Body: `{ pause: boolean }` |
+| `POST` | `/bot/:botId/restart` | Restart the bot |
+| `GET` | `/bot/:botId/arbitrage` | Arbitrage results for the bot |
+| `POST` | `/setBotsRulesList` | Replace the full bot rules list. Body: `{ botsRulesList: IBotsRule[] }` |
 
-### 3.3 Ошибки
+### 4.3 Errors
 
-| Метод | URL | Описание |
+| Method | URL | Description |
 |---|---|---|
-| `GET` | `/errors` | Список всех ошибок |
-| `DELETE` | `/errors` | Очистить ошибки |
+| `GET` | `/errors` | List all errors |
+| `DELETE` | `/errors` | Clear all errors |
 
-### 3.4 Цены (PriceStore)
+---
 
-| Метод | URL | Описание |
-|---|---|---|
-| `GET` | `/prices/keys` | Все ключи, по которым есть данные |
-| `GET` | `/prices/all` | Все данные по всем ключам |
-| `GET` | `/prices/key/:key` | Серия точек по одному ключу |
-| `POST` | `/prices/keys` | Серии по списку ключей. Body: `{ keys: string[] }` |
+## 5. Market Data — arbiDexMarketData
 
-#### Формат ключа PriceStore
+All price data collected by arbiDexServerBots is forwarded to the **arbiDexMarketData**
+microservice in real time. arbiDexMarketData is the single source of truth for market data.
+
+- **Deployed at:** `http://45.135.182.251:3002`
+- **Swagger UI:** `http://45.135.182.251:3002/api`
+- **OpenAPI JSON:** `http://45.135.182.251:3002/api-json`
+
+### 5.1 Price Key Format
 
 ```
 <source>|<symbol>|<bidPrice|askPrice>
 ```
 
-Примеры:
+Examples:
 ```
 binance|ETHUSDC|bidPrice
 binance|ETHUSDC|askPrice
@@ -119,31 +134,45 @@ bybit|ETHUSDT|bidPrice
 gateio|ETH_USDT|askPrice
 ```
 
-#### Формат точки (PricePoint)
+### 5.2 Data Point Format
 
 ```typescript
-interface PricePoint {
-  t: number;  // timestamp (ms), Unix epoch
-  v: number;  // value (цена)
+interface DataPoint {
+  t: number;  // timestamp (ms), Unix epoch — Date.now()
+  v: number;  // numeric value (price)
 }
 ```
 
-#### Пример запроса
+### 5.3 Reading Data via REST (arbiDexMarketData)
 
 ```bash
-# Все ключи
-curl http://localhost:3000/prices/keys
+# All available keys
+curl http://45.135.182.251:3002/store/keys
 
-# Серия по ключу
-curl http://localhost:3000/prices/key/binance%7CETHUSDC%7CbidPrice
+# Latest point for a key
+curl "http://45.135.182.251:3002/store/key/binance%7CETHUSDC%7CbidPrice/latest"
 
-# Несколько ключей
-curl -X POST http://localhost:3000/prices/keys \
+# Full series with optional filters (?limit=50 / ?from=ms&to=ms)
+curl "http://45.135.182.251:3002/store/key/binance%7CETHUSDC%7CbidPrice?limit=50"
+
+# Time-range query
+curl "http://45.135.182.251:3002/store/key/binance%7CETHUSDC%7CbidPrice?from=1700000000000&to=1700000099000"
+
+# Multiple keys at once
+curl -X POST http://45.135.182.251:3002/store/keys \
   -H 'Content-Type: application/json' \
-  -d '{"keys":["binance|ETHUSDC|bidPrice","dex:arbitrum|WETH/USDC|askPrice"]}'
+  -d '{
+    "keys": [
+      "binance|ETHUSDC|bidPrice",
+      "binance|ETHUSDC|askPrice",
+      "dex:arbitrum|WETH/USDC|bidPrice",
+      "dex:arbitrum|WETH/USDC|askPrice"
+    ],
+    "limit": 10
+  }'
 ```
 
-#### Пример ответа `/prices/key/:key`
+#### Response for `/store/key/:key`
 
 ```json
 {
@@ -157,114 +186,106 @@ curl -X POST http://localhost:3000/prices/keys \
 }
 ```
 
-> **Дедупликация:** если цена не изменилась, новая точка не записывается.
-> Интервалы между точками определяют время, когда цена оставалась неизменной.
+> **Deduplication:** if the price has not changed, a new point is not written.
+> Gaps between points indicate periods when the price remained constant.
 
----
+### 5.4 Subscribing to Real-Time Updates (WebSocket)
 
-## 4. WebSocket API (Socket.IO)
-
-**Namespace:** `/prices`  
-**URL:** `ws://localhost:3000/prices`
-
-### 4.1 С использованием socket.io-client
+**Namespace:** `/store`  
+**URL:** `ws://45.135.182.251:3002/store`
 
 ```typescript
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3000/prices');
+const socket = io('http://45.135.182.251:3002/store');
 
-// Подписка на конкретные ключи
-socket.emit('subscribe', {
-  keys: [
-    'binance|ETHUSDC|bidPrice',
-    'binance|ETHUSDC|askPrice',
-    'dex:arbitrum|WETH/USDC|bidPrice',
-  ]
+socket.on('connect', () => {
+  // Subscribe to specific keys
+  socket.emit('subscribe', {
+    keys: [
+      'binance|ETHUSDC|bidPrice',
+      'binance|ETHUSDC|askPrice',
+      'dex:arbitrum|WETH/USDC|bidPrice',
+    ]
+  });
+
+  // Or subscribe to ALL keys
+  socket.emit('subscribe', {});
 });
 
-// Подписка на ВСЕ ключи
-socket.emit('subscribe', {});
-
-// Получение обновлений
-socket.on('priceChange', (data: { key: string; point: { t: number; v: number } }) => {
-  console.log(`${data.key} → ${data.point.v} @ ${new Date(data.point.t).toISOString()}`);
+socket.on('dataChange', ({ key, point }) => {
+  // point = { t: <unix_ms>, v: <price> }
+  console.log(`${key} = ${point.v} @ ${new Date(point.t).toISOString()}`);
 });
 
-// Подтверждение подписки
 socket.on('subscribed', (info) => {
-  console.log('Subscribed:', info);  // { keys: [...] } или { keys: 'all' }
+  console.log('Subscribed:', info); // { keys: [...] } or { keys: 'all' }
 });
-
-// Отписка
-socket.emit('unsubscribe');
 ```
 
-### 4.2 Без socket.io-client (raw WebSocket — Engine.IO протокол)
+#### WebSocket Event Reference
 
-Socket.IO использует собственный протокол поверх WebSocket. Для прямого подключения
-необходимо использовать Engine.IO handshake:
-
-```
-1. GET http://localhost:3000/prices/socket.io/?EIO=4&transport=polling
-   → получить sid
-
-2. WS  ws://localhost:3000/prices/socket.io/?EIO=4&transport=websocket&sid=<sid>
-   → отправить: 40                          (Socket.IO connect к namespace)
-   → получить: 40{"sid":"..."}              (подтверждение)
-
-3. Отправить subscribe:
-   42["subscribe",{"keys":["binance|ETHUSDC|bidPrice"]}]
-
-4. Получить:
-   42["priceChange",{"key":"binance|ETHUSDC|bidPrice","point":{"t":1774548817787,"v":2049.2}}]
-```
-
-> **Рекомендация:** используйте socket.io-client — он доступен для JS/TS, Python, Java, Go.
-
-### 4.3 События
-
-| Клиент → Сервер | Payload | Описание |
+| Client → Server | Payload | Description |
 |---|---|---|
-| `subscribe` | `{ keys?: string[] }` | Подписка на ключи. Если `keys` пуст/отсутствует — подписка на всё |
-| `unsubscribe` | — | Отписка от всех ключей |
+| `subscribe` | `{ keys?: string[] }` | Subscribe to keys. Empty / omitted `keys` = subscribe to all |
+| `unsubscribe` | — | Cancel all subscriptions |
 
-| Сервер → Клиент | Payload | Описание |
+| Server → Client | Payload | Description |
 |---|---|---|
-| `subscribed` | `{ keys: string[] \| 'all' }` | Подтверждение подписки |
-| `unsubscribed` | `{}` | Подтверждение отписки |
-| `priceChange` | `{ key: string, point: PricePoint }` | Новая цена по ключу |
+| `subscribed` | `{ keys: string[] \| 'all' }` | Subscription confirmed |
+| `unsubscribed` | `{}` | Unsubscription confirmed |
+| `dataChange` | `{ key: string, point: DataPoint }` | New price point for a subscribed key |
+
+### 5.5 Python Client Example
+
+```python
+import socketio
+
+sio = socketio.Client()
+
+@sio.on('dataChange', namespace='/store')
+def on_data_change(data):
+    print(f"{data['key']} → {data['point']['v']}")
+
+@sio.on('subscribed', namespace='/store')
+def on_subscribed(data):
+    print(f"Subscribed: {data}")
+
+sio.connect('http://45.135.182.251:3002', namespaces=['/store'])
+sio.emit('subscribe', {'keys': ['binance|ETHUSDC|bidPrice']}, namespace='/store')
+sio.wait()
+```
 
 ---
 
-## 5. Ключевые типы данных
+## 6. Key Data Types
 
-### 5.1 UnifiedQuoteResult
+### 6.1 UnifiedQuoteResult
 
-Все 7 источников котировок приводятся к этому формату:
+All 7 quote sources are normalised to this format:
 
 ```typescript
 interface UnifiedQuoteResult {
   sourceType: 'cex' | 'dex';
   source: QuoteSourceName;   // 'binance' | 'mexc' | 'bybit' | 'okx' | 'kucoin' | 'gateio' | 'dex:arbitrum'
-  symbol: string;            // "ETHUSDC", "ETH-USDT", "WETH/USDC" и т.д.
+  symbol: string;            // "ETHUSDC", "ETH-USDT", "WETH/USDC", etc.
   ok: boolean;
   latencyMs: number;
   error?: string;
   timestamp: number;         // Date.now()
 
-  // Цены
-  bidPrice: number;          // лучшая цена покупателя (bid) — продать по ней
-  askPrice: number;          // лучшая цена продавца (ask)  — купить по ней
+  // Prices
+  bidPrice: number;          // best buyer price (bid) — you can SELL the base asset at this price
+  askPrice: number;          // best seller price (ask) — you can BUY the base asset at this price
   midPrice: number;          // (bid + ask) / 2
   spread: number;            // ask − bid
   spreadPct: number;         // spread / midPrice × 100
 
-  // CEX-специфичные
+  // CEX-specific
   bidQty?: number;
   askQty?: number;
 
-  // DEX-специфичные
+  // DEX-specific
   blockNumber?: number;
   gasUsed?: string;
   poolsCount?: number;
@@ -273,48 +294,48 @@ interface UnifiedQuoteResult {
 }
 ```
 
-### 5.2 Семантика bid/ask
+### 6.2 Bid / Ask Semantics
 
-| Термин | Значение | Пример (ETH/USDC) |
+| Term | Meaning | Example (ETH/USDC) |
 |---|---|---|
-| `bidPrice` | По этой цене можно **ПРОДАТЬ** базовый актив (ETH) | 2049.20 USDC |
-| `askPrice` | По этой цене можно **КУПИТЬ** базовый актив (ETH) | 2049.80 USDC |
+| `bidPrice` | Price at which you can **SELL** the base asset (ETH) | 2049.20 USDC |
+| `askPrice` | Price at which you can **BUY** the base asset (ETH) | 2049.80 USDC |
 
-Для **CEX**: `bidPrice` = лучший bid стакана, `askPrice` = лучший ask стакана.  
-Для **DEX**: `bidPrice` = bestSellPrice (цена продажи ETH), `askPrice` = bestBuyPrice (цена покупки ETH).
+For **CEX**: `bidPrice` = best order-book bid, `askPrice` = best order-book ask.  
+For **DEX**: `bidPrice` = bestSellPrice (ETH sell price), `askPrice` = bestBuyPrice (ETH buy price).
 
-### 5.3 IBotsRule (конфигурация бота)
+### 6.3 IBotsRule (Bot Configuration)
 
 ```typescript
 interface IBotsRule {
-  id: string;              // уникальный ID, напр. "Binance_USDC_WETH"
+  id: string;              // unique ID, e.g. "Binance_USDC_WETH"
   botParams: IBotParams;
-  jobParams: IJobParams;   // зависит от jobType
+  jobParams: IJobParams;   // depends on jobType
 }
 
 interface IBotParams {
   botType: 'TestBot';
   paused: boolean;
   isRepeat: boolean;
-  delayBetweenRepeat?: number;  // мс между повторами
+  delayBetweenRepeat?: number;  // ms between iterations
   maxJobs: number;
   maxErrors?: number;
   maxArbitrage?: number;
-  timeoutMs?: number;           // таймаут на 1 джобу
+  timeoutMs?: number;           // timeout per job (ms)
 }
 ```
 
-### 5.4 Типы джоб (IJobType)
+### 6.4 Job Types (IJobType)
 
-| JobType | Описание | Ключевые поля jobParams |
+| JobType | Description | Key jobParams fields |
 |---|---|---|
-| `get_Cex_Quotes` | CEX-котировка | `source`: `CexSourceName`, `symbol?` |
-| `get_Dex_Quotes_By_Arb_Quoter` | DEX on-chain квотирование | `source`, `rpcUrl`, `pairsToQuote: IPool[]`, `symbol?` |
-| `get_Pool_State` | Состояние пула | `rpcUrl`, `poolAddress`, `wordsAround`, `maxTicks` |
-| `get_Executor_Balances` | Балансы ArbExecutor | `rpcUrl?`, `executorAddress?` |
-| `getArbExecutorQuotes` | Котировки через ArbExecutor | `rpcUrl`, `pairsToQuote: IQuote[]` |
+| `get_Cex_Quotes` | CEX quote | `source`: `CexSourceName`, `symbol?` |
+| `get_Dex_Quotes_By_Arb_Quoter` | DEX on-chain quoting | `source`, `rpcUrl`, `pairsToQuote: IPool[]`, `symbol?` |
+| `get_Pool_State` | Pool tick/state | `rpcUrl`, `poolAddress`, `wordsAround`, `maxTicks` |
+| `get_Executor_Balances` | ArbExecutor balances | `rpcUrl?`, `executorAddress?` |
+| `getArbExecutorQuotes` | Quotes via ArbExecutor | `rpcUrl`, `pairsToQuote: IQuote[]` |
 
-### 5.5 IPool (DEX-пул)
+### 6.5 IPool (DEX Pool)
 
 ```typescript
 interface IPool {
@@ -323,15 +344,15 @@ interface IPool {
   poolAddress: string;     // 0x...
   token0: Address;         // 0x...
   token1: Address;         // 0x...
-  feePpm?: number;         // Fee в ppm (100 = 0.01%, 500 = 0.05%, 3000 = 0.3%, 10000 = 1%)
+  feePpm?: number;         // Fee in ppm (100 = 0.01%, 500 = 0.05%, 3000 = 0.3%, 10000 = 1%)
 }
 
 type Address = `0x${string}`;
 ```
 
-### 5.6 CEX Source → Default Symbol
+### 6.6 CEX Source → Default Symbol
 
-| Source | Default Symbol | Формат |
+| Source | Default Symbol | Format |
 |---|---|---|
 | `binance` | `ETHUSDC` | `BASEQUOTE` |
 | `mexc` | `ETHUSDT` | `BASEQUOTE` |
@@ -342,110 +363,142 @@ type Address = `0x${string}`;
 
 ---
 
-## 6. Архитектура проекта
+## 7. Project Architecture
+
+> **Author:** Aliaksei Razhnou
 
 ```
 src/
-├── main.ts                     # Точка входа, NestJS bootstrap, порт 3000
-├── app.module.ts               # Root module
+├── main.ts                          # Entry point, NestJS bootstrap, port 3000
+├── app.module.ts                    # Root module
 │
 ├── controllers/
-│   ├── app.controller.ts       # /info, /prices/*, /rules, /getPoolsByFactory
-│   ├── bots.controller.ts      # /bots/*, /bot/:id/*
-│   ├── store.controller.ts     # /store (полный snapshot)
-│   ├── price.gateway.ts        # WebSocket /prices namespace
-│   └── ui-errors.controller.ts # /errors
+│   ├── app.controller.ts            # /info, /rules, /getPoolsByFactory
+│   ├── bots.controller.ts           # /bots/*, /bot/:id/*
+│   ├── store.controller.ts          # /store (full state snapshot)
+│   └── ui-errors.controller.ts      # /errors
 │
-├── store/                      # Redux-like store (BehaviorSubject + reducer)
-│   ├── app.store.ts            # AppStore (Injectable)
-│   ├── state.types.ts          # ВСЕ интерфейсы и enum'ы
-│   ├── reducer.ts              # Reducer + initialState
-│   ├── actions.ts              # Action-типы
-│   ├── selectors.ts            # Селекторы
+├── store/                           # Redux-like store (BehaviorSubject + reducer)
+│   ├── app.store.ts                 # AppStore (Injectable)
+│   ├── state.types.ts               # All interfaces and enums
+│   ├── reducer.ts                   # Reducer + initialState
+│   ├── actions.ts                   # Action types
+│   ├── selectors.ts                 # Selectors
 │   └── stabs/
-│       ├── bots-list.stabs.ts  # BotList10 — конфигурация 7 ботов (6 CEX + 1 DEX)
-│       └── tokens.stabs.ts     # Константы токенов (USDC, WETH, ...)
+│       ├── bots-list.stabs.ts       # BotList10 — config for 7 bots (6 CEX + 1 DEX)
+│       └── tokens.stabs.ts          # Token constants (USDC, WETH, ...)
 │
 ├── bots/
-│   ├── bot-factory.ts          # Фабрика ботов
-│   ├── bot-runner.service.ts   # Сервис запуска ботов по botsRulesList
-│   ├── price-watcher.service.ts# Логирование изменений цен
-│   └── test/testBot.ts         # TestBot — универсальный бот (loop + job)
+│   ├── bot-factory.ts               # Bot factory
+│   ├── bot-runner.service.ts        # Runs bots from botsRulesList
+│   └── test/testBot.ts              # TestBot — generic bot (loop + job)
 │
 ├── jobs/
-│   ├── handlers.ts             # Маршрутизация jobType → handler-функция
-│   ├── getCexQuotes/           # Единая CEX-джоба для всех 6 бирж
+│   ├── handlers.ts                  # Routes jobType → handler function
+│   ├── getCexQuotes/                # Single CEX job for all 6 exchanges
 │   │   ├── getCexQuotes.ts
 │   │   ├── types.ts
-│   │   └── helpers/            # getBinanceQuote, getMexcQuote, ...
-│   ├── getDexQuotesByArbQuoter/# DEX-квотирование через ArbQuoter
+│   │   └── helpers/                 # getBinanceQuote, getMexcQuote, ...
+│   ├── getDexQuotesByArbQuoter/     # DEX quoting via ArbQuoter contract
 │   │   ├── getDexQuotesByArbQuoter.ts
-│   │   └── helpers/            # fetchBuySellQuotes, calculateQuotes, ...
-│   └── shared/                 # Общие утилиты
-│       ├── types.ts            # UnifiedQuoteResult, PoolBrief, ...
-│       ├── priceStore.ts       # PriceStore — хранилище ценовых серий
+│   │   └── helpers/                 # fetchBuySellQuotes, calculateQuotes, ...
+│   └── shared/                      # Shared utilities
+│       ├── types.ts                 # UnifiedQuoteResult, PoolBrief, ...
+│       ├── market-data-client.ts    # MarketDataClient — WebSocket client for arbiDexMarketData
 │       ├── printUnifiedQuotesTable.ts
 │       ├── adapters/
-│       │   ├── cexToUnified.ts # CEX → UnifiedQuoteResult
-│       │   └── dexToUnified.ts # DEX → UnifiedQuoteResult
-│       └── index.ts            # Реэкспорт
+│       │   ├── cexToUnified.ts      # CEX → UnifiedQuoteResult
+│       │   └── dexToUnified.ts      # DEX → UnifiedQuoteResult
+│       └── index.ts                 # Re-exports
 │
-├── helpers/                    # Утилиты (dex.constants, address-хелперы, ...)
-├── arbitrage/                  # Логика поиска арбитража
-├── swap/                       # Исполнение свопов on-chain
-├── artifacts/                  # ABI контрактов (ArbQuoter, ArbExecutor, ...)
-└── scripts/                    # Standalone-скрипты для ручного запуска
+├── helpers/                         # Utilities (dex.constants, address helpers, ...)
+├── arbitrage/                       # Arbitrage search logic
+├── swap/                            # On-chain swap execution
+├── artifacts/                       # Contract ABIs (ArbQuoter, ArbExecutor, ...)
+└── scripts/                         # Standalone scripts for manual runs
 ```
 
-### Поток данных
+### Data Flow
 
 ```
-┌────────────────────────────────────────────────────────┐
-│                    BotRunnerService                     │
-│  (читает botsRulesList, создаёт TestBot для каждого)    │
-└────────────────┬───────────────────────────────────────┘
-                 │ создаёт N ботов
-                 ▼
-┌────────────────────────────────────────────────────────┐
-│  TestBot (loop)                                         │
-│  ┌──────────────────────────────┐                       │
-│  │ runJob(jobParams)            │  ← handlers.ts        │
-│  │  → getCexQuotes(source)      │  или                  │
-│  │  → getDexQuotesByArbQuoter() │                       │
-│  └──────────┬───────────────────┘                       │
-│             │ UnifiedQuoteResult                        │
-│             ▼                                           │
-│  priceStore.recordQuote(unified)                        │
-└────────────────┬───────────────────────────────────────┘
-                 │
-                 ▼
-┌────────────────────────────────────────────────────────┐
-│  PriceStore (in-memory)                                 │
-│  Map<key, PricePoint[]>                                 │
-│  EventEmitter: change:<key>, change (any)               │
-└────────┬──────────────────────┬────────────────────────┘
-         │                      │
-    REST API                WebSocket
-    /prices/*             /prices namespace
+┌─────────────────────────────────────────────────────────────┐
+│                      BotRunnerService                        │
+│  (reads botsRulesList, creates one TestBot per rule)         │
+└────────────────────┬────────────────────────────────────────┘
+                     │ spawns N bots
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  TestBot (loop)                                              │
+│  ┌──────────────────────────────┐                            │
+│  │ runJob(jobParams)            │  ← handlers.ts             │
+│  │  → getCexQuotes(source)      │                            │
+│  │  → getDexQuotesByArbQuoter() │                            │
+│  └──────────────┬───────────────┘                            │
+│                 │ UnifiedQuoteResult                         │
+│                 ▼                                            │
+│  marketDataClient.writeQuote(unified)  ←── fire-and-forget   │
+└────────────────────┬────────────────────────────────────────┘
+                     │ Socket.IO  emit('write', {key, value, ts})
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  arbiDexMarketData  (http://45.135.182.251:3002)             │
+│  In-memory time-series store                                 │
+│  REST API  +  WebSocket subscriptions                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### MarketDataClient — Singleton WebSocket Client
+
+`src/jobs/shared/market-data-client.ts`  
+**Author:** Aliaksei Razhnou
+
+- **Lazy-singleton**: the WebSocket connection is created on the first `write()` call.
+- **One shared socket** for the entire process — all jobs reuse the same connection.
+- **Noop** when `MARKET_DATA_URL` is not set — nothing crashes, useful for local dev without arbiDexMarketData.
+- **Auto-reconnect** via socket.io-client (`reconnectionAttempts: Infinity`).
+- **Fire-and-forget**: `write()` is synchronous, no ack awaited.
+
+```typescript
+import { marketDataClient } from './jobs/shared';
+
+// Write a single point
+marketDataClient.write('binance|ETHUSDC|bidPrice', 2049.2, Date.now());
+
+// Write a unified quote (two writes: bidPrice + askPrice)
+marketDataClient.writeQuote(unifiedQuoteResult);
+
+// Write a batch
+marketDataClient.writeBatch([
+  { key: 'binance|ETHUSDC|bidPrice', value: 2049.2 },
+  { key: 'binance|ETHUSDC|askPrice', value: 2049.8 },
+]);
 ```
 
 ---
 
-## 7. Интеграция: Чтение котировок
+## 8. Integration: Reading Market Data
 
-### 7.1 Получить текущие лучшие цены (REST)
+All market data is available via **arbiDexMarketData** at `http://45.135.182.251:3002`.
+
+### 8.1 Get Current Best Prices (REST)
 
 ```bash
-# 1. Узнать доступные ключи
-curl http://localhost:3000/prices/keys
+# 1. List available keys
+curl http://45.135.182.251:3002/store/keys
 # → ["binance|ETHUSDC|bidPrice","binance|ETHUSDC|askPrice","dex:arbitrum|WETH/USDC|bidPrice",...]
 
-# 2. Получить последнюю цену по ключу
-curl http://localhost:3000/prices/key/binance%7CETHUSDC%7CbidPrice
-# → { "key": "...", "last": { "t": 1774..., "v": 2049.2 }, "count": 42, "points": [...] }
+# 2. Latest price for a key
+curl "http://45.135.182.251:3002/store/key/binance%7CETHUSDC%7CbidPrice/latest"
+# → { "t": 1774548818034, "v": 2049.5 }
 
-# 3. Получить цены из нескольких источников разом
-curl -X POST http://localhost:3000/prices/keys \
+# 3. Full series — last 50 points
+curl "http://45.135.182.251:3002/store/key/binance%7CETHUSDC%7CbidPrice?limit=50"
+
+# 4. Time-range query
+curl "http://45.135.182.251:3002/store/key/binance%7CETHUSDC%7CbidPrice?from=1700000000000&to=1700000099000"
+
+# 5. Multiple keys at once
+curl -X POST http://45.135.182.251:3002/store/keys \
   -H 'Content-Type: application/json' \
   -d '{
     "keys": [
@@ -457,15 +510,14 @@ curl -X POST http://localhost:3000/prices/keys \
   }'
 ```
 
-### 7.2 Подписка на обновления (WebSocket)
+### 8.2 Subscribe to Real-Time Updates (WebSocket)
 
 ```typescript
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3000/prices');
+const socket = io('http://45.135.182.251:3002/store');
 
 socket.on('connect', () => {
-  // Подписка только на Binance и DEX Arbitrum
   socket.emit('subscribe', {
     keys: [
       'binance|ETHUSDC|bidPrice',
@@ -476,37 +528,16 @@ socket.on('connect', () => {
   });
 });
 
-socket.on('priceChange', ({ key, point }) => {
-  // point = { t: <unix_ms>, v: <price> }
-  console.log(`${key} = ${point.v}`);
+socket.on('dataChange', ({ key, point }) => {
+  console.log(`${key} = ${point.v} @ ${new Date(point.t).toISOString()}`);
 });
-```
-
-### 7.3 Пример Python-клиента
-
-```python
-import socketio
-
-sio = socketio.Client()
-
-@sio.on('priceChange', namespace='/prices')
-def on_price_change(data):
-    print(f"{data['key']} → {data['point']['v']}")
-
-@sio.on('subscribed', namespace='/prices')
-def on_subscribed(data):
-    print(f"Subscribed: {data}")
-
-sio.connect('http://localhost:3000', namespaces=['/prices'])
-sio.emit('subscribe', {'keys': ['binance|ETHUSDC|bidPrice']}, namespace='/prices')
-sio.wait()
 ```
 
 ---
 
-## 8. Интеграция: Управление ботами
+## 9. Integration: Bot Management
 
-### 8.1 Программный перезапуск с новыми правилами
+### 9.1 Restart with New Rules
 
 ```bash
 curl -X POST http://localhost:3000/setBotsRulesList \
@@ -562,59 +593,61 @@ curl -X POST http://localhost:3000/setBotsRulesList \
   }'
 ```
 
-### 8.2 Пауза / перезапуск бота
+### 9.2 Pause / Resume / Restart a Bot
 
 ```bash
-# Поставить на паузу
+# Pause
 curl -X POST http://localhost:3000/bot/Binance_USDC_WETH/pause \
   -H 'Content-Type: application/json' \
   -d '{"pause": true}'
 
-# Снять с паузы
+# Resume
 curl -X POST http://localhost:3000/bot/Binance_USDC_WETH/pause \
   -H 'Content-Type: application/json' \
   -d '{"pause": false}'
 
-# Перезапуск
+# Restart
 curl -X POST http://localhost:3000/bot/Binance_USDC_WETH/restart
 ```
 
 ---
 
-## 9. Интеграция: Добавление нового источника котировок
+## 10. Integration: Adding a New Quote Source
 
-### 9.1 Новый CEX-источник
+> **Author:** Aliaksei Razhnou
 
-1. Создать `src/jobs/getCexQuotes/helpers/getNewExchangeQuote.ts`:
+### 10.1 New CEX Source
+
+1. Create `src/jobs/getCexQuotes/helpers/getNewExchangeQuote.ts`:
 
 ```typescript
 import { CexQuote } from '../types';
 
 export async function getNewExchangeQuote(symbol: string): Promise<CexQuote> {
   const start = performance.now();
-  // ... fetch из API биржи ...
+  // ... fetch from the exchange API ...
   const latencyMs = Math.round(performance.now() - start);
 
   return {
     symbol,
     bidPrice: /* ... */,
-    bidQty: /* ... */,
+    bidQty:   /* ... */,
     askPrice: /* ... */,
-    askQty: /* ... */,
+    askQty:   /* ... */,
     midPrice: (bidPrice + askPrice) / 2,
-    spread: askPrice - bidPrice,
+    spread:   askPrice - bidPrice,
     spreadPct: (spread / midPrice) * 100,
     latencyMs,
   };
 }
 ```
 
-2. Добавить source в `CexSourceName` (`src/store/state.types.ts`):
+2. Add the source to `CexSourceName` (`src/store/state.types.ts`):
 ```typescript
 export type CexSourceName = 'binance' | 'mexc' | ... | 'newexchange';
 ```
 
-3. Зарегистрировать в `cexConfigs` (`src/jobs/getCexQuotes/getCexQuotes.ts`):
+3. Register in `cexConfigs` (`src/jobs/getCexQuotes/getCexQuotes.ts`):
 ```typescript
 const cexConfigs: Record<CexSourceName, CexConfig> = {
   // ...existing...
@@ -622,61 +655,73 @@ const cexConfigs: Record<CexSourceName, CexConfig> = {
 };
 ```
 
-4. Добавить source в `QuoteSourceName` (`src/jobs/shared/types.ts`):
+4. Add the source to `QuoteSourceName` (`src/jobs/shared/types.ts`):
 ```typescript
 export type QuoteSourceName = ... | 'newexchange';
 ```
 
-5. Добавить правило бота в `BotList10` (`src/store/stabs/bots-list.stabs.ts`):
+5. Add a bot rule to `BotList10` (`src/store/stabs/bots-list.stabs.ts`):
 ```typescript
 {
   id: 'NewExchange_USDT_WETH',
-  botParams: { botType: IBotType.TEST_BOT, paused: false, isRepeat: true, delayBetweenRepeat: 200, maxJobs: 1000000, maxErrors: 100, timeoutMs: 30000 },
-  jobParams: { jobType: IJobType.GET_CEX_QUOTES, source: 'newexchange', symbol: 'ETHUSDT' },
+  botParams: {
+    botType: IBotType.TEST_BOT,
+    paused: false,
+    isRepeat: true,
+    delayBetweenRepeat: 200,
+    maxJobs: 1000000,
+    maxErrors: 100,
+    timeoutMs: 30000,
+  },
+  jobParams: {
+    jobType: IJobType.GET_CEX_QUOTES,
+    source: 'newexchange',
+    symbol: 'ETHUSDT',
+  },
 }
 ```
 
-### 9.2 Новый DEX-источник (другая сеть)
+### 10.2 New DEX Source (Different Network)
 
-1. Создать аналог `getDexQuotes` в `src/jobs/` для новой сети.
-2. Добавить новый `IJobType` и handler в `src/jobs/handlers.ts`.
-3. Использовать `dexToUnified()` адаптер (или создать аналог).
-4. Вызывать `priceStore.recordQuote(unified)` для записи в PriceStore.
+1. Create an analogue of `getDexQuotes` in `src/jobs/` for the new network.
+2. Add a new `IJobType` and its handler in `src/jobs/handlers.ts`.
+3. Use the `dexToUnified()` adapter (or create a custom one).
+4. Call `marketDataClient.writeQuote(unified)` to forward data to arbiDexMarketData.
 
 ---
 
-## 10. Ключевые адреса токенов (Arbitrum One)
+## 11. Key Token Addresses (Arbitrum One)
 
-| Токен | Адрес | Decimals |
+| Token | Address | Decimals |
 |---|---|---|
 | USDC | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | 6 |
 | USDT | `0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9` | 6 |
 | WETH | `0x82af49447d8a07e3bd95bd0d56f35241523fbab1` | 18 |
 | WBTC | `0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f` | 8 |
-| ARB | `0x912CE59144191C1204E64559FE8253a0e49E6548` | 18 |
-| DAI | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 |
+| ARB  | `0x912CE59144191C1204E64559FE8253a0e49E6548` | 18 |
+| DAI  | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 |
 
-Полный список — `src/store/stabs/tokens.stabs.ts`.
+Full list: `src/store/stabs/tokens.stabs.ts`.
 
 ---
 
-## 11. Контракты (Arbitrum One)
+## 12. Contracts (Arbitrum One)
 
-| Контракт | Адрес | Назначение |
+| Contract | Address | Purpose |
 |---|---|---|
-| ArbQuoter | `0xb8C793ea9201b0875BEc927585Ca101D8A142E7F` | On-chain квотирование: `quoteExactInBatch(steps[], amountIn)` |
-| ArbExecutor | `0x4ffDddC895719C3f662364e79f989C4deea44118` | Исполнение арбитражных сделок |
-| ConfigStore | `0xfcB158cf91994c31D61e3F7358B5273c8e6729bD` | Хранение конфигурации на chain |
+| ArbQuoter | `0xb8C793ea9201b0875BEc927585Ca101D8A142E7F` | On-chain quoting: `quoteExactInBatch(steps[], amountIn)` |
+| ArbExecutor | `0x4ffDddC895719C3f662364e79f989C4deea44118` | Executes arbitrage trades |
+| ConfigStore | `0xfcB158cf91994c31D61e3F7358B5273c8e6729bD` | On-chain configuration storage |
 
-ABI контрактов: `src/artifacts/contracts/`
+Contract ABIs: `src/artifacts/contracts/`
 
 ---
 
-## 12. Текущая конфигурация ботов (BotList10)
+## 13. Default Bot Configuration (BotList10)
 
-При старте сервера запускаются 7 ботов:
+Seven bots are started on server launch:
 
-| ID | Тип | Source | Symbol | Delay (мс) |
+| ID | Type | Source | Symbol | Delay (ms) |
 |---|---|---|---|---|
 | `Binance_USDC_WETH` | CEX | binance | ETHUSDC | 200 |
 | `Mexc_USDT_WETH` | CEX | mexc | ETHUSDT | 200 |
@@ -686,73 +731,86 @@ ABI контрактов: `src/artifacts/contracts/`
 | `GateIO_USDT_WETH` | CEX | gateio | ETH_USDT | 200 |
 | `Arbitrum_USDC_WETH` | DEX | dex:arbitrum | WETH/USDC | 500 |
 
-DEX-бот опрашивает 13 пулов (Uniswap V3, SushiSwap V3, PancakeSwap V3, Camelot V3).
+The DEX bot queries 13 pools (Uniswap V3, SushiSwap V3, PancakeSwap V3, Camelot V3).
 
 ---
 
-## 13. Пример: Полный цикл получения арбитражной информации
+## 14. Example: Full Arbitrage Detection Cycle
 
 ```typescript
-// 1. Получить все текущие цены
-const keysRes = await fetch('http://localhost:3000/prices/keys');
-const keys = await keysRes.json();
+// Author: Aliaksei Razhnou
 
-// 2. Найти лучший bid и ask
-const allRes = await fetch('http://localhost:3000/prices/all');
-const allData = await allRes.json();
+// 1. Get all available keys
+const keysRes = await fetch('http://45.135.182.251:3002/store/keys');
+const keys: string[] = await keysRes.json();
+
+// 2. Get latest point for every key (snapshot)
+const snapRes = await fetch('http://45.135.182.251:3002/store/snapshot');
+const snap: Record<string, { t: number; v: number }> = await snapRes.json();
 
 let bestBid = { source: '', value: 0 };
 let bestAsk = { source: '', value: Infinity };
 
 for (const key of keys) {
-  const last = allData[key]?.[allData[key].length - 1];
-  if (!last) continue;
-  
-  if (key.endsWith('|bidPrice') && last.v > bestBid.value) {
-    bestBid = { source: key, value: last.v };
+  const point = snap[key];
+  if (!point) continue;
+
+  if (key.endsWith('|bidPrice') && point.v > bestBid.value) {
+    bestBid = { source: key, value: point.v };
   }
-  if (key.endsWith('|askPrice') && last.v < bestAsk.value) {
-    bestAsk = { source: key, value: last.v };
+  if (key.endsWith('|askPrice') && point.v < bestAsk.value) {
+    bestAsk = { source: key, value: point.v };
   }
 }
 
-// 3. Проверить арбитраж
+// 3. Check for arbitrage
 if (bestBid.value > bestAsk.value) {
   const profitPct = ((bestBid.value - bestAsk.value) / bestAsk.value) * 100;
-  console.log(`🔥 Арбитраж: купить на ${bestAsk.source} по ${bestAsk.value}, продать на ${bestBid.source} по ${bestBid.value} (+${profitPct.toFixed(4)}%)`);
+  console.log(
+    `🔥 Arbitrage: buy on ${bestAsk.source} @ ${bestAsk.value}, ` +
+    `sell on ${bestBid.source} @ ${bestBid.value} (+${profitPct.toFixed(4)}%)`
+  );
 }
 ```
 
 ---
 
-## 14. Ограничения и особенности
+## 15. Limitations and Notes
 
-1. **In-memory хранилище** — PriceStore хранит данные в памяти процесса. При перезапуске все ценовые серии теряются.
-2. **Лимит точек** — по умолчанию 100 000 точек на ключ. При превышении удаляется самая старая точка (FIFO).
-3. **Дедупликация** — одинаковые последовательные значения не записываются.
-4. **Timeout** — по умолчанию 30 000 мс на джобу. Если джоба не ответила — ошибка `TIMEOUT`.
-5. **CORS** — включён (`app.enableCors()`), WebSocket тоже с `cors: true`.
-6. **Формат символов** — у каждой биржи свой формат (ETHUSDC, ETH-USDT, ETH_USDT). Ключи PriceStore содержат оригинальный формат символа источника.
-7. **DEX цены** — зависят от `tokenPair.tokenIn.amount` и `tokenPair.tokenOut.amount` (размер запроса влияет на slippage). По умолчанию: 100 USDC на покупку, 0.03 WETH на продажу.
+1. **Stateless collector** — arbiDexServerBots itself does not store price history. All data is forwarded to arbiDexMarketData.
+2. **Single WebSocket** — `MarketDataClient` maintains one persistent connection per process. All jobs share it.
+3. **Graceful degradation** — if `MARKET_DATA_URL` is not set or arbiDexMarketData is unreachable, jobs continue running; Socket.IO auto-reconnects silently in the background.
+4. **Deduplication** — performed on the arbiDexMarketData side: if the value is unchanged, no new point is written.
+5. **Timeout** — default 30 000 ms per job. If a job does not respond — `TIMEOUT` error.
+6. **CORS** — enabled (`app.enableCors()`).
+7. **Symbol formats** — each exchange has its own format (ETHUSDC, ETH-USDT, ETH\_USDT). Keys forwarded to arbiDexMarketData preserve the source's original symbol format.
+8. **DEX prices** — depend on `tokenPair.tokenIn.amount` and `tokenPair.tokenOut.amount` (trade size affects slippage). Default: 100 USDC to buy, 0.03 WETH to sell.
 
 ---
 
-## 15. Быстрый старт для интеграции
+## 16. Quick Start
 
 ```bash
-# 1. Запустить сервер
+# 1. Clone and configure
 cd arbiDexServerBots
-cp .env.example .env   # настроить переменные
+cp .env.example .env   # fill in the variables, set MARKET_DATA_URL
 npm install
+
+# 2. Start the server
 npm run start
 
-# 2. Проверить что данные поступают (через ~1-2 секунды)
-curl http://localhost:3000/prices/keys
+# 3. Verify data is flowing into arbiDexMarketData (after ~1–2 seconds)
+curl http://45.135.182.251:3002/store/keys
 
-# 3. Получить текущие цены
-curl http://localhost:3000/prices/all
+# 4. Get current snapshot (latest point per key)
+curl http://45.135.182.251:3002/store/snapshot
 
-# 4. Подписаться на обновления через WebSocket
-# → см. примеры в разделе 7.2 / 7.3
+# 5. Subscribe to real-time updates via WebSocket
+# → see examples in sections 5.4 / 8.2
 ```
 
+---
+
+## Author
+
+**Aliaksei Razhnou**

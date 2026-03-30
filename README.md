@@ -1,98 +1,200 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# arbiDexServerBots
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> **Author:** Aliaksei Razhnou
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Autonomous quote-collection server that gathers real-time **bid/ask** prices from 6 CEX exchanges and 1 DEX source (Arbitrum on-chain), normalises them into a unified format, and forwards everything to [arbiDexMarketData](http://45.135.182.251:3002/api) via a persistent WebSocket connection.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Project setup
+- **7 parallel bots** — Binance, MEXC, Bybit, OKX, KuCoin, Gate.io (CEX) + Arbitrum DEX (13 pools)
+- **Unified quote format** — all sources normalised to `UnifiedQuoteResult` with bid/ask/mid/spread
+- **Real-time forwarding** — single Socket.IO connection to arbiDexMarketData (fire-and-forget)
+- **REST API** — bot management, pause/resume, live reconfiguration
+- **Swagger UI** — interactive API explorer at `/api`
+- **OpenAPI JSON** — machine-readable spec at `/api-json` for AI agents and code generators
+- **Graceful degradation** — works without arbiDexMarketData; auto-reconnects in background
+- **Docker** — ready for production deployment
+
+## Quick Start
 
 ```bash
-$ npm install
+# 1. Install dependencies
+npm install
+
+# 2. Configure environment
+cp .env.example .env
+# Set MARKET_DATA_URL, PRIVATE_KEY, RPC endpoints (see table below)
+
+# 3. Run
+npm run start:dev
 ```
 
-## Compile and run the project
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `PRIVATE_KEY` | Wallet private key (hex) |
+| `ARBITRUM_ALCHEMY_RPC` | Alchemy RPC for Arbitrum One |
+| `ARBITRUM_RPC` | Public Arbitrum RPC |
+| `QUOTER_ADDRESS` | ArbQuoter contract address |
+| `EXECUTOR_ADDRESS` | ArbExecutor contract address |
+| `CONFIG_STORE_ADDRESS` | ConfigStore contract address |
+| `CALLER_ADDRESS` | Caller address |
+| `MARKET_DATA_URL` | arbiDexMarketData URL (e.g. `http://45.135.182.251:3002`) |
+| `MARKET_DATA_API_KEY` | API key for arbiDexMarketData (empty = auth disabled) |
+
+## Scripts
 
 ```bash
-# development
-$ npm run start
+npm run start          # Development
+npm run start:dev      # Watch mode
+npm run start:prod     # Production (after build)
+npm run build          # Compile TypeScript
 
-# watch mode
-$ npm run start:dev
+npm test               # Unit tests
+npm run test:cov       # Tests with coverage
+npm run test:e2e       # End-to-end tests
 
-# production mode
-$ npm run start:prod
+npm run start:docker   # Docker Compose up
+npm run "stop & clear:docker"  # Docker Compose down
 ```
 
-## Run tests
+## Architecture
+
+```
+BotRunnerService
+  └── TestBot × 7
+        ├── getCexQuotes(binance|mexc|bybit|okx|kucoin|gateio)
+        └── getDexQuotesByArbQuoter(arbitrum, 13 pools)
+              │
+              ▼  UnifiedQuoteResult
+        marketDataClient.writeQuote()
+              │
+              ▼  Socket.IO emit('write', {key, value, timestamp})
+        arbiDexMarketData (http://45.135.182.251:3002)
+```
+
+All quotes flow through `MarketDataClient` — a lazy-singleton Socket.IO client that creates one shared connection on first use and auto-reconnects on failure.
+
+## Market Data
+
+All price data lives in **arbiDexMarketData**:
+
+| Resource | URL |
+|---|---|
+| Swagger UI | http://45.135.182.251:3002/api |
+| OpenAPI JSON | http://45.135.182.251:3002/api-json |
+| WebSocket | `ws://45.135.182.251:3002/store` (Socket.IO namespace) |
+
+### Key format
+
+```
+<source>|<symbol>|<bidPrice|askPrice>
+```
+
+Examples: `binance|ETHUSDC|bidPrice`, `dex:arbitrum|WETH/USDC|askPrice`
+
+### Quick read
 
 ```bash
-# unit tests
-$ npm run test
+# All keys
+curl http://45.135.182.251:3002/store/keys
 
-# e2e tests
-$ npm run test:e2e
+# Latest price
+curl "http://45.135.182.251:3002/store/key/binance%7CETHUSDC%7CbidPrice/latest"
 
-# test coverage
-$ npm run test:cov
+# Snapshot (all keys, latest point each)
+curl http://45.135.182.251:3002/store/snapshot
 ```
 
-## Deployment
+### Real-time subscription
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```typescript
+import { io } from 'socket.io-client';
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+const socket = io('http://45.135.182.251:3002/store');
+socket.on('connect', () => {
+  socket.emit('subscribe', {
+    keys: ['binance|ETHUSDC|bidPrice', 'dex:arbitrum|WETH/USDC|askPrice']
+  });
+});
+socket.on('dataChange', ({ key, point }) => {
+  console.log(`${key} = ${point.v}`);
+});
+```
+
+## API Documentation
+
+| Resource | URL |
+|---|---|
+| **Swagger UI** | `http://localhost:3000/api` |
+| **OpenAPI JSON** | `http://localhost:3000/api-json` |
+
+Swagger UI allows humans to explore and try all API endpoints interactively.  
+OpenAPI JSON is a machine-readable spec for AI agents, code generators, and HTTP clients (Postman, Insomnia, etc.).
+
+## REST API (this server)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/info` | Server info (version, uptime, bot count) |
+| `GET` | `/bots/get-all` | List all bots |
+| `GET` | `/bot/:id/settings` | Bot settings |
+| `PUT` | `/bot/:id/settings` | Update bot settings |
+| `POST` | `/bot/:id/pause` | Pause / resume (`{ pause: boolean }`) |
+| `POST` | `/bot/:id/restart` | Restart a bot |
+| `POST` | `/setBotsRulesList` | Replace all bot rules |
+| `GET` | `/store` | Full application state |
+| `GET` | `/errors` | Error list |
+| `DELETE` | `/errors` | Clear errors |
+
+## Project Structure
+
+```
+src/
+├── main.ts                        # NestJS bootstrap
+├── app.module.ts                  # Root module
+├── controllers/                   # REST endpoints
+├── bots/                          # Bot runner + TestBot
+├── jobs/
+│   ├── getCexQuotes/              # CEX quote fetchers (6 exchanges)
+│   ├── getDexQuotesByArbQuoter/   # DEX on-chain quoting
+│   └── shared/
+│       ├── market-data-client.ts  # WebSocket client → arbiDexMarketData
+│       ├── types.ts               # UnifiedQuoteResult
+│       └── adapters/              # cexToUnified, dexToUnified
+├── store/                         # Redux-like state (BehaviorSubject + reducer)
+├── helpers/                       # Utilities
+├── arbitrage/                     # Arbitrage detection
+├── swap/                          # On-chain swap execution
+└── artifacts/                     # Contract ABIs
+```
+
+## Tests
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+19 unit tests covering `MarketDataClient` (noop mode, lazy connect, write/writeQuote/writeBatch, disconnect, auto-connect).
 
-## Resources
+## Documentation
 
-Check out a few resources that may come in handy when working with NestJS:
+Full integration guide with detailed API examples, data types, and architecture diagrams:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+📖 **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)**
 
-## Support
+## Tech Stack
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+| | |
+|---|---|
+| NestJS 11 | TypeScript (strict) |
+| ethers.js v6 | viem v2 |
+| Socket.IO | Jest |
+| Docker | docker-compose |
 
-## Stay in touch
+## Author
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Aliaksei Razhnou**

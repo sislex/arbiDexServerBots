@@ -1,7 +1,7 @@
 import { IJobParams_get_Cex_Quotes, CexSourceName } from '../../store/state.types';
 import { CexQuote, CexQuotesResult } from './types';
 import { printCexQuotesTable } from './printCexQuotesTable';
-import { cexToUnified, priceStore } from '../shared';
+import { cexToUnified, marketDataClient } from '../shared';
 
 import { getBinanceQuote } from './helpers/getBinanceQuote';
 import { getMexcQuote }    from './helpers/getMexcQuote';
@@ -43,7 +43,7 @@ export async function getCexQuotes(
 
     const result: CexQuotesResult = { ok: true, latencyMs: quote.latencyMs, quote };
     result.unified = cexToUnified(source, result, symbol);
-    priceStore.recordQuote(result.unified);
+    marketDataClient.writeQuote(result.unified);
 
     return result;
   } catch (err: any) {
