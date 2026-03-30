@@ -5,7 +5,7 @@ import {BotList10} from '../store/stabs/bots-list.stabs';
 import { printQuotesTable } from '../jobs/getDexQuotesByArbQuoter/helpers/printQuotesTable';
 
 async function main() {
-  const jobParams = BotList10[0].jobParams as IJobParams_get_Dex_Quotes_By_Arb_Quoter;
+  const jobParams = BotList10[6].jobParams as IJobParams_get_Dex_Quotes_By_Arb_Quoter;
 
   const consoleOutput = true;
   const humanReadable = true;

@@ -301,7 +301,7 @@ export class TestBot implements ITestBot {
         this.botState.lastJobTimeFinish.getTime() -
         this.botState.lastJobTimeStart.getTime();
 
-      console.log('this.botState.lastLatency', this.botState.lastLatency);
+      // console.log('this.botState.lastLatency', this.botState.lastLatency);
     } else {
       this.botState.lastLatency = null;
     }
@@ -320,7 +320,7 @@ export class TestBot implements ITestBot {
       this.botState.latency = Math.round(avg + (this.botState.lastLatency - avg) / n);
     }
 
-    this.startAnalytics();
+    // this.startAnalytics();
   }
 
   async job(jobParams: IJobParams = this.jobParams): Promise<any> {

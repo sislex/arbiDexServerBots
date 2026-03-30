@@ -43,8 +43,9 @@ export enum IJobType {
   GET_POOLS_RESERVES = 'get_Pools_Reserves',
   GET_NEW_DEX_POOLS_RESERVES = 'get_New_Dex_Pools_From_Factory',
   GET_EXECUTOR_BALANCES = 'get_Executor_Balances',
-  GET_BEST_SELL_QUOTES = 'get_Best_Sell_Quotes',
-  GET_DEX_QUOTES_BY_ARB_QUOTER = 'get_Dex_Quotes_By_Arb_Quoter',
+  GET_BEST_SELL_QUOTES= 'get_Best_Sell_Quotes',
+  GET_DEX_QUOTES_BY_ARB_QUOTER= 'get_Dex_Quotes_By_Arb_Quoter',
+  GET_CEX_QUOTES= 'get_Cex_Quotes',
   SET_QUOTES_GRAPH_DATA = 'set_Quotes_Graph_Data',
 }
 
@@ -187,7 +188,9 @@ export interface IJobParams_get_Best_Sell_Quotes extends IJobDefaultParams {
 
 export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultParams {
   jobType: IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER;
+  source: string;
   rpcUrl: string;
+  symbol?: string;
 
   pairsToQuote: IPool[];
   stepPrefundPct?: number;
@@ -230,6 +233,15 @@ export interface IJobParams_get_Executor_Balances extends IJobDefaultParams {
   rpcUrl?: string;
   /** Адрес контракта ArbExecutor (по умолчанию из process.env.EXECUTOR_ADDRESS) */
   executorAddress?: string;
+}
+
+/** Название CEX-источника */
+export type CexSourceName = 'binance' | 'mexc' | 'bybit' | 'okx' | 'kucoin' | 'gateio';
+
+export interface IJobParams_get_Cex_Quotes extends IJobDefaultParams {
+  jobType: IJobType.GET_CEX_QUOTES;
+  source: CexSourceName;
+  symbol?: string;
 }
 
 export interface IJobParams_set_Quotes_Graph_Data extends IJobDefaultParams {
@@ -316,6 +328,7 @@ export type IJobParams =
   | IJobParams_get_Pools_Reserves
   | IJobParams_get_New_Dex_Pools_Reserves
   | IJobParams_get_Executor_Balances
+  | IJobParams_get_Cex_Quotes
   | IJobParams_set_Quotes_Graph_Data;
 
 

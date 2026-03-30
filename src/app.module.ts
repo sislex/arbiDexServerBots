@@ -5,6 +5,8 @@ import { ErrorsController } from './controllers/ui-errors.controller';
 import { StoreController } from './controllers/store.controller';
 import { BotRunnerService } from './bots/bot-runner.service';
 import { BotsController } from './controllers/bots.controller';
+import { PriceWatcherService } from './bots/price-watcher.service';
+import { PriceGateway } from './controllers/price.gateway';
 import { QuotesGraphController } from './controllers/quotes_graph.controller';
 import { ChatGateway } from './helpers/websocket-gateway';
 
@@ -17,6 +19,6 @@ import { ChatGateway } from './helpers/websocket-gateway';
     ErrorsController,
     QuotesGraphController,
   ],
-  providers: [BotRunnerService, ChatGateway],
+  providers: [BotRunnerService, PriceWatcherService, PriceGateway, ChatGateway],
 })
 export class AppModule {}

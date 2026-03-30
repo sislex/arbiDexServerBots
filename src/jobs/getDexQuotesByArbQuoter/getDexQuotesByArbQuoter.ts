@@ -6,6 +6,7 @@ import { toAmount } from './helpers/toAmount';
 import { getDexQuotes } from './helpers/getDexQuotes';
 import type { GetDexQuotesByArbQuoterOpts, DexQuotesByArbQuoteResult } from './helpers/types';
 import {printQuotesTable} from './helpers/printQuotesTable';
+import {dexToUnified, printUnifiedQuotesTable, priceStore} from '../shared';
 
 // Реэкспорт
 export type {
@@ -31,15 +32,21 @@ export async function getDexQuotesByArbQuoter(
 ): Promise<DexQuotesByArbQuoteResult> {
   const { pairsToQuote, rpcUrl = 'https://arb1.arbitrum.io/rpc' } = params;
 
-  const dexQuotes = await getDexQuotes({
+  const tokenPair = opts?.tokenPair ?? TOKEN_PAIR;
+
+  const result = await getDexQuotes({
     pairsToQuote,
     rpcUrl,
-    tokenPair: opts?.tokenPair ?? TOKEN_PAIR,
+    tokenPair,
     humanReadable: opts?.humanReadable ?? true,
     quoterAddress: process.env.QUOTER_ADDRESS,
   });
 
-  printQuotesTable(dexQuotes, { tokenPair: TOKEN_PAIR, humanReadable: true });
+  const symbol = params.symbol ?? `${tokenPair.tokenOut.symbol}/${tokenPair.tokenIn.symbol}`;
+  result.unified = dexToUnified(result, symbol);
+  priceStore.recordQuote(result.unified);
 
-  return dexQuotes;
+  // printQuotesTable(dexQuotes, { tokenPair, humanReadable: true });
+  // printUnifiedQuotesTable(result.unified);
+  return result;
 }

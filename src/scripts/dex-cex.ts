@@ -4,13 +4,13 @@ import { dexCexComparison } from '../jobs/getQuoteFromArbExecutor/helpers/dexCex
 import { dexCexResultToSwapStep, SignalDirection } from '../jobs/getQuoteFromArbExecutor/helpers/dexCexResultToSwapStep';
 import { swap } from '../jobs/getQuoteFromArbExecutor/helpers/swap';
 import { IJobParams_get_Arbitrum_Arb_Executor_Quotes } from '../store/state.types';
-import { BotListFilteredUSDC } from '../store/stabs/bots-list.stabs';
+import { BotList10 } from '../store/stabs/bots-list.stabs';
 import ArbExecutorAbi from '../artifacts/contracts/ArbExecutor.sol/ArbExecutor.json';
 
 const VAULT_ADDRESS = process.env.EXECUTOR_ADDRESS || '0x4ffDddC895719C3f662364e79f989C4deea44118';
 
 async function main() {
-  const jobParams = BotListFilteredUSDC[0].jobParams as IJobParams_get_Arbitrum_Arb_Executor_Quotes;
+  const jobParams = BotList10[1].jobParams as IJobParams_get_Arbitrum_Arb_Executor_Quotes;
 
   // ── 1. Получаем DEX-CEX сравнение ──
   const result = await dexCexComparison(jobParams);

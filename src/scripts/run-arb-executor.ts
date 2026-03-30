@@ -1,11 +1,11 @@
 import 'dotenv/config';
 import { getArbViaScanPairs, getArbViaFindArb, getArbViaFindArbStore } from '../jobs/getQuoteFromArbExecutor/getArbExecutor.quotes';
 import { IJobType, IQuote } from '../store/state.types';
-import { BotListFiltered } from '../store/stabs/bots-list.stabs';
+import { BotList10 } from '../store/stabs/bots-list.stabs';
 
 let pairsToQuote: IQuote[] = [];
-if (BotListFiltered[0].jobParams.jobType === IJobType.GET_ARB_EXECUTOR_QUOTES) {
-  pairsToQuote = BotListFiltered[0].jobParams.pairsToQuote;
+if (BotList10[1].jobParams.jobType === IJobType.GET_ARB_EXECUTOR_QUOTES) {
+  pairsToQuote = BotList10[1].jobParams.pairsToQuote;
 }
 
 const jobParams = {

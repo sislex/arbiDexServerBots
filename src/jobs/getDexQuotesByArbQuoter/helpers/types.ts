@@ -1,3 +1,5 @@
+import { UnifiedQuoteResult } from '../../shared';
+
 export interface IDexTokenConfig {
   address: string;
   amount: bigint;
@@ -60,6 +62,9 @@ export interface DexQuotesByArbQuoteResult {
   bestSell: PoolQuoteResult | null;
 
   allQuotes: PoolQuoteResult[];
+
+  /** Унифицированный результат */
+  unified?: UnifiedQuoteResult;
 }
 
 

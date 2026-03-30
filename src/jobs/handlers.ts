@@ -10,7 +10,11 @@ import {
   IJobParams_get_Pools_From_Factory,
   IJobParams_get_Pools_Reserves,
   IJobParams_get_New_Dex_Pools_Reserves,
-  IJobParams_get_Executor_Balances, IJobParams_set_Quotes_Graph_Data, IJobParams_get_Best_Sell_Quotes, IJobParams_get_Dex_Quotes_By_Arb_Quoter
+  IJobParams_get_Executor_Balances,
+  IJobParams_get_Best_Sell_Quotes,
+  IJobParams_get_Dex_Quotes_By_Arb_Quoter,
+  IJobParams_get_Cex_Quotes,
+  IJobParams_set_Quotes_Graph_Data
 } from '../store/state.types';
 import {
   get_Arbitrum_UniswapV3_Quote,
@@ -27,7 +31,12 @@ import { getPoolsReserves } from './getPoolsReserves/getPoolsReserves';
 import { getNewDexPoolsFromFactory } from './getPoolsFromFactory/getNewDexPoolsFromFactory';
 import { getExecutorBalances } from './getExecutorBalances/getExecutorBalances';
 import {getDexQuotesByArbQuoter} from './getDexQuotesByArbQuoter/getDexQuotesByArbQuoter';
+import {getCexQuotes} from './getCexQuotes/getCexQuotes';
 import { setQuotesGraphData } from './setQuotesGraphData/createRandomDataForGraph';
+
+// Реэкспорт общих unified-типов
+export type { UnifiedQuoteResult, QuoteSourceName, QuoteSourceType, PoolBrief } from './shared';
+export { cexToUnified, dexToUnified, printUnifiedQuotesTable } from './shared';
 
 // базовый результат для всех квот
 export interface BaseQuoteResult {
@@ -60,6 +69,8 @@ export interface QuoteResultMulti<T = any> extends BaseQuoteResult {
 
 // Регистрируем хендлеры: каждый принимает *ровно те же params*, что пришли в раннер
 const handlers = {
+  [IJobType.GET_CEX_QUOTES]:
+    async (params: IJobParams_get_Cex_Quotes) => getCexQuotes(params),
   [IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER]:
     async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter): Promise<QuoteResult> => getDexQuotesByArbQuoter(params),
   [IJobType.GET_ARB_EXECUTOR_QUOTES]:

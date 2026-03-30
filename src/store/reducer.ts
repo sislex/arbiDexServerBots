@@ -3,7 +3,7 @@ import { Action } from './actions';
 import {AppState, IJobType, IBotType} from './state.types';
 import {ApiStabs} from './stabs/api.stabs';
 import {
-  BotListFiltered, BotListFilteredUSDC
+  BotList10
 } from './stabs/bots-list.stabs';
 
 const ERROR_CAP = 1000;
@@ -23,7 +23,7 @@ export const initialState: AppState = {
   // botsRulesList: BotRuleListStab,
   // botsRulesList: BotsListReplacedStab,
   // botsRulesList: BotListFiltered,
-  botsRulesList: BotListFilteredUSDC,
+  botsRulesList: BotList10,
   // botsRulesList: [],
   botsList: [],
   errorList: [],
