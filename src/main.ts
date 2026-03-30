@@ -1,7 +1,7 @@
+import "dotenv/config";
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import "dotenv/config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -34,5 +34,6 @@ async function bootstrap() {
   console.log(`🚀 Server running on port ${process.env.PORT ?? 3000}`);
   console.log(`📖 Swagger UI: http://localhost:${process.env.PORT ?? 3000}/api`);
   console.log(`📄 OpenAPI JSON: http://localhost:${process.env.PORT ?? 3000}/api-json`);
+  console.log(`📡 MARKET_DATA_URL: ${process.env.MARKET_DATA_URL ?? '⚠️ NOT SET — quotes will NOT be forwarded'}`);
 }
 bootstrap();

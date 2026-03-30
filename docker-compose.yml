@@ -6,6 +6,8 @@ services:
       dockerfile: ./docker/DockerfileBackend
     ports:
       - "1001:3000"
+    env_file:
+      - .env
     restart: unless-stopped
 
 #  arbi-second-server-bots:
