@@ -20,6 +20,7 @@ export interface WritePoint {
 
 export class MarketDataClient {
   private socket: Socket | null = null;
+  private connecting = false;
   private readonly url: string | undefined;
   private readonly apiKey: string | undefined;
 
@@ -90,7 +91,8 @@ export class MarketDataClient {
 
   /**
    * Lazy-инициализация сокета. Создаётся один раз и переиспользуется.
-   * Если сокет не подключён — вызывает connect().
+   * connect() вызывается строго один раз — флаг `connecting` предотвращает
+   * повторные вызовы, пока хендшейк не завершился.
    */
   private getSocket(): Socket {
     if (!this.socket) {
@@ -107,7 +109,8 @@ export class MarketDataClient {
       this.attachListeners(this.socket);
     }
 
-    if (!this.socket.connected) {
+    if (!this.socket.connected && !this.connecting) {
+      this.connecting = true;
       this.socket.connect();
     }
 
@@ -116,14 +119,17 @@ export class MarketDataClient {
 
   private attachListeners(socket: Socket): void {
     socket.on('connect', () => {
+      this.connecting = false;
       console.log(`[MarketDataClient] ✅ connected  id=${socket.id}  url=${this.url}`);
     });
 
     socket.on('disconnect', (reason: string) => {
+      this.connecting = false;
       console.log(`[MarketDataClient] 🔌 disconnected  reason=${reason}`);
     });
 
     socket.on('connect_error', (err: Error) => {
+      this.connecting = false;
       console.error(`[MarketDataClient] ❌ connect_error: ${err.message}`);
     });
 
