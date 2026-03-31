@@ -49,6 +49,7 @@ export class PriceProxyGateway implements OnGatewayInit, OnGatewayConnection, On
 
     const upstream = io(`${url}/store`, {
       autoConnect: true,
+      transports: ['websocket'],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,

@@ -96,6 +96,7 @@ export class MarketDataClient {
     if (!this.socket) {
       this.socket = io(`${this.url}/store`, {
         autoConnect: false,
+        transports: ['websocket'],
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
