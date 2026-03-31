@@ -5,6 +5,8 @@ import { ErrorsController } from './controllers/ui-errors.controller';
 import { StoreController } from './controllers/store.controller';
 import { BotRunnerService } from './bots/bot-runner.service';
 import { BotsController } from './controllers/bots.controller';
+import { PricesProxyController } from './controllers/prices-proxy.controller';
+import { PriceProxyGateway } from './controllers/price-proxy.gateway';
 
 @Module({
   imports: [StoreModule],
@@ -13,7 +15,8 @@ import { BotsController } from './controllers/bots.controller';
     StoreController,
     BotsController,
     ErrorsController,
+    PricesProxyController,
   ],
-  providers: [BotRunnerService],
+  providers: [BotRunnerService, PriceProxyGateway],
 })
 export class AppModule {}
