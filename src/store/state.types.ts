@@ -189,7 +189,8 @@ export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultPara
   jobType: IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER;
   source: string;
   rpcUrl: string;
-  symbol?: string;
+  token0: string;
+  token1: string;
 
   pairsToQuote: IPool[];
   stepPrefundPct?: number;

@@ -29,18 +29,21 @@ interface CexResultLike {
  *
  * @param source   — имя биржи ('binance' | 'mexc' | ...)
  * @param result   — нативный результат джобы (BinanceQuotesResult и т.д.)
- * @param fallbackSymbol — символ по умолчанию, если quote === null
+ * @param token0   — базовый токен (напр. "ETH")
+ * @param token1   — котировочный токен (напр. "USDC")
  */
 export function cexToUnified(
   source: QuoteSourceName,
   result: CexResultLike,
-  fallbackSymbol = 'UNKNOWN',
+  token0: string,
+  token1: string,
 ): UnifiedQuoteResult {
   if (!result.ok || !result.quote) {
     return {
       sourceType: 'cex',
       source,
-      symbol: fallbackSymbol,
+      token0,
+      token1,
       ok: false,
       latencyMs: result.latencyMs,
       error: result.error ?? 'No quote data',
@@ -58,7 +61,8 @@ export function cexToUnified(
   return {
     sourceType: 'cex',
     source,
-    symbol: q.symbol,
+    token0,
+    token1,
     ok: true,
     latencyMs: result.latencyMs,
     timestamp: Date.now(),

@@ -122,7 +122,8 @@ export const BotList10: IBotsRule[] = [
     "jobParams": {
       "jobType": IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER,
       "source": "dex:arbitrum",
-      "symbol": "WETH/USDC",
+      "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+      "token1": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
       "rpcUrl": "https://arb-mainnet.g.alchemy.com/v2/_T_Qkk4fOdQ7jQbGjSW2F",
       "stepPrefundPct": 2,
       "pairsToQuote": [

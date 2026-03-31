@@ -38,7 +38,8 @@ function makeQuote(overrides: Partial<UnifiedQuoteResult> = {}): UnifiedQuoteRes
     ok: true,
     sourceType: 'cex',
     source: 'binance',
-    symbol: 'ETHUSDC',
+    token0: 'ETH',
+    token1: 'USDC',
     latencyMs: 10,
     timestamp: 1700000001000,
     bidPrice: 3500.5,
@@ -155,9 +156,9 @@ describe('MarketDataClient', () => {
 
     it('вызывает socket.emit("write", { key, value, timestamp })', () => {
       const client = new MarketDataClient();
-      client.write('binance|ETHUSDC|bidPrice', 3500.5, 1700000001000);
+      client.write('binance|ETH|USDC|bidPrice', 3500.5, 1700000001000);
       expect(mockSocketEmit).toHaveBeenCalledWith('write', {
-        key: 'binance|ETHUSDC|bidPrice',
+        key: 'binance|ETH|USDC|bidPrice',
         value: 3500.5,
         timestamp: 1700000001000,
       });
@@ -189,24 +190,24 @@ describe('MarketDataClient', () => {
       expect(mockSocketEmit).toHaveBeenCalledTimes(2);
 
       expect(mockSocketEmit).toHaveBeenCalledWith('write', {
-        key: 'binance|ETHUSDC|bidPrice',
+        key: 'binance|ETH|USDC|bidPrice',
         value: 3500.5,
         timestamp: 1700000001000,
       });
       expect(mockSocketEmit).toHaveBeenCalledWith('write', {
-        key: 'binance|ETHUSDC|askPrice',
+        key: 'binance|ETH|USDC|askPrice',
         value: 3501.0,
         timestamp: 1700000001000,
       });
     });
 
-    it('использует правильный формат ключа source|symbol|field', () => {
+    it('использует правильный формат ключа source|token0|token1|field', () => {
       const client = new MarketDataClient();
-      client.writeQuote(makeQuote({ source: 'mexc', symbol: 'ETHUSDT' }));
+      client.writeQuote(makeQuote({ source: 'mexc', token0: 'ETH', token1: 'USDT' }));
 
       const calls = mockSocketEmit.mock.calls.map((c) => c[1].key);
-      expect(calls).toContain('mexc|ETHUSDT|bidPrice');
-      expect(calls).toContain('mexc|ETHUSDT|askPrice');
+      expect(calls).toContain('mexc|ETH|USDT|bidPrice');
+      expect(calls).toContain('mexc|ETH|USDT|askPrice');
     });
   });
 
@@ -236,19 +237,19 @@ describe('MarketDataClient', () => {
     it('вызывает socket.emit("write") для каждого point', () => {
       const client = new MarketDataClient();
       client.writeBatch([
-        { key: 'binance|ETHUSDC|bidPrice', value: 3500.5, timestamp: 1000 },
-        { key: 'binance|ETHUSDC|askPrice', value: 3501.0, timestamp: 1000 },
-        { key: 'mexc|ETHUSDT|bidPrice', value: 3499.8 },
+        { key: 'binance|ETH|USDC|bidPrice', value: 3500.5, timestamp: 1000 },
+        { key: 'binance|ETH|USDC|askPrice', value: 3501.0, timestamp: 1000 },
+        { key: 'mexc|ETH|USDT|bidPrice', value: 3499.8 },
       ]);
 
       expect(mockSocketEmit).toHaveBeenCalledTimes(3);
       expect(mockSocketEmit).toHaveBeenNthCalledWith(1, 'write', {
-        key: 'binance|ETHUSDC|bidPrice',
+        key: 'binance|ETH|USDC|bidPrice',
         value: 3500.5,
         timestamp: 1000,
       });
       expect(mockSocketEmit).toHaveBeenNthCalledWith(3, 'write', {
-        key: 'mexc|ETHUSDT|bidPrice',
+        key: 'mexc|ETH|USDT|bidPrice',
         value: 3499.8,
         timestamp: undefined,
       });

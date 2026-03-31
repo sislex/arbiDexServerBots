@@ -18,7 +18,7 @@ export function printUnifiedQuotesTable(
     if (!r.ok) {
       return {
         source: r.source,
-        symbol: r.symbol,
+        pair: `${r.token0}/${r.token1}`,
         bid: '❌',
         ask: '❌',
         mid: '❌',
@@ -30,7 +30,7 @@ export function printUnifiedQuotesTable(
 
     return {
       source: r.source,
-      symbol: r.symbol,
+      pair: `${r.token0}/${r.token1}`,
       bid: r.bidPrice.toFixed(2),
       ask: r.askPrice.toFixed(2),
       mid: r.midPrice.toFixed(2),

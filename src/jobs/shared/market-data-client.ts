@@ -67,12 +67,12 @@ export class MarketDataClient {
     if (!quote.ok) return;
 
     this.write(
-      `${quote.source}|${quote.symbol}|bidPrice`,
+      `${quote.source}|${quote.token0}|${quote.token1}|bidPrice`,
       quote.bidPrice,
       quote.timestamp,
     );
     this.write(
-      `${quote.source}|${quote.symbol}|askPrice`,
+      `${quote.source}|${quote.token0}|${quote.token1}|askPrice`,
       quote.askPrice,
       quote.timestamp,
     );

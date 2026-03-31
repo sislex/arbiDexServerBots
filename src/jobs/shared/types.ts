@@ -29,8 +29,11 @@ export interface UnifiedQuoteResult {
   /** Имя источника */
   source: QuoteSourceName;
 
-  /** Символ пары в формате источника ("ETHUSDC", "ETH-USDT", и т.д.) */
-  symbol: string;
+  /** Базовый токен (CEX: тикер, напр. "ETH"; DEX: адрес 0x…) */
+  token0: string;
+
+  /** Котировочный токен (CEX: тикер, напр. "USDC"; DEX: адрес 0x…) */
+  token1: string;
 
   /** Запрос завершился успешно */
   ok: boolean;

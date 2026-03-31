@@ -35,13 +35,11 @@ export async function getCexQuotes(
   const config = cexConfigs[source];
   if (!config) throw new Error(`Unknown CEX source: ${source}`);
 
-  const fallbackSymbol = `${token0}/${token1}`;
-
   try {
     const quote = await config.fetchQuote(token0, token1);
 
     const result: CexQuotesResult = { ok: true, latencyMs: quote.latencyMs, quote };
-    result.unified = cexToUnified(source, result, fallbackSymbol);
+    result.unified = cexToUnified(source, result, token0, token1);
     marketDataClient.writeQuote(result.unified);
 
     return result;
@@ -52,7 +50,7 @@ export async function getCexQuotes(
       error: err.message ?? String(err),
       quote: null,
     };
-    result.unified = cexToUnified(source, result, fallbackSymbol);
+    result.unified = cexToUnified(source, result, token0, token1);
     printCexQuotesTable(source, result);
 
     return result;

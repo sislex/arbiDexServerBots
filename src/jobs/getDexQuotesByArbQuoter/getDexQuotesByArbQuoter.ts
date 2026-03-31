@@ -41,8 +41,7 @@ export async function getDexQuotesByArbQuoter(
     quoterAddress: process.env.QUOTER_ADDRESS,
   });
 
-  const symbol = params.symbol ?? `${tokenPair.tokenOut.symbol}/${tokenPair.tokenIn.symbol}`;
-  result.unified = dexToUnified(result, symbol);
+  result.unified = dexToUnified(result, params.token0, params.token1);
   marketDataClient.writeQuote(result.unified);
 
   // printQuotesTable(dexQuotes, { tokenPair, humanReadable: true });

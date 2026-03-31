@@ -19,17 +19,20 @@ function toPoolBrief(pq: PoolQuoteResult | null): PoolBrief | null {
  *   bestSellPrice (цена продажи base)  → bidPrice  (по ней можно продать)
  *
  * @param result — результат getDexQuotes
- * @param symbol — символ пары для отображения, напр. "WETH/USDC"
+ * @param token0 — базовый токен (адрес 0x…)
+ * @param token1 — котировочный токен (адрес 0x…)
  */
 export function dexToUnified(
   result: DexQuotesByArbQuoteResult,
-  symbol = 'WETH/USDC',
+  token0: string,
+  token1: string,
 ): UnifiedQuoteResult {
   if (!result.ok) {
     return {
       sourceType: 'dex',
       source: 'dex:arbitrum',
-      symbol,
+      token0,
+      token1,
       ok: false,
       latencyMs: result.latencyMs,
       error: result.error,
@@ -55,7 +58,8 @@ export function dexToUnified(
   return {
     sourceType: 'dex',
     source: 'dex:arbitrum',
-    symbol,
+    token0,
+    token1,
     ok: true,
     latencyMs: result.latencyMs,
     timestamp: Date.now(),
