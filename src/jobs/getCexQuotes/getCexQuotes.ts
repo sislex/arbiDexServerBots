@@ -10,20 +10,19 @@ import { getOkxQuote }     from './helpers/getOkxQuote';
 import { getKucoinQuote }  from './helpers/getKucoinQuote';
 import { getGateioQuote }  from './helpers/getGateioQuote';
 
-// ── Маппинг source → { fetchQuote, defaultSymbol } ────────
+// ── Маппинг source → fetchQuote(token0, token1) ────────
 
 interface CexConfig {
-  fetchQuote: (symbol: string) => Promise<CexQuote>;
-  defaultSymbol: string;
+  fetchQuote: (token0: string, token1: string) => Promise<CexQuote>;
 }
 
 const cexConfigs: Record<CexSourceName, CexConfig> = {
-  binance: { fetchQuote: getBinanceQuote, defaultSymbol: 'ETHUSDC' },
-  mexc:    { fetchQuote: getMexcQuote,    defaultSymbol: 'ETHUSDT' },
-  bybit:   { fetchQuote: getBybitQuote,   defaultSymbol: 'ETHUSDT' },
-  okx:     { fetchQuote: getOkxQuote,     defaultSymbol: 'ETH-USDT' },
-  kucoin:  { fetchQuote: getKucoinQuote,  defaultSymbol: 'ETH-USDT' },
-  gateio:  { fetchQuote: getGateioQuote,  defaultSymbol: 'ETH_USDT' },
+  binance: { fetchQuote: getBinanceQuote },
+  mexc:    { fetchQuote: getMexcQuote },
+  bybit:   { fetchQuote: getBybitQuote },
+  okx:     { fetchQuote: getOkxQuote },
+  kucoin:  { fetchQuote: getKucoinQuote },
+  gateio:  { fetchQuote: getGateioQuote },
 };
 
 // ── Единая CEX-джоба ────────────────────────────────────────
@@ -31,18 +30,18 @@ const cexConfigs: Record<CexSourceName, CexConfig> = {
 export async function getCexQuotes(
   params: IJobParams_get_Cex_Quotes,
 ): Promise<CexQuotesResult> {
-  const { source } = params;
+  const { source, token0, token1 } = params;
 
   const config = cexConfigs[source];
   if (!config) throw new Error(`Unknown CEX source: ${source}`);
 
-  const symbol = params.symbol ?? config.defaultSymbol;
+  const fallbackSymbol = `${token0}/${token1}`;
 
   try {
-    const quote = await config.fetchQuote(symbol);
+    const quote = await config.fetchQuote(token0, token1);
 
     const result: CexQuotesResult = { ok: true, latencyMs: quote.latencyMs, quote };
-    result.unified = cexToUnified(source, result, symbol);
+    result.unified = cexToUnified(source, result, fallbackSymbol);
     marketDataClient.writeQuote(result.unified);
 
     return result;
@@ -53,7 +52,7 @@ export async function getCexQuotes(
       error: err.message ?? String(err),
       quote: null,
     };
-    result.unified = cexToUnified(source, result, symbol);
+    result.unified = cexToUnified(source, result, fallbackSymbol);
     printCexQuotesTable(source, result);
 
     return result;

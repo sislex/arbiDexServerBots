@@ -14,7 +14,8 @@ export interface GateioQuote {
   latencyMs: number;
 }
 
-export async function getGateioQuote(symbol = 'ETH_USDT'): Promise<GateioQuote> {
+export async function getGateioQuote(token0: string, token1: string): Promise<GateioQuote> {
+  const symbol = `${token0}_${token1}`;
   const start = performance.now();
 
   const url = `https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${symbol}`;

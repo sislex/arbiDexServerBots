@@ -15,7 +15,8 @@ export interface KucoinQuote {
   latencyMs: number;
 }
 
-export async function getKucoinQuote(symbol = 'ETH-USDT'): Promise<KucoinQuote> {
+export async function getKucoinQuote(token0: string, token1: string): Promise<KucoinQuote> {
+  const symbol = `${token0}-${token1}`;
   const start = performance.now();
 
   const url = `https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=${symbol}`;

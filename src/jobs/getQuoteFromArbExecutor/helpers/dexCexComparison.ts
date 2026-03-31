@@ -67,9 +67,9 @@ export async function dexCexComparison(
   let t0 = performance.now();
   const [arbResult, binanceRaw, mexcRaw, bybitRaw] = await Promise.all([
     getArbViaFindArb(jobParams as IJobParams_get_Arbitrum_Arb_Executor_Quotes),
-    getBinanceQuote('ETHUSDC'),
-    getMexcQuote('ETHUSDT'),
-    getBybitQuote('ETHUSDT').catch((e) => { console.warn(`  ⚠️ Bybit недоступен: ${e.message}`); return null; }),
+    getBinanceQuote('ETH', 'USDC'),
+    getMexcQuote('ETH', 'USDT'),
+    getBybitQuote('ETH', 'USDT').catch((e) => { console.warn(`  ⚠️ Bybit недоступен: ${e.message}`); return null; }),
   ]);
   metrics.push({ step: 'parallel fetch (DEX + CEX)', ms: performance.now() - t0 });
 

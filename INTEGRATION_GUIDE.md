@@ -329,7 +329,7 @@ interface IBotParams {
 
 | JobType | Description | Key jobParams fields |
 |---|---|---|
-| `get_Cex_Quotes` | CEX quote | `source`: `CexSourceName`, `symbol?` |
+| `get_Cex_Quotes` | CEX quote | `source`: `CexSourceName`, `token0`: string, `token1`: string |
 | `get_Dex_Quotes_By_Arb_Quoter` | DEX on-chain quoting | `source`, `rpcUrl`, `pairsToQuote: IPool[]`, `symbol?` |
 | `get_Pool_State` | Pool tick/state | `rpcUrl`, `poolAddress`, `wordsAround`, `maxTicks` |
 | `get_Executor_Balances` | ArbExecutor balances | `rpcUrl?`, `executorAddress?` |
@@ -558,7 +558,8 @@ curl -X POST http://localhost:3000/setBotsRulesList \
         "jobParams": {
           "jobType": "get_Cex_Quotes",
           "source": "binance",
-          "symbol": "ETHUSDC"
+          "token0": "ETH",
+          "token1": "USDC"
         }
       },
       {
@@ -623,7 +624,8 @@ curl -X POST http://localhost:3000/bot/Binance_USDC_WETH/restart
 ```typescript
 import { CexQuote } from '../types';
 
-export async function getNewExchangeQuote(symbol: string): Promise<CexQuote> {
+export async function getNewExchangeQuote(token0: string, token1: string): Promise<CexQuote> {
+  const symbol = `${token0}${token1}`; // build exchange-native symbol
   const start = performance.now();
   // ... fetch from the exchange API ...
   const latencyMs = Math.round(performance.now() - start);
@@ -642,6 +644,18 @@ export async function getNewExchangeQuote(symbol: string): Promise<CexQuote> {
 }
 ```
 
+> **Symbol format per exchange:**
+> | Exchange | Format | Example |
+> |---|---|---|
+> | Binance | `TOKEN0TOKEN1` | `ETHUSDC` |
+> | MEXC | `TOKEN0TOKEN1` | `ETHUSDT` |
+> | Bybit | `TOKEN0TOKEN1` | `ETHUSDT` |
+> | OKX | `TOKEN0-TOKEN1` | `ETH-USDT` |
+> | KuCoin | `TOKEN0-TOKEN1` | `ETH-USDT` |
+> | Gate.io | `TOKEN0_TOKEN1` | `ETH_USDT` |
+
+Each helper function receives generic `token0` / `token1` and constructs the exchange-native symbol internally.
+
 2. Add the source to `CexSourceName` (`src/store/state.types.ts`):
 ```typescript
 export type CexSourceName = 'binance' | 'mexc' | ... | 'newexchange';
@@ -651,7 +665,7 @@ export type CexSourceName = 'binance' | 'mexc' | ... | 'newexchange';
 ```typescript
 const cexConfigs: Record<CexSourceName, CexConfig> = {
   // ...existing...
-  newexchange: { fetchQuote: getNewExchangeQuote, defaultSymbol: 'ETHUSDT' },
+  newexchange: { fetchQuote: getNewExchangeQuote },
 };
 ```
 
@@ -676,7 +690,8 @@ export type QuoteSourceName = ... | 'newexchange';
   jobParams: {
     jobType: IJobType.GET_CEX_QUOTES,
     source: 'newexchange',
-    symbol: 'ETHUSDT',
+    token0: 'ETH',
+    token1: 'USDT',
   },
 }
 ```
@@ -783,7 +798,7 @@ if (bestBid.value > bestAsk.value) {
 4. **Deduplication** — performed on the arbiDexMarketData side: if the value is unchanged, no new point is written.
 5. **Timeout** — default 30 000 ms per job. If a job does not respond — `TIMEOUT` error.
 6. **CORS** — enabled (`app.enableCors()`).
-7. **Symbol formats** — each exchange has its own format (ETHUSDC, ETH-USDT, ETH\_USDT). Keys forwarded to arbiDexMarketData preserve the source's original symbol format.
+7. **Symbol formats** — each exchange has its own format (ETHUSDC, ETH-USDT, ETH\_USDT). The `jobParams` uses generic `token0` / `token1` (e.g. `"ETH"`, `"USDT"`); each CEX helper builds the exchange-native symbol internally. Keys forwarded to arbiDexMarketData preserve the source's original symbol format.
 8. **DEX prices** — depend on `tokenPair.tokenIn.amount` and `tokenPair.tokenOut.amount` (trade size affects slippage). Default: 100 USDC to buy, 0.03 WETH to sell.
 
 ---

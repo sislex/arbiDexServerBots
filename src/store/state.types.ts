@@ -240,7 +240,8 @@ export type CexSourceName = 'binance' | 'mexc' | 'bybit' | 'okx' | 'kucoin' | 'g
 export interface IJobParams_get_Cex_Quotes extends IJobDefaultParams {
   jobType: IJobType.GET_CEX_QUOTES;
   source: CexSourceName;
-  symbol?: string;
+  token0: string;
+  token1: string;
 }
 
 

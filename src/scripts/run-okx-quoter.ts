@@ -7,7 +7,7 @@ async function main() {
   const jobParams = BotList10[3].jobParams as IJobParams_get_Cex_Quotes;
 
   console.log(`\n📋 Конфигурация ${jobParams.source}:`);
-  console.log(`  Symbol: ${jobParams.symbol}`);
+  console.log(`  Token0: ${jobParams.token0}, Token1: ${jobParams.token1}`);
 
   const result = await getCexQuotes(jobParams);
 

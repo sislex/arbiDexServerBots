@@ -15,7 +15,8 @@ export interface BinanceQuote {
   latencyMs: number;
 }
 
-export async function getBinanceQuote(symbol = 'ETHUSDC'): Promise<BinanceQuote> {
+export async function getBinanceQuote(token0: string, token1: string): Promise<BinanceQuote> {
+  const symbol = `${token0}${token1}`;
   const start = performance.now();
 
   const url = `https://data-api.binance.vision/api/v3/ticker/bookTicker?symbol=${symbol}`;

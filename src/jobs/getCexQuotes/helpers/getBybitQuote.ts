@@ -20,7 +20,8 @@ const BYBIT_HOSTS = [
   'https://api.bytick.com',
 ];
 
-export async function getBybitQuote(symbol = 'ETHUSDT'): Promise<BybitQuote> {
+export async function getBybitQuote(token0: string, token1: string): Promise<BybitQuote> {
+  const symbol = `${token0}${token1}`;
   const start = performance.now();
 
   let lastError: Error | null = null;

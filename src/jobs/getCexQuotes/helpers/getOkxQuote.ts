@@ -14,7 +14,8 @@ export interface OkxQuote {
   latencyMs: number;
 }
 
-export async function getOkxQuote(symbol = 'ETH-USDT'): Promise<OkxQuote> {
+export async function getOkxQuote(token0: string, token1: string): Promise<OkxQuote> {
+  const symbol = `${token0}-${token1}`;
   const start = performance.now();
 
   const url = `https://www.okx.com/api/v5/market/ticker?instId=${symbol}`;

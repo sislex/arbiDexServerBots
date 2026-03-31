@@ -16,7 +16,8 @@ export interface MexcQuote {
   latencyMs: number;
 }
 
-export async function getMexcQuote(symbol = 'ETHUSDT'): Promise<MexcQuote> {
+export async function getMexcQuote(token0: string, token1: string): Promise<MexcQuote> {
+  const symbol = `${token0}${token1}`;
   const start = performance.now();
 
   const url = `https://api.mexc.com/api/v3/ticker/bookTicker?symbol=${symbol}`;

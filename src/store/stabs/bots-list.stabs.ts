@@ -14,7 +14,8 @@ export const BotList10: IBotsRule[] = [
     "jobParams": {
       "jobType": IJobType.GET_CEX_QUOTES,
       "source": "binance",
-      "symbol": "ETHUSDC",
+      "token0": "ETH",
+      "token1": "USDC",
     }
   },
   {
@@ -31,7 +32,8 @@ export const BotList10: IBotsRule[] = [
     "jobParams": {
       "jobType": IJobType.GET_CEX_QUOTES,
       "source": "mexc",
-      "symbol": "ETHUSDT",
+      "token0": "ETH",
+      "token1": "USDT",
     }
   },
   {
@@ -48,7 +50,8 @@ export const BotList10: IBotsRule[] = [
     "jobParams": {
       "jobType": IJobType.GET_CEX_QUOTES,
       "source": "bybit",
-      "symbol": "ETHUSDT",
+      "token0": "ETH",
+      "token1": "USDT",
     }
   },
   {
@@ -65,7 +68,8 @@ export const BotList10: IBotsRule[] = [
     "jobParams": {
       "jobType": IJobType.GET_CEX_QUOTES,
       "source": "okx",
-      "symbol": "ETH-USDT",
+      "token0": "ETH",
+      "token1": "USDT",
     }
   },
   {
@@ -82,7 +86,8 @@ export const BotList10: IBotsRule[] = [
     "jobParams": {
       "jobType": IJobType.GET_CEX_QUOTES,
       "source": "kucoin",
-      "symbol": "ETH-USDT",
+      "token0": "ETH",
+      "token1": "USDT",
     }
   },
   {
@@ -99,7 +104,8 @@ export const BotList10: IBotsRule[] = [
     "jobParams": {
       "jobType": IJobType.GET_CEX_QUOTES,
       "source": "gateio",
-      "symbol": "ETH_USDT",
+      "token0": "ETH",
+      "token1": "USDT",
     }
   },
   {
