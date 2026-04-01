@@ -119,19 +119,19 @@ npm run start:docker   # docker-compose up --build -d, порт 1001 → 3000
 ### 5.1 Формат ключа
 
 ```
-<source>|<token0>|<token1>|<bidPrice|askPrice>
+<source>|<token0>/<token1>|<bidPrice|askPrice>
 ```
 
 Примеры:
 ```
-binance|ETH|USDC|bidPrice
-binance|ETH|USDC|askPrice
-mexc|ETH|USDT|bidPrice
-dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1|0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice
-okx|ETH|USDT|bidPrice
-kucoin|ETH|USDT|askPrice
-bybit|ETH|USDT|bidPrice
-gateio|ETH|USDT|askPrice
+binance|ETH/USDC|bidPrice
+binance|ETH/USDC|askPrice
+mexc|ETH/USDT|bidPrice
+dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice
+okx|ETH/USDT|bidPrice
+kucoin|ETH/USDT|askPrice
+bybit|ETH/USDT|bidPrice
+gateio|ETH/USDT|askPrice
 ```
 
 ### 5.2 Формат точки данных
@@ -150,23 +150,23 @@ interface DataPoint {
 curl http://45.135.182.251:3002/store/keys
 
 # Последняя точка по ключу
-curl "http://45.135.182.251:3002/store/key/binance%7CETH%7CUSDC%7CbidPrice/latest"
+curl "http://45.135.182.251:3002/store/key/binance%7CETH%2FUSDC%7CbidPrice/latest"
 
 # Серия с фильтрами (?limit=50 / ?from=мс&to=мс)
-curl "http://45.135.182.251:3002/store/key/binance%7CETH%7CUSDC%7CbidPrice?limit=50"
+curl "http://45.135.182.251:3002/store/key/binance%7CETH%2FUSDC%7CbidPrice?limit=50"
 
 # Запрос по диапазону времени
-curl "http://45.135.182.251:3002/store/key/binance%7CETH%7CUSDC%7CbidPrice?from=1700000000000&to=1700000099000"
+curl "http://45.135.182.251:3002/store/key/binance%7CETH%2FUSDC%7CbidPrice?from=1700000000000&to=1700000099000"
 
 # Несколько ключей за раз
 curl -X POST http://45.135.182.251:3002/store/keys \
   -H 'Content-Type: application/json' \
   -d '{
     "keys": [
-      "binance|ETH|USDC|bidPrice",
-      "binance|ETH|USDC|askPrice",
-      "dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1|0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPrice",
-      "dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1|0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice"
+      "binance|ETH/USDC|bidPrice",
+      "binance|ETH/USDC|askPrice",
+      "dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPrice",
+      "dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice"
     ],
     "limit": 10
   }'
@@ -176,7 +176,7 @@ curl -X POST http://45.135.182.251:3002/store/keys \
 
 ```json
 {
-  "key": "binance|ETH|USDC|bidPrice",
+  "key": "binance|ETH/USDC|bidPrice",
   "points": [
     { "t": 1774548817787, "v": 2049.2 },
     { "t": 1774548818034, "v": 2049.5 }
@@ -203,9 +203,9 @@ socket.on('connect', () => {
   // Подписка на конкретные ключи
   socket.emit('subscribe', {
     keys: [
-      'binance|ETH|USDC|bidPrice',
-      'binance|ETH|USDC|askPrice',
-      'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1|0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPrice',
+      'binance|ETH/USDC|bidPrice',
+      'binance|ETH/USDC|askPrice',
+      'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPrice',
     ]
   });
 
@@ -252,7 +252,7 @@ def on_subscribed(data):
     print(f"Subscribed: {data}")
 
 sio.connect('http://45.135.182.251:3002', namespaces=['/store'])
-sio.emit('subscribe', {'keys': ['binance|ETH|USDC|bidPrice']}, namespace='/store')
+sio.emit('subscribe', {'keys': ['binance|ETH/USDC|bidPrice']}, namespace='/store')
 sio.wait()
 ```
 
@@ -463,15 +463,15 @@ src/
 import { marketDataClient } from './jobs/shared';
 
 // Записать одну точку
-marketDataClient.write('binance|ETH|USDC|bidPrice', 2049.2, Date.now());
+marketDataClient.write('binance|ETH/USDC|bidPrice', 2049.2, Date.now());
 
 // Записать котировку (два write: bidPrice + askPrice)
 marketDataClient.writeQuote(unifiedQuoteResult);
 
 // Записать батч
 marketDataClient.writeBatch([
-  { key: 'binance|ETH|USDC|bidPrice', value: 2049.2 },
-  { key: 'binance|ETH|USDC|askPrice', value: 2049.8 },
+  { key: 'binance|ETH/USDC|bidPrice', value: 2049.2 },
+  { key: 'binance|ETH/USDC|askPrice', value: 2049.8 },
 ]);
 ```
 
@@ -486,27 +486,27 @@ marketDataClient.writeBatch([
 ```bash
 # 1. Узнать доступные ключи
 curl http://45.135.182.251:3002/store/keys
-# → ["binance|ETH|USDC|bidPrice","binance|ETH|USDC|askPrice","dex:arbitrum|0x82af...|0xaf88...|bidPrice",...]
+# → ["binance|ETH/USDC|bidPrice","binance|ETH/USDC|askPrice","dex:arbitrum|0x82af.../0xaf88...|bidPrice",...]
 
 # 2. Последняя цена по ключу
-curl "http://45.135.182.251:3002/store/key/binance%7CETH%7CUSDC%7CbidPrice/latest"
+curl "http://45.135.182.251:3002/store/key/binance%7CETH%2FUSDC%7CbidPrice/latest"
 # → { "t": 1774548818034, "v": 2049.5 }
 
 # 3. Серия — последние 50 точек
-curl "http://45.135.182.251:3002/store/key/binance%7CETH%7CUSDC%7CbidPrice?limit=50"
+curl "http://45.135.182.251:3002/store/key/binance%7CETH%2FUSDC%7CbidPrice?limit=50"
 
 # 4. Запрос по диапазону времени
-curl "http://45.135.182.251:3002/store/key/binance%7CETH%7CUSDC%7CbidPrice?from=1700000000000&to=1700000099000"
+curl "http://45.135.182.251:3002/store/key/binance%7CETH%2FUSDC%7CbidPrice?from=1700000000000&to=1700000099000"
 
 # 5. Несколько ключей за раз
 curl -X POST http://45.135.182.251:3002/store/keys \
   -H 'Content-Type: application/json' \
   -d '{
     "keys": [
-      "binance|ETH|USDC|bidPrice",
-      "binance|ETH|USDC|askPrice",
-      "dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1|0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPrice",
-      "dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1|0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice"
+      "binance|ETH/USDC|bidPrice",
+      "binance|ETH/USDC|askPrice",
+      "dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPrice",
+      "dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice"
     ]
   }'
 ```
@@ -521,10 +521,10 @@ const socket = io('http://45.135.182.251:3002/store');
 socket.on('connect', () => {
   socket.emit('subscribe', {
     keys: [
-      'binance|ETH|USDC|bidPrice',
-      'binance|ETH|USDC|askPrice',
-      'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1|0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPrice',
-      'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1|0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice',
+      'binance|ETH/USDC|bidPrice',
+      'binance|ETH/USDC|askPrice',
+      'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPrice',
+      'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice',
     ]
   });
 });

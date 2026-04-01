@@ -156,9 +156,9 @@ describe('MarketDataClient', () => {
 
     it('вызывает socket.emit("write", { key, value, timestamp })', () => {
       const client = new MarketDataClient();
-      client.write('binance|ETH|USDC|bidPrice', 3500.5, 1700000001000);
+      client.write('binance|ETH/USDC|bidPrice', 3500.5, 1700000001000);
       expect(mockSocketEmit).toHaveBeenCalledWith('write', {
-        key: 'binance|ETH|USDC|bidPrice',
+        key: 'binance|ETH/USDC|bidPrice',
         value: 3500.5,
         timestamp: 1700000001000,
       });
@@ -190,24 +190,24 @@ describe('MarketDataClient', () => {
       expect(mockSocketEmit).toHaveBeenCalledTimes(2);
 
       expect(mockSocketEmit).toHaveBeenCalledWith('write', {
-        key: 'binance|ETH|USDC|bidPrice',
+        key: 'binance|ETH/USDC|bidPrice',
         value: 3500.5,
         timestamp: 1700000001000,
       });
       expect(mockSocketEmit).toHaveBeenCalledWith('write', {
-        key: 'binance|ETH|USDC|askPrice',
+        key: 'binance|ETH/USDC|askPrice',
         value: 3501.0,
         timestamp: 1700000001000,
       });
     });
 
-    it('использует правильный формат ключа source|token0|token1|field', () => {
+    it('использует правильный формат ключа source|token0/token1|field', () => {
       const client = new MarketDataClient();
       client.writeQuote(makeQuote({ source: 'mexc', token0: 'ETH', token1: 'USDT' }));
 
       const calls = mockSocketEmit.mock.calls.map((c) => c[1].key);
-      expect(calls).toContain('mexc|ETH|USDT|bidPrice');
-      expect(calls).toContain('mexc|ETH|USDT|askPrice');
+      expect(calls).toContain('mexc|ETH/USDT|bidPrice');
+      expect(calls).toContain('mexc|ETH/USDT|askPrice');
     });
   });
 
@@ -237,19 +237,19 @@ describe('MarketDataClient', () => {
     it('вызывает socket.emit("write") для каждого point', () => {
       const client = new MarketDataClient();
       client.writeBatch([
-        { key: 'binance|ETH|USDC|bidPrice', value: 3500.5, timestamp: 1000 },
-        { key: 'binance|ETH|USDC|askPrice', value: 3501.0, timestamp: 1000 },
-        { key: 'mexc|ETH|USDT|bidPrice', value: 3499.8 },
+        { key: 'binance|ETH/USDC|bidPrice', value: 3500.5, timestamp: 1000 },
+        { key: 'binance|ETH/USDC|askPrice', value: 3501.0, timestamp: 1000 },
+        { key: 'mexc|ETH/USDT|bidPrice', value: 3499.8 },
       ]);
 
       expect(mockSocketEmit).toHaveBeenCalledTimes(3);
       expect(mockSocketEmit).toHaveBeenNthCalledWith(1, 'write', {
-        key: 'binance|ETH|USDC|bidPrice',
+        key: 'binance|ETH/USDC|bidPrice',
         value: 3500.5,
         timestamp: 1000,
       });
       expect(mockSocketEmit).toHaveBeenNthCalledWith(3, 'write', {
-        key: 'mexc|ETH|USDT|bidPrice',
+        key: 'mexc|ETH/USDT|bidPrice',
         value: 3499.8,
         timestamp: undefined,
       });
