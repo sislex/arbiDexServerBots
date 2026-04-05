@@ -234,6 +234,7 @@ async function main() {
   }
 
   console.log('');
+  process.exit(0);
 }
 
 main().catch(err => {

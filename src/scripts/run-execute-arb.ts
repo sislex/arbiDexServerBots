@@ -29,6 +29,7 @@ async function main() {
   });
 
   console.log('\n📊 Результат:', JSON.stringify(result, null, 2));
+  process.exit(0);
 }
 
 main().catch(err => {

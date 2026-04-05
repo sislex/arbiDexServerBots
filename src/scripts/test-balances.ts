@@ -29,6 +29,7 @@ async function main() {
     console.log(`\n  No tracked tokens with balance`);
   }
   console.log();
+  process.exit(0);
 }
 
 main().catch(console.error);

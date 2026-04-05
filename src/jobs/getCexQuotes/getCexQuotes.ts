@@ -9,6 +9,7 @@ import { getBybitQuote }   from './helpers/getBybitQuote';
 import { getOkxQuote }     from './helpers/getOkxQuote';
 import { getKucoinQuote }  from './helpers/getKucoinQuote';
 import { getGateioQuote }  from './helpers/getGateioQuote';
+import { getDzengiQuote }  from './helpers/getDzengiQuote';
 
 // ── Маппинг source → fetchQuote(token0, token1) ────────
 
@@ -23,6 +24,7 @@ const cexConfigs: Record<CexSourceName, CexConfig> = {
   okx:     { fetchQuote: getOkxQuote },
   kucoin:  { fetchQuote: getKucoinQuote },
   gateio:  { fetchQuote: getGateioQuote },
+  dzengi:  { fetchQuote: getDzengiQuote },
 };
 
 // ── Единая CEX-джоба ────────────────────────────────────────

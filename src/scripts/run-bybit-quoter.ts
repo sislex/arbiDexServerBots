@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import { getCexQuotes } from '../jobs/getCexQuotes/getCexQuotes';
+import { printCexQuotesTable } from '../jobs/getCexQuotes/printCexQuotesTable';
 import { IJobParams_get_Cex_Quotes } from '../store/state.types';
 import { BotList10 } from '../store/stabs/bots-list.stabs';
+import { printUnifiedQuotesTable, marketDataClient } from '../jobs/shared';
 
 async function main() {
   const jobParams = BotList10[2].jobParams as IJobParams_get_Cex_Quotes;
@@ -16,8 +18,15 @@ async function main() {
     process.exit(1);
   }
 
+  printCexQuotesTable(jobParams.source, result);
+
+  if (result.unified) {
+    printUnifiedQuotesTable(result.unified);
+  }
 
   console.log(`\n✅ Готово за ${result.latencyMs} ms`);
+  marketDataClient.disconnect();
+  process.exit(0);
 }
 
 main().catch((err) => {

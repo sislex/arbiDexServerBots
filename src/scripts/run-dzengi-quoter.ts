@@ -1,3 +1,10 @@
+/**
+ * Script to test Dzengi.com CEX quote fetching.
+ *
+ * Usage: npx ts-node src/scripts/run-dzengi-quoter.ts
+ *
+ * Author: Aliaksei Razhnou
+ */
 import 'dotenv/config';
 import { getCexQuotes } from '../jobs/getCexQuotes/getCexQuotes';
 import { printCexQuotesTable } from '../jobs/getCexQuotes/printCexQuotesTable';
@@ -6,7 +13,7 @@ import { BotList10 } from '../store/stabs/bots-list.stabs';
 import { printUnifiedQuotesTable, marketDataClient } from '../jobs/shared';
 
 async function main() {
-  const jobParams = BotList10[3].jobParams as IJobParams_get_Cex_Quotes;
+  const jobParams = BotList10[6].jobParams as IJobParams_get_Cex_Quotes;
 
   console.log(`\n📋 Конфигурация ${jobParams.source}:`);
   console.log(`  Token0: ${jobParams.token0}, Token1: ${jobParams.token1}`);
@@ -33,3 +40,4 @@ main().catch((err) => {
   console.error('Fatal:', err);
   process.exit(1);
 });
+

@@ -109,6 +109,24 @@ export const BotList10: IBotsRule[] = [
     }
   },
   {
+    "id": "Dzengi_USDT_WETH",
+    "botParams": {
+      "botType": IBotType.TEST_BOT,
+      "paused": false,
+      "isRepeat": true,
+      delayBetweenRepeat: 200,
+      maxJobs: 1000000,
+      maxErrors: 100,
+      timeoutMs: 30000,
+    },
+    "jobParams": {
+      "jobType": IJobType.GET_CEX_QUOTES,
+      "source": "dzengi",
+      "token0": "ETH",
+      "token1": "USDT",
+    }
+  },
+  {
     "id": "Arbitrum_USDC_WETH",
     "botParams": {
       "botType": IBotType.TEST_BOT,

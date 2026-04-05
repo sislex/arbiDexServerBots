@@ -20,6 +20,7 @@ export type QuoteSourceName =
   | 'okx'
   | 'kucoin'
   | 'gateio'
+  | 'dzengi'
   | 'dex:arbitrum';
 
 export interface UnifiedQuoteResult {

@@ -236,7 +236,7 @@ export interface IJobParams_get_Executor_Balances extends IJobDefaultParams {
 }
 
 /** Название CEX-источника */
-export type CexSourceName = 'binance' | 'mexc' | 'bybit' | 'okx' | 'kucoin' | 'gateio';
+export type CexSourceName = 'binance' | 'mexc' | 'bybit' | 'okx' | 'kucoin' | 'gateio' | 'dzengi';
 
 export interface IJobParams_get_Cex_Quotes extends IJobDefaultParams {
   jobType: IJobType.GET_CEX_QUOTES;

@@ -11,7 +11,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('arbiDexServerBots')
     .setDescription(
-      'Autonomous quote-collection server: 6 CEX + 1 DEX (Arbitrum) → arbiDexMarketData.\n\n' +
+      'Autonomous quote-collection server: 7 CEX + 1 DEX (Arbitrum) → arbiDexMarketData.\n\n' +
       'Collects bid/ask quotes, normalises to UnifiedQuoteResult, forwards via WebSocket.\n\n' +
       '**Market data (read/subscribe):** [arbiDexMarketData Swagger](http://45.135.182.251:3002/api)\n\n' +
       '**Author:** Aliaksei Razhnou',

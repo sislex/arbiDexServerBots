@@ -3,9 +3,10 @@ import {getDexQuotesByArbQuoter, TOKEN_PAIR} from '../jobs/getDexQuotesByArbQuot
 import { IJobParams_get_Dex_Quotes_By_Arb_Quoter } from '../store/state.types';
 import {BotList10} from '../store/stabs/bots-list.stabs';
 import { printQuotesTable } from '../jobs/getDexQuotesByArbQuoter/helpers/printQuotesTable';
+import { printUnifiedQuotesTable, marketDataClient } from '../jobs/shared';
 
 async function main() {
-  const jobParams = BotList10[6].jobParams as IJobParams_get_Dex_Quotes_By_Arb_Quoter;
+  const jobParams = BotList10[7].jobParams as IJobParams_get_Dex_Quotes_By_Arb_Quoter;
 
   const consoleOutput = true;
   const humanReadable = true;
@@ -24,7 +25,14 @@ async function main() {
     console.log(`  tokenOut:       ${TOKEN_PAIR.tokenOut.symbol}  amount=${TOKEN_PAIR.tokenOut.amount}`);
 
     printQuotesTable(result, { tokenPair: TOKEN_PAIR, humanReadable });
+
+    if (result.unified) {
+      printUnifiedQuotesTable(result.unified);
+    }
   }
+
+  marketDataClient.disconnect();
+  process.exit(0);
 }
 
 main().catch((err) => {
