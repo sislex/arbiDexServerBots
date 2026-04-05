@@ -7,6 +7,7 @@ import { BotRunnerService } from './bots/bot-runner.service';
 import { BotsController } from './controllers/bots.controller';
 import { PricesProxyController } from './controllers/prices-proxy.controller';
 import { PriceProxyGateway } from './controllers/price-proxy.gateway';
+import { JobsController } from './controllers/jobs.controller';
 
 @Module({
   imports: [StoreModule],
@@ -16,6 +17,7 @@ import { PriceProxyGateway } from './controllers/price-proxy.gateway';
     BotsController,
     ErrorsController,
     PricesProxyController,
+    JobsController,
   ],
   providers: [BotRunnerService, PriceProxyGateway],
 })

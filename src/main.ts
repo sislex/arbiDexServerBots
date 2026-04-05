@@ -22,6 +22,7 @@ async function bootstrap() {
     .addTag('bots', 'Bot management — list, pause, resume, restart, configure')
     .addTag('store', 'Application state snapshot')
     .addTag('errors', 'Error management')
+    .addTag('jobs', 'Run quote-collection jobs on demand (CEX / DEX)')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
