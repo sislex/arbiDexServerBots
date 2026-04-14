@@ -305,14 +305,14 @@ export const BotList10: IBotsRule[] = [
           "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
           "feePpm": 100
         },
-        {
-          "dex": "pancake",
-          "version": "v2",
-          "poolAddress": "0x630388b8a8d22bb401e0c6a91c3a7956535cb30e",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 3000
-        },
+        // {
+        //   "dex": "pancake",
+        //   "version": "v2",
+        //   "poolAddress": "0x630388b8a8d22bb401e0c6a91c3a7956535cb30e",
+        //   "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+        //   "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+        //   "feePpm": 3000
+        // },
         {
           "dex": "camelot",
           "version": "v3",
