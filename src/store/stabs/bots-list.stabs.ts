@@ -260,7 +260,7 @@ export const BotList10: IBotsRule[] = [
       "botType": IBotType.TEST_BOT,
       "paused": false,
       "isRepeat": true,
-      "delayBetweenRepeat": 123,
+      "delayBetweenRepeat": 250,
       "maxJobs": 1000000,
       "maxErrors": 100,
       "timeoutMs": 30000
