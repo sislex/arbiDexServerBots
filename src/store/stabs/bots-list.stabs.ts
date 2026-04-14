@@ -282,7 +282,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 500
         },
         {
-          "dex": 4,
+          "dex": "pancake",
           "version": "v3",
           "poolAddress": "0xaeab1336efc2bf74bc89fcf0e33e6013f3c8587e",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -290,7 +290,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 2500
         },
         {
-          "dex": 4,
+          "dex": "pancake",
           "version": "v3",
           "poolAddress": "0x5b7dd61f102280c6c121650e328f1e9f0af2543f",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -298,7 +298,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 10000
         },
         {
-          "dex": 4,
+          "dex": "pancake",
           "version": "v3",
           "poolAddress": "0x389938cf14be379217570d8e4619e51fbdafaa21",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -306,7 +306,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 100
         },
         {
-          "dex": 4,
+          "dex": "pancake",
           "version": "v2",
           "poolAddress": "0x630388b8a8d22bb401e0c6a91c3a7956535cb30e",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -314,7 +314,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 3000
         },
         {
-          "dex": 3,
+          "dex": "camelot",
           "version": "v3",
           "poolAddress": "0x7cccba38e2d959fe135e79aebb57ccb27b128358",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -322,7 +322,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 0
         },
         {
-          "dex": 3,
+          "dex": "camelot",
           "version": "v2",
           "poolAddress": "0x97b192198d164c2a1834295e302b713bc32c8f1d",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -330,7 +330,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 3000
         },
         {
-          "dex": 2,
+          "dex": "sushi",
           "version": "v3",
           "poolAddress": "0x824d9bc425c599f46c700afdcae0867596f48ce2",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -338,7 +338,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 100
         },
         {
-          "dex": 2,
+          "dex": "sushi",
           "version": "v3",
           "poolAddress": "0x7f9061b253545103b80698e579c9891718057dfc",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -346,7 +346,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 10000
         },
         {
-          "dex": 2,
+          "dex": "sushi",
           "version": "v3",
           "poolAddress": "0x92d543a8a158a6bc2c7018ae17803819cb9150b2",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -354,7 +354,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 3000
         },
         {
-          "dex": 2,
+          "dex": "sushi",
           "version": "v3",
           "poolAddress": "0x96ada81328abce21939a51d971a63077e16db26e",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -362,7 +362,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 500
         },
         {
-          "dex": 2,
+          "dex": "sushi",
           "version": "v2",
           "poolAddress": "0xcb0e5bfa72bbb4d16ab5aa0c60601c438f04b4ad",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -370,7 +370,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 3000
         },
         {
-          "dex": 1,
+          "dex": "uniswap",
           "version": "v3",
           "poolAddress": "0x42161084d0672e1d3f26a9b53e653be2084ff19c",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -378,7 +378,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 100
         },
         {
-          "dex": 1,
+          "dex": "uniswap",
           "version": "v3",
           "poolAddress": "0x58039203442c9f2a45d5536bd021a383c7f3035c",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -386,7 +386,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 10000
         },
         {
-          "dex": 1,
+          "dex": "uniswap",
           "version": "v3",
           "poolAddress": "0x641c00a822e8b671738d32a431a4fb6074e5c79d",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -394,7 +394,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 500
         },
         {
-          "dex": 1,
+          "dex": "uniswap",
           "version": "v3",
           "poolAddress": "0xc82819f72a9e77e2c0c3a69b3196478f44303cf4",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
@@ -402,7 +402,7 @@ export const BotList10: IBotsRule[] = [
           "feePpm": 3000
         },
         {
-          "dex": 1,
+          "dex": "uniswap",
           "version": "v2",
           "poolAddress": "0xd04bc65744306a5c149414dd3cd5c984d9d3470d",
           "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
