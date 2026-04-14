@@ -258,7 +258,7 @@ export const BotList10: IBotsRule[] = [
     "id": "168",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 123,
       "maxJobs": 1000000,
@@ -416,7 +416,7 @@ export const BotList10: IBotsRule[] = [
     "id": "159",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -434,7 +434,7 @@ export const BotList10: IBotsRule[] = [
     "id": "158",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -452,7 +452,7 @@ export const BotList10: IBotsRule[] = [
     "id": "157",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -470,7 +470,7 @@ export const BotList10: IBotsRule[] = [
     "id": "156",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -488,7 +488,7 @@ export const BotList10: IBotsRule[] = [
     "id": "155",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -506,7 +506,7 @@ export const BotList10: IBotsRule[] = [
     "id": "146",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -524,7 +524,7 @@ export const BotList10: IBotsRule[] = [
     "id": "145",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -542,7 +542,7 @@ export const BotList10: IBotsRule[] = [
     "id": "55",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -560,7 +560,7 @@ export const BotList10: IBotsRule[] = [
     "id": "54",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -578,7 +578,7 @@ export const BotList10: IBotsRule[] = [
     "id": "53",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -596,7 +596,7 @@ export const BotList10: IBotsRule[] = [
     "id": "52",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -614,7 +614,7 @@ export const BotList10: IBotsRule[] = [
     "id": "26",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
@@ -632,7 +632,7 @@ export const BotList10: IBotsRule[] = [
     "id": "25",
     "botParams": {
       "botType": IBotType.TEST_BOT,
-      "paused": true,
+      "paused": false,
       "isRepeat": true,
       "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
