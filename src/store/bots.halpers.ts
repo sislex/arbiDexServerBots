@@ -3,6 +3,7 @@ import {convertBigIntToString} from '../helpers/convertBigIntToString';
 
 export const getParamsFromBotInstance = (bot: IBot)=> ({
   id: bot.id,
+  description: bot.description,
   running: bot.botInstance.botState.running,
   createdAt: bot.botInstance.botState.createdAt,
   jobCount: bot.botInstance.botState.jobCount,

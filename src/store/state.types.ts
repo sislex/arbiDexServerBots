@@ -372,7 +372,8 @@ export interface IBotsRule {
 }
 
 export interface IBot {
-  id: string;                           // уникальный ид бота, соответствует id из botsSettingsList
+  id: string; // уникальный ид бота, соответствует id из botsSettingsList
+  description: string;
   botInstance: TestBot;
 }
 
