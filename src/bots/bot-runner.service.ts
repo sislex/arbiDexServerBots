@@ -25,7 +25,7 @@ export class BotRunnerService {
       distinctUntilChanged(),
       withLatestFrom(this.botsList$)
     ).subscribe(([botsRulesList, botsList]) => {
-      console.log('botsRulesList.length', botsRulesList.length);
+      console.log('botsRulesList.length', botsRulesList);
       if (botsRulesList?.length) {
         const newBotsList: IBot[] = [];
         const oldBotsList: IBot[] = [];
