@@ -21,6 +21,7 @@ export class BotsController {
   @ApiOperation({ summary: 'List all bots', description: 'Returns all active bots with their runtime state (id, running, jobCount, latency, errors, etc.).' })
   async getAll() {
     const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    console.log('Getting all bots', botsList);
     return botsList.map((bot: IBot) => getParamsFromBotInstance(bot));
   }
 
