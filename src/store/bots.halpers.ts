@@ -1,9 +1,9 @@
-import {IBot} from './state.types';
-import {convertBigIntToString} from '../helpers/convertBigIntToString';
+import { IBot } from './state.types';
+import { convertBigIntToString } from '../helpers/convertBigIntToString';
 
-export const getParamsFromBotInstance = (bot: IBot)=> ({
+export const getParamsFromBotInstance = (bot: IBot) => ({
   id: bot.id,
-  description: bot.botInstance,
+  botParams: bot.botInstance.botParams,
   running: bot.botInstance.botState.running,
   createdAt: bot.botInstance.botState.createdAt,
   jobCount: bot.botInstance.botState.jobCount,
@@ -14,4 +14,4 @@ export const getParamsFromBotInstance = (bot: IBot)=> ({
   lastLatency: bot.botInstance.botState.lastLatency,
   lastJobResult: convertBigIntToString(bot.botInstance.botState.lastJobResult),
   arbitrageCount: bot.botInstance.botState.arbitrageList.length,
-})
+});

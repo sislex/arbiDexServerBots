@@ -89,7 +89,7 @@ export class TestBot implements ITestBot {
   botState: ITestBotState;
 
   constructor(
-    private botParams: IBotParams,
+    public botParams: IBotParams,
     private jobParams: IJobParams,
   ) {
     this.resetState();
