@@ -363,6 +363,7 @@ export interface IBotParams {
   maxErrors?: number,
   maxArbitrage?: number,
   timeoutMs?: number,
+  description?: string,
 }
 
 export interface IBotsRule {
@@ -373,7 +374,6 @@ export interface IBotsRule {
 
 export interface IBot {
   id: string; // уникальный ид бота, соответствует id из botsSettingsList
-  description?: any;
   botInstance: TestBot;
 }
 
