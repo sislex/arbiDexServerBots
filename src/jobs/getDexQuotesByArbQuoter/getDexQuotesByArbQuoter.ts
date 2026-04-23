@@ -22,13 +22,13 @@ export { getDexQuotes } from './helpers/getDexQuotes';
 export const TOKEN_PAIR = {
   tokenIn: {
     address: USDC.address,
-    amount: toAmount(20000, USDC.decimals),
+    amount: toAmount(100, USDC.decimals),
     decimals: USDC.decimals,
     symbol: 'USDC',
   },
   tokenOut: {
     address: WETH.address,
-    amount: toAmount(3, WETH.decimals),
+    amount: toAmount(0.03, WETH.decimals),
     decimals: WETH.decimals,
     symbol: 'WETH',
   },
