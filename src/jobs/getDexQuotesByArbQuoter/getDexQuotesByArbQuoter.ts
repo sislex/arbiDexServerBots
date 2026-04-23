@@ -45,16 +45,16 @@ export async function getDexQuotesByArbQuoter(
   // const tokenPair = opts?.tokenPair ?? TOKEN_PAIR;
   const tokenPair = {
     tokenIn: {
-      address: params.token0,
-      amount: toAmount(params.amount0, params.decimals0),
-      decimals: params.decimals0,
-      symbol: params.symbol0,
+      address: params.token0 || '',
+      amount: toAmount(params.amount0 || 0, params.decimals0 || 0),
+      decimals: params.decimals0 || 0,
+      symbol: params.symbol0 || '',
     },
     tokenOut: {
-      address: params.token1,
-      amount: toAmount(params.amount1, params.decimals1),
-      decimals: params.decimals1,
-      symbol: params.symbol1,
+      address: params.token1 || '',
+      amount: toAmount(params.amount1 || 0, params.decimals1 || 0),
+      decimals: params.decimals1 || 0,
+      symbol: params.symbol1 || '',
     },
   };
   // console.log('::::opts', opts);
