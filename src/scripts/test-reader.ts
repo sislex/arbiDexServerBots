@@ -41,7 +41,6 @@ async function main() {
     console.log('Нужно записать конфиги через setConfig().');
     console.log('Owner ConfigStore:', await configStore.owner());
   }
-  process.exit(0);
 }
 
 main().catch(console.error);
