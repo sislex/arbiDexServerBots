@@ -19,7 +19,7 @@ export { toAmount } from './helpers/toAmount';
 export { getDexQuotes } from './helpers/getDexQuotes';
 
 export const TOKEN_PAIR = {
-  tokenIn:  { address: USDC.address, amount: toAmount(100, USDC.decimals), decimals: USDC.decimals, symbol: 'USDC' },
+  tokenIn: { address: USDC.address, amount: toAmount(100, USDC.decimals), decimals: USDC.decimals, symbol: 'USDC' },
   tokenOut: { address: WETH.address, amount: toAmount(0.03, WETH.decimals), decimals: WETH.decimals, symbol: 'WETH' },
 } as const;
 
@@ -33,6 +33,7 @@ export async function getDexQuotesByArbQuoter(
 
   const tokenPair = opts?.tokenPair ?? TOKEN_PAIR;
   console.log('::::opts', opts);
+  console.log('::::params', params);
   const result = await getDexQuotes({
     pairsToQuote,
     rpcUrl,
