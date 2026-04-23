@@ -191,6 +191,12 @@ export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultPara
   rpcUrl: string;
   token0: string;
   token1: string;
+  amount0: number;
+  amount1: number;
+  decimals0: number;
+  decimals1: number;
+  symbol0: string;
+  symbol1: string;
 
   pairsToQuote: IPool[];
   stepPrefundPct?: number;

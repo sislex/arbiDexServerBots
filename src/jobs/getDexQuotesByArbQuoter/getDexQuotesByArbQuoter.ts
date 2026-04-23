@@ -1,11 +1,12 @@
-import {
-  IJobParams_get_Dex_Quotes_By_Arb_Quoter,
-} from '../../store/state.types';
-import {USDC, WETH} from '../../store/stabs/tokens.stabs';
+import { IJobParams_get_Dex_Quotes_By_Arb_Quoter } from '../../store/state.types';
+import { USDC, WETH } from '../../store/stabs/tokens.stabs';
 import { toAmount } from './helpers/toAmount';
 import { getDexQuotes } from './helpers/getDexQuotes';
-import type { GetDexQuotesByArbQuoterOpts, DexQuotesByArbQuoteResult } from './helpers/types';
-import {dexToUnified, marketDataClient} from '../shared';
+import type {
+  GetDexQuotesByArbQuoterOpts,
+  DexQuotesByArbQuoteResult,
+} from './helpers/types';
+import { dexToUnified, marketDataClient } from '../shared';
 
 // Реэкспорт
 export type {
@@ -19,8 +20,18 @@ export { toAmount } from './helpers/toAmount';
 export { getDexQuotes } from './helpers/getDexQuotes';
 
 export const TOKEN_PAIR = {
-  tokenIn: { address: USDC.address, amount: toAmount(100, USDC.decimals), decimals: USDC.decimals, symbol: 'USDC' },
-  tokenOut: { address: WETH.address, amount: toAmount(0.03, WETH.decimals), decimals: WETH.decimals, symbol: 'WETH' },
+  tokenIn: {
+    address: USDC.address,
+    amount: toAmount(100, USDC.decimals),
+    decimals: USDC.decimals,
+    symbol: 'USDC',
+  },
+  tokenOut: {
+    address: WETH.address,
+    amount: toAmount(0.03, WETH.decimals),
+    decimals: WETH.decimals,
+    symbol: 'WETH',
+  },
 } as const;
 
 // ── Джоба ────────────────────────────────────────────────────
@@ -31,9 +42,24 @@ export async function getDexQuotesByArbQuoter(
 ): Promise<DexQuotesByArbQuoteResult> {
   const { pairsToQuote, rpcUrl = 'https://arb1.arbitrum.io/rpc' } = params;
 
-  const tokenPair = opts?.tokenPair ?? TOKEN_PAIR;
-  console.log('::::opts', opts);
+  // const tokenPair = opts?.tokenPair ?? TOKEN_PAIR;
+  const tokenPair = {
+    tokenIn: {
+      address: params.token0,
+      amount: toAmount(params.amount0, params.decimals0),
+      decimals: params.decimals0,
+      symbol: params.symbol0,
+    },
+    tokenOut: {
+      address: params.token1,
+      amount: toAmount(params.amount1, params.decimals1),
+      decimals: params.decimals1,
+      symbol: params.symbol1,
+    },
+  };
+  // console.log('::::opts', opts);
   console.log('::::params', params);
+  console.log('::::tokenPair', tokenPair);
   const result = await getDexQuotes({
     pairsToQuote,
     rpcUrl,
