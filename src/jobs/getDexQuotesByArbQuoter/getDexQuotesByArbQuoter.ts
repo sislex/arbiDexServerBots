@@ -32,7 +32,7 @@ export async function getDexQuotesByArbQuoter(
   const { pairsToQuote, rpcUrl = 'https://arb1.arbitrum.io/rpc' } = params;
 
   const tokenPair = opts?.tokenPair ?? TOKEN_PAIR;
-
+  console.log('::::opts', opts);
   const result = await getDexQuotes({
     pairsToQuote,
     rpcUrl,
