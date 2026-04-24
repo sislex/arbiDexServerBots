@@ -61,9 +61,6 @@ export async function getDexQuotesByArbQuoter(
     },
   };
 
-
-  console.log('::::params', params);
-  console.log('::::tokenPair', tokenPair);
   const result = await getDexQuotes({
     pairsToQuote,
     rpcUrl,
