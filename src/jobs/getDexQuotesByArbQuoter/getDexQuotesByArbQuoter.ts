@@ -42,7 +42,23 @@ export async function getDexQuotesByArbQuoter(
 ): Promise<DexQuotesByArbQuoteResult> {
   const { pairsToQuote, rpcUrl = 'https://arb1.arbitrum.io/rpc' } = params;
 
-  const tokenPair = params?.opts ?? TOKEN_PAIR;
+  const tokenPair = {
+    tokenIn: {
+      ...params?.opts?.tokenIn,
+      address: (params as any).token0,
+      amount: params?.opts?.tokenIn?.amount ?? 0n,
+      decimals: params?.opts?.tokenIn?.decimals ?? 18,
+      symbol: params?.opts?.tokenIn?.symbol ?? '',
+    },
+    tokenOut: {
+      ...params?.opts?.tokenOut,
+      address: (params as any).token1,
+      amount: params?.opts?.tokenOut?.amount ?? 0n,
+      decimals: params?.opts?.tokenOut?.decimals ?? 18,
+      symbol: params?.opts?.tokenOut?.symbol ?? '',
+    },
+  };
+
   console.log('::::params', params);
   console.log('::::tokenPair', tokenPair);
   const result = await getDexQuotes({
@@ -53,7 +69,7 @@ export async function getDexQuotesByArbQuoter(
     quoterAddress: process.env.QUOTER_ADDRESS,
   });
 
-  result.unified = dexToUnified(result, params.opts.tokenIn.address, params.opts.tokenOut.address);
+  result.unified = dexToUnified(result, params.token0, params.token1);
   marketDataClient.writeQuote(result.unified);
 
   // printQuotesTable(dexQuotes, { tokenPair, humanReadable: true });
