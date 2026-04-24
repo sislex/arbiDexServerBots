@@ -46,14 +46,14 @@ export async function getDexQuotesByArbQuoter(
     tokenIn: {
       ...params?.opts?.tokenIn,
       address: (params as any).token0,
-      amount: params?.opts?.tokenIn?.amount ?? 0n,
+      amount: params?.externalSettings?.amountIn ?? 0n,
       decimals: params?.opts?.tokenIn?.decimals ?? 18,
       symbol: params?.opts?.tokenIn?.symbol ?? '',
     },
     tokenOut: {
       ...params?.opts?.tokenOut,
       address: (params as any).token1,
-      amount: params?.opts?.tokenOut?.amount ?? 0n,
+      amount: params?.externalSettings?.amountOut ?? 0n,
       decimals: params?.opts?.tokenOut?.decimals ?? 18,
       symbol: params?.opts?.tokenOut?.symbol ?? '',
     },

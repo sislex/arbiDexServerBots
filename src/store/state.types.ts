@@ -196,6 +196,7 @@ export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultPara
 
   pairsToQuote: IPool[];
   stepPrefundPct?: number;
+  externalSettings?: any;
 }
 
 export interface IJobParams_resolve_Pools_For_Pairs extends IJobDefaultParams {
