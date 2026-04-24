@@ -1,12 +1,14 @@
 import 'dotenv/config';
 import {getDexQuotesByArbQuoter, TOKEN_PAIR} from '../jobs/getDexQuotesByArbQuoter/getDexQuotesByArbQuoter';
-import { IJobParams_get_Dex_Quotes_By_Arb_Quoter } from '../store/state.types';
+import { IJobParams_get_Dex_Quotes_By_Arb_Quoter, IJobType } from '../store/state.types';
 import {BotList10} from '../store/stabs/bots-list.stabs';
 import { printQuotesTable } from '../jobs/getDexQuotesByArbQuoter/helpers/printQuotesTable';
 import { printUnifiedQuotesTable, marketDataClient } from '../jobs/shared';
 
 async function main() {
-  const jobParams = BotList10[7].jobParams as IJobParams_get_Dex_Quotes_By_Arb_Quoter;
+  const dexBot = BotList10.find(b => b.jobParams.jobType === IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER);
+  if (!dexBot) throw new Error('DEX bot not found in BotList10');
+  const jobParams = dexBot.jobParams as IJobParams_get_Dex_Quotes_By_Arb_Quoter;
 
   const consoleOutput = true;
   const humanReadable = true;
