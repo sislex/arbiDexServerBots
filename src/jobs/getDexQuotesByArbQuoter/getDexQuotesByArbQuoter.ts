@@ -42,22 +42,25 @@ export async function getDexQuotesByArbQuoter(
 ): Promise<DexQuotesByArbQuoteResult> {
   const { pairsToQuote, rpcUrl = 'https://arb1.arbitrum.io/rpc' } = params;
 
+  const parsedSettings = params.extraSettings ? JSON.parse(params.extraSettings) : {};
+
   const tokenPair = {
     tokenIn: {
       ...params?.opts?.tokenIn,
       address: (params as any).token0,
-      amount: toAmount(params?.extraSettings?.amountIn || 0, params?.opts?.tokenIn?.decimals || 0) ?? 0n,
+      amount: toAmount(parsedSettings?.amountIn || 0, params?.opts?.tokenIn?.decimals || 0) ?? 0n,
       decimals: params?.opts?.tokenIn?.decimals ?? 18,
       symbol: params?.opts?.tokenIn?.symbol ?? '',
     },
     tokenOut: {
       ...params?.opts?.tokenOut,
       address: (params as any).token1,
-      amount: toAmount(params?.extraSettings?.amountOut || 0, params?.opts?.tokenOut?.decimals || 0) ?? 0n,
+      amount: toAmount(parsedSettings?.amountOut || 0, params?.opts?.tokenOut?.decimals || 0) ?? 0n,
       decimals: params?.opts?.tokenOut?.decimals ?? 18,
       symbol: params?.opts?.tokenOut?.symbol ?? '',
     },
   };
+
 
   console.log('::::params', params);
   console.log('::::tokenPair', tokenPair);
