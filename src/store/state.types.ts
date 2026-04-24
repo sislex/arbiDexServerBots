@@ -6,6 +6,7 @@ import {
   QuoteExactInputSingleRaw,
   QuoteExactOutputSingleRaw
 } from '../jobs/getQuote_Arbitrum_Multi/arbitrum-multi.quote';
+import { ITokenPair } from '../jobs/getDexQuotesByArbQuoter/helpers/types';
 
 export type ContractAbi = readonly string[];
 
@@ -189,15 +190,7 @@ export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultPara
   jobType: IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER;
   source: string;
   rpcUrl: string;
-  token0: string;
-  token1: string;
-
-  amount0?: number;
-  amount1?: number;
-  decimals0?: number;
-  decimals1?: number;
-  symbol0?: string;
-  symbol1?: string;
+  opts: ITokenPair;
 
   pairsToQuote: IPool[];
   stepPrefundPct?: number;
