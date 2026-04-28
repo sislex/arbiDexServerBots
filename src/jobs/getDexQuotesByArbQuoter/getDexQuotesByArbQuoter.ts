@@ -1,5 +1,4 @@
 import { IJobParams_get_Dex_Quotes_By_Arb_Quoter } from '../../store/state.types';
-import { USDC, WETH } from '../../store/stabs/tokens.stabs';
 import { toAmount } from './helpers/toAmount';
 import { getDexQuotes } from './helpers/getDexQuotes';
 import type {
@@ -19,21 +18,6 @@ export type {
 export { toAmount } from './helpers/toAmount';
 export { getDexQuotes } from './helpers/getDexQuotes';
 
-export const TOKEN_PAIR = {
-  tokenIn: {
-    address: USDC.address,
-    amount: toAmount(100, USDC.decimals),
-    decimals: USDC.decimals,
-    symbol: 'USDC',
-  },
-  tokenOut: {
-    address: WETH.address,
-    amount: toAmount(0.03, WETH.decimals),
-    decimals: WETH.decimals,
-    symbol: 'WETH',
-  },
-} as const;
-
 // ── Джоба ────────────────────────────────────────────────────
 
 export async function getDexQuotesByArbQuoter(
@@ -44,20 +28,24 @@ export async function getDexQuotesByArbQuoter(
 
   const parsedSettings = params.extraSettings ? JSON.parse(params.extraSettings) : {};
 
+  // Адрес: сначала из opts.tokenIn.address, затем из устаревшего token0
+  const tokenInAddress  = params.opts?.tokenIn?.address  ?? params.token0 ?? '';
+  const tokenOutAddress = params.opts?.tokenOut?.address ?? params.token1 ?? '';
+
   const tokenPair = {
     tokenIn: {
       ...params?.opts?.tokenIn,
-      address: (params as any).token0,
-      amount: toAmount(parsedSettings?.amountIn || 0, params?.opts?.tokenIn?.decimals || 0) ?? 0n,
-      decimals: params?.opts?.tokenIn?.decimals ?? 18,
-      symbol: params?.opts?.tokenIn?.symbol ?? '',
+      address:  tokenInAddress,
+      amount:   toAmount(parsedSettings?.amountIn  || 0, params?.opts?.tokenIn?.decimals  || 0) ?? 0n,
+      decimals: params?.opts?.tokenIn?.decimals  ?? 18,
+      symbol:   params?.opts?.tokenIn?.symbol    ?? '',
     },
     tokenOut: {
       ...params?.opts?.tokenOut,
-      address: (params as any).token1,
-      amount: toAmount(parsedSettings?.amountOut || 0, params?.opts?.tokenOut?.decimals || 0) ?? 0n,
+      address:  tokenOutAddress,
+      amount:   toAmount(parsedSettings?.amountOut || 0, params?.opts?.tokenOut?.decimals || 0) ?? 0n,
       decimals: params?.opts?.tokenOut?.decimals ?? 18,
-      symbol: params?.opts?.tokenOut?.symbol ?? '',
+      symbol:   params?.opts?.tokenOut?.symbol   ?? '',
     },
   };
 
@@ -69,10 +57,8 @@ export async function getDexQuotesByArbQuoter(
     quoterAddress: process.env.QUOTER_ADDRESS,
   });
 
-  result.unified = dexToUnified(result, params.token0, params.token1);
+  result.unified = dexToUnified(result, tokenInAddress, tokenOutAddress);
   marketDataClient.writeQuote(result.unified);
 
-  // printQuotesTable(dexQuotes, { tokenPair, humanReadable: true });
-  // printUnifiedQuotesTable(result.unified);
   return result;
 }

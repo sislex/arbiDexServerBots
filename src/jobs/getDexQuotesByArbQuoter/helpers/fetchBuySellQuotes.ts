@@ -43,6 +43,10 @@ export async function fetchBuySellQuotes(
   const tokenInAddress  = tokenPair.tokenIn.address;
   const tokenOutAddress = tokenPair.tokenOut.address;
 
+  if (!tokenInAddress || !tokenOutAddress) {
+    throw new Error('tokenIn.address and tokenOut.address must be defined in tokenPair');
+  }
+
   // Buy steps: tokenIn → tokenOut  (USDC → WETH)
   const buySteps = pairsToQuote.map((pool) =>
     poolConfigToStoreStep(poolToPoolConfig(pool, tokenInAddress, tokenOutAddress)),
