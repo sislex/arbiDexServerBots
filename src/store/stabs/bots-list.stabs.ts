@@ -1,5 +1,46 @@
 import {IBotsRule, IBotType, IJobType, IPool} from '../state.types';
 
+export const BotListTestOptimism: IBotsRule[] = [
+  {
+    "id": "168",
+    "botParams": {
+      "botType": IBotType.TEST_BOT,
+      "paused": false,
+      "isRepeat": true,
+      "delayBetweenRepeat": 250,
+      "maxJobs": 1000000,
+      "maxErrors": 100,
+      "timeoutMs": 30000
+    },
+    "jobParams": {
+      "extraSettings": "{\n  \"amountIn\": 100,\n  \"amountOut\":  870\n}",
+      "jobType": IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER,
+      "rpcUrl": "https://mainnet.optimism.io",
+      "source": "dex:optimism",
+      "opts": {
+        "tokenIn": {
+          "decimals": 6,
+          "symbol": "USDC",
+          "address": "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
+        },
+        "tokenOut": {
+          "decimals": 18,
+          "symbol": "OP",
+          "address": "0x4200000000000000000000000000000000000042",
+        }
+      },
+      "pairsToQuote": [
+        {
+          "dex": "uniswap",
+          "version": "v3",
+          "poolAddress": "0x6f32061f59a21086c334d0d45f804089ce374aaf",
+          "feePpm": 10000
+        }
+      ]
+    }
+  },
+];
+
 export const BotListTestArbitrum: IBotsRule[] = [
   {
     "id": "168",
@@ -130,6 +171,7 @@ export const BotListTestArbitrum: IBotsRule[] = [
     }
   },
 ];
+
 export const BotList10: IBotsRule[] = [
   {
     "id": "168",

@@ -58,12 +58,16 @@ export async function getDexQuotes(params: GetDexQuotesParams): Promise<DexQuote
     });
   } catch (err: any) {
     const latencyMs = Math.round(performance.now() - totalStart);
+    const rawMessage = err?.message ?? String(err);
+    const error = rawMessage.includes('CALL_EXCEPTION')
+      ? `${rawMessage}. Проверьте соответствие rpcUrl, quoterAddress и pairsToQuote (сеть/адреса пулов).`
+      : rawMessage;
 
     return {
       ok: false,
       latencyMs,
       blockNumber: 0,
-      error: err?.message ?? String(err),
+      error,
       filteredPairsCount: pairsToQuote.length,
       bestBuyPrice: 0,
       bestSellPrice: 0,

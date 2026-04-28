@@ -46,6 +46,9 @@ export type StoreSwapStep = {
   pool: string;
   tokenIn: string;
   tokenOut: string;
+  v4Fee: number;
+  v4TickSpacing: number;
+  v4Hooks: string;
 };
 
 /**
@@ -57,6 +60,11 @@ export type StoreSwapStep = {
  */
 export function poolConfigToStoreStep(cfg: PoolConfig): StoreSwapStep {
   const ZERO = ethers.ZeroAddress;
+  const base = {
+    v4Fee: 0,
+    v4TickSpacing: 0,
+    v4Hooks: ZERO,
+  };
 
   if (cfg.version === "v2") {
     const router = V2_ROUTERS[cfg.dex];
@@ -66,6 +74,7 @@ export function poolConfigToStoreStep(cfg: PoolConfig): StoreSwapStep {
     const kind = cfg.dex === "camelot" ? 2 : 0;
 
     return {
+      ...base,
       kind,
       router,
       path: [cfg.tokenIn.address, cfg.tokenOut.address],
@@ -80,12 +89,27 @@ export function poolConfigToStoreStep(cfg: PoolConfig): StoreSwapStep {
     const kind = cfg.dex === "camelot" ? 3 : 1;
 
     return {
+      ...base,
       kind,
       router: ZERO,
       path: [],
       pool: cfg.poolAddress,
       tokenIn: cfg.tokenIn.address,
       tokenOut: cfg.tokenOut.address,
+    };
+  }
+
+  if (cfg.version === 'v4') {
+    return {
+      kind: 4,
+      router: ZERO,
+      path: [],
+      pool: cfg.poolAddress ?? ZERO,
+      tokenIn: cfg.tokenIn.address,
+      tokenOut: cfg.tokenOut.address,
+      v4Fee: (cfg as any).v4Fee ?? 0,
+      v4TickSpacing: (cfg as any).v4TickSpacing ?? 0,
+      v4Hooks: (cfg as any).v4Hooks ?? ZERO,
     };
   }
 
