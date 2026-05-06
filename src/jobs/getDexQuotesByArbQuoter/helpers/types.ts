@@ -1,8 +1,8 @@
 import { UnifiedQuoteResult } from '../../shared';
 
 export interface IDexTokenConfig {
-  address: string;
-  amount: bigint;
+  address?: string;
+  amount?: bigint;
   decimals: number;
   symbol: string;
 }

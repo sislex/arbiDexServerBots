@@ -21,7 +21,8 @@ export type QuoteSourceName =
   | 'kucoin'
   | 'gateio'
   | 'dzengi'
-  | 'dex:arbitrum';
+  | 'dex:arbitrum'
+  | 'dex:optimism';
 
 export interface UnifiedQuoteResult {
   /** Тип источника */

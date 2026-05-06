@@ -190,8 +190,10 @@ export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultPara
   jobType: IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER;
   source: string;
   rpcUrl: string;
-  token0: string;
-  token1: string;
+  /** @deprecated Используйте opts.tokenIn.address */
+  token0?: string;
+  /** @deprecated Используйте opts.tokenOut.address */
+  token1?: string;
   opts?: ITokenPair;
 
   pairsToQuote: IPool[];
@@ -253,8 +255,8 @@ export interface IPool {
   dex: DexId;
   version: PoolVersion;
   poolAddress: string;
-  token0: Address;
-  token1: Address;
+  token0?: Address;
+  token1?: Address;
   feePpm?: number;
 }
 

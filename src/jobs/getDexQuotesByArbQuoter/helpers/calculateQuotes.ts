@@ -20,8 +20,8 @@ export function calculateQuotes(params: CalculateQuotesParams): DexQuotesByArbQu
   const { pairsToQuote, fetchResult, tokenPair, humanReadable, latencyMs } = params;
   const { buyQuotes, sellQuotes, blockNumber, gasUsed } = fetchResult;
 
-  const buyAmountIn  = tokenPair.tokenIn.amount;
-  const sellAmountIn = tokenPair.tokenOut.amount;
+  const buyAmountIn  = tokenPair.tokenIn.amount  ?? 0n;
+  const sellAmountIn = tokenPair.tokenOut.amount ?? 0n;
 
   const realInDec  = tokenPair.tokenIn.decimals;
   const realOutDec = tokenPair.tokenOut.decimals;

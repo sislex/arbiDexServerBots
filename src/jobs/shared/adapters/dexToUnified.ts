@@ -1,6 +1,8 @@
 import { UnifiedQuoteResult, PoolBrief } from '../types';
 import type { DexQuotesByArbQuoteResult, PoolQuoteResult } from '../../getDexQuotesByArbQuoter/helpers/types';
 
+const DEFAULT_DEX_SOURCE: UnifiedQuoteResult['source'] = 'dex:arbitrum';
+
 function toPoolBrief(pq: PoolQuoteResult | null): PoolBrief | null {
   if (!pq) return null;
   return {
@@ -21,16 +23,18 @@ function toPoolBrief(pq: PoolQuoteResult | null): PoolBrief | null {
  * @param result — результат getDexQuotes
  * @param token0 — базовый токен (адрес 0x…)
  * @param token1 — котировочный токен (адрес 0x…)
+ * @param source — имя DEX-источника в unified-формате
  */
 export function dexToUnified(
   result: DexQuotesByArbQuoteResult,
   token0: string,
   token1: string,
+  source: UnifiedQuoteResult['source'] = DEFAULT_DEX_SOURCE,
 ): UnifiedQuoteResult {
   if (!result.ok) {
     return {
       sourceType: 'dex',
-      source: 'dex:arbitrum',
+      source,
       token0,
       token1,
       ok: false,
@@ -57,7 +61,7 @@ export function dexToUnified(
 
   return {
     sourceType: 'dex',
-    source: 'dex:arbitrum',
+    source,
     token0,
     token1,
     ok: true,
