@@ -57,6 +57,21 @@
               "internalType": "address",
               "name": "tokenOut",
               "type": "address"
+            },
+            {
+              "internalType": "uint24",
+              "name": "v4Fee",
+              "type": "uint24"
+            },
+            {
+              "internalType": "int24",
+              "name": "v4TickSpacing",
+              "type": "int24"
+            },
+            {
+              "internalType": "address",
+              "name": "v4Hooks",
+              "type": "address"
             }
           ],
           "internalType": "struct ISwapStepsConfigStore.SwapStep[]",

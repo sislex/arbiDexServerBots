@@ -1,0 +1,48 @@
+import { DeployedImpactQuoteStabsConfig } from '../helpers/types';
+
+export const ArbitrumPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
+  source: 'dex:arbitrum',
+  rpcUrl: 'https://arb1.arbitrum.io/rpc',
+  extraSettings: {
+    amountIn: 0.01,
+  },
+  opts: {
+    tokenIn: {
+      symbol: 'WETH',
+      decimals: 18,
+      address: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+    },
+    tokenOut: {
+      symbol: 'USDC',
+      decimals: 6,
+      address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+    },
+  },
+  pairsToQuote: [
+    {
+      dex: 'uniswap',
+      version: 'v2',
+      poolAddress: '0xf64dfe17c8b87f012fcf50fbda1d62bfa148366a',
+      feePpm: 3000,
+    },
+    {
+      dex: 'sushi',
+      version: 'v3',
+      poolAddress: '0xf3eb87c1f6020982173c908e7eb31aa66c1f0296',
+      feePpm: 500,
+    },
+    {
+      dex: 'uniswap',
+      version: 'v3',
+      poolAddress: '0xc473e2aee3441bf9240be85eb122abb059a3b57c',
+      feePpm: 3000,
+    },
+    {
+      dex: 'camelot',
+      version: 'v2',
+      poolAddress: '0x54b26faf3671677c19f70c4b879a6f7b898f732c',
+      feePpm: 3000,
+    },
+  ],
+};
+
