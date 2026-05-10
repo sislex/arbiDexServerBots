@@ -1,5 +1,5 @@
-import { ArbitrumPoolsConfigListStabs } from './configs/arbitrum.config';
-import { runDeployedImpactQuoteTest } from './helpers/runDeployedImpactQuoteTest';
+import { ArbitrumPoolsConfigListStabs } from './arbitrumPoolsConfigList.stabs';
+import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
 
 runDeployedImpactQuoteTest({
   networkName: 'Arbitrum',
@@ -10,4 +10,6 @@ runDeployedImpactQuoteTest({
   console.error('Quote script failed:', e);
   process.exitCode = 1;
 });
+
+
 

@@ -1,5 +1,5 @@
-import { LineaPoolsConfigListStabs } from './configs/linea.config';
-import { runDeployedImpactQuoteTest } from './helpers/runDeployedImpactQuoteTest';
+import { LineaPoolsConfigListStabs } from './lineaPoolsConfigList.stabs';
+import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
 
 runDeployedImpactQuoteTest({
   networkName: 'Linea',
@@ -10,4 +10,6 @@ runDeployedImpactQuoteTest({
   console.error('Quote script failed:', e);
   process.exitCode = 1;
 });
+
+
 

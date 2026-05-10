@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { ethers } from 'ethers';
-import ArbQuoterAbi from '../../../artifacts/contracts/ArbQuoter.sol/ArbQuoter.json';
+import ArbQuoterAbi from '../../../../artifacts/contracts/ArbQuoter.sol/ArbQuoter.json';
 import { buildStoreStep } from './buildStoreStep';
 import { DeployedImpactQuoteStabsConfig, RunDeployedImpactQuoteTestOptions } from './types';
 
@@ -306,4 +306,6 @@ export async function runDeployedImpactQuoteTest(options: RunDeployedImpactQuote
 
   console.log(`Success: ${successCount}/${callsCount}`);
 }
+
+
 

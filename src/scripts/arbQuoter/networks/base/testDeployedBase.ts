@@ -1,5 +1,5 @@
-import { BasePoolsConfigListStabs } from './configs/base.config';
-import { runDeployedImpactQuoteTest } from './helpers/runDeployedImpactQuoteTest';
+import { BasePoolsConfigListStabs } from './basePoolsConfigList.stabs';
+import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
 
 runDeployedImpactQuoteTest({
   networkName: 'Base',
@@ -10,4 +10,6 @@ runDeployedImpactQuoteTest({
   console.error('Quote script failed:', e);
   process.exitCode = 1;
 });
+
+
 

@@ -18,6 +18,7 @@ export type DeployedImpactQuoteStabsConfig = {
   };
   extraSettings?: {
     amountIn?: number;
+    amountOut?: number;
   };
   pairsToQuote: PoolQuoteConfig[];
 };
@@ -29,4 +30,5 @@ export type RunDeployedImpactQuoteTestOptions = {
   config: DeployedImpactQuoteStabsConfig;
   includeRevertHint?: boolean;
 };
+
 

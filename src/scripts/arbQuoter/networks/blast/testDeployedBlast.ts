@@ -1,5 +1,5 @@
-import { BlastPoolsConfigListStabs } from './configs/blast.config';
-import { runDeployedImpactQuoteTest } from './helpers/runDeployedImpactQuoteTest';
+import { BlastPoolsConfigListStabs } from './blastPoolsConfigList.stabs';
+import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
 
 runDeployedImpactQuoteTest({
   networkName: 'Blast',
@@ -10,4 +10,6 @@ runDeployedImpactQuoteTest({
   console.error('Quote script failed:', e);
   process.exitCode = 1;
 });
+
+
 

@@ -18,19 +18,20 @@ export const LineaPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
       address: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
     },
   },
-  pairsToQuote: [
+  "pairsToQuote": [
     {
-      dex: 'uniswap',
-      version: 'v3',
-      poolAddress: '0xc48622190a6B91d64ee7459C62fadE9AbE61b48a',
-      feePpm: 500,
+      "dex": "uniswap",
+      "version": "v3",
+      "poolAddress": "0xc48622190a6B91d64ee7459C62fadE9AbE61b48a",
+      "feePpm": 500
     },
     {
-      dex: 'sushi',
-      version: 'v3',
-      poolAddress: '0xb273e954983abae94ec500c19f1a23790d3553d3',
-      feePpm: 3000,
-    },
-  ],
+      "dex": "sushi",
+      "version": "v3",
+      "poolAddress": "0xb273e954983abae94ec500c19f1a23790d3553d3",
+      "feePpm": 3000
+    }
+  ]
 };
+
 

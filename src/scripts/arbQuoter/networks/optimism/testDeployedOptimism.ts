@@ -1,5 +1,5 @@
-import { OptimismPoolsConfigListStabs } from './configs/optimism.config';
-import { runDeployedImpactQuoteTest } from './helpers/runDeployedImpactQuoteTest';
+import { OptimismPoolsConfigListStabs } from './optimismPoolsConfigList.stabs';
+import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
 
 runDeployedImpactQuoteTest({
   networkName: 'Optimism',
@@ -10,4 +10,6 @@ runDeployedImpactQuoteTest({
   console.error('Quote script failed:', e);
   process.exitCode = 1;
 });
+
+
 

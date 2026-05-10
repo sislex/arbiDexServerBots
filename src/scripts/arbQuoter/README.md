@@ -1,6 +1,24 @@
 # ArbQuoter test scripts
 
-Скрипты для ручного тестирования задеплоенного `ArbQuoter` в сетях Arbitrum/Optimism/Base/Linea/Blast.
+Структура и нейминг синхронизированы с `arbiDexSmartcontracts/scripts/arbQuoter`.
+
+## Структура
+
+- `compareCamelotV2.ts`
+- `deploy.ts`
+- `testDeployedOptimism.ts`
+- `networks/arbitrum/arbitrumPoolsConfigList.stabs.ts`
+- `networks/arbitrum/testDeployedArbitrum.ts`
+- `networks/optimism/optimismPoolsConfigList.stabs.ts`
+- `networks/optimism/testDeployedOptimism.ts`
+- `networks/base/basePoolsConfigList.stabs.ts`
+- `networks/base/testDeployedBase.ts`
+- `networks/base/testDeployedBaseParallel.ts`
+- `networks/linea/lineaPoolsConfigList.stabs.ts`
+- `networks/linea/testDeployedLinea.ts`
+- `networks/blast/blastPoolsConfigList.stabs.ts`
+- `networks/blast/testDeployedBlast.ts`
+- `networks/helpers/runDeployedImpactQuoteTest.ts`
 
 ## Что нужно в `.env`
 
@@ -33,4 +51,5 @@ npm run arbq:test:base
 npm run arbq:test:linea
 npm run arbq:test:blast
 ```
+
 
