@@ -5,6 +5,7 @@ export const OptimismPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
   rpcUrl: 'https://mainnet.optimism.io',
   extraSettings: {
     amountIn: 0.01,
+    amountOut: 25,
   },
   opts: {
     tokenIn: {

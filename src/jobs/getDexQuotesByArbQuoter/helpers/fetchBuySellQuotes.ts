@@ -11,6 +11,7 @@ export interface QuoteItem {
   index: bigint;
   amountOut: bigint;
   success: boolean;
+  amountIn?: bigint;
 }
 
 export interface FetchBuySellQuotesResult {
@@ -23,11 +24,8 @@ export interface FetchBuySellQuotesResult {
 // ── Функция ──────────────────────────────────────────────────
 
 /**
- * Шаги 1-3: setup, конвертация IPool[] → SwapSteps, два параллельных
- * вызова quoteExactInBatch (buy + sell).
- *
- * Buy:  tokenIn  → tokenOut  (e.g. USDC → WETH),  amountIn = tokenPair.tokenIn.amount
- * Sell: tokenOut → tokenIn   (e.g. WETH → USDC),  amountIn = tokenPair.tokenOut.amount
+ * Новый поток через ArbQuoter.quoteExactInWithImpact:
+ * для каждого пула получаем amountOut (buy) и sellAmountOut (sell/roundtrip).
  */
 export async function fetchBuySellQuotes(
   pairsToQuote: IPool[],
@@ -47,30 +45,69 @@ export async function fetchBuySellQuotes(
     throw new Error('tokenIn.address and tokenOut.address must be defined in tokenPair');
   }
 
-  // Buy steps: tokenIn → tokenOut  (USDC → WETH)
+  // Buy steps: tokenIn → tokenOut
   const buySteps = pairsToQuote.map((pool) =>
     poolConfigToStoreStep(poolToPoolConfig(pool, tokenInAddress, tokenOutAddress)),
   );
 
-  // Sell steps: tokenOut → tokenIn  (WETH → USDC) — обратное направление
-  const sellSteps = pairsToQuote.map((pool) =>
-    poolConfigToStoreStep(poolToPoolConfig(pool, tokenOutAddress, tokenInAddress)),
+  const buyAmountIn = tokenPair.tokenIn.amount ?? 0n;
+  const referenceDivisor = BigInt(process.env.REFERENCE_DIVISOR ?? '100');
+  const safeDivisor = referenceDivisor > 0n ? referenceDivisor : 100n;
+  const referenceAmountIn = buyAmountIn / safeDivisor || 1n;
+  const IMPACT_FN =
+    'quoteExactInWithImpact((uint8,address,address[],address,address,address,uint24,int24,address),uint256,uint256)';
+
+  const quoteRows = await Promise.all(
+    buySteps.map(async (step, i) => {
+      try {
+        const r = await quoter[IMPACT_FN].staticCall(step, buyAmountIn, referenceAmountIn) as {
+          amountOut: bigint;
+          sellAmountOut: bigint;
+          canTradeAmountIn: boolean;
+          success: boolean;
+        };
+
+        console.log('r', r);
+
+        return {
+          buy: {
+            index: BigInt(i),
+            amountOut: r.amountOut,
+            success: r.success,
+          } as QuoteItem,
+          sell: {
+            index: BigInt(i),
+            amountOut: r.sellAmountOut,
+            // Для расчёта sellPrice используем фактический объём tokenOut из buy-части.
+            amountIn: r.amountOut,
+            success: r.success && r.canTradeAmountIn,
+          } as QuoteItem,
+        };
+      } catch {
+        return {
+          buy: {
+            index: BigInt(i),
+            amountOut: 0n,
+            success: false,
+          } as QuoteItem,
+          sell: {
+            index: BigInt(i),
+            amountOut: 0n,
+            amountIn: 0n,
+            success: false,
+          } as QuoteItem,
+        };
+      }
+    }),
   );
 
-  const buyAmountIn  = tokenPair.tokenIn.amount;
-  const sellAmountIn = tokenPair.tokenOut.amount;
-
-  // ── 3. Два параллельных вызова quoteExactInBatch ──
-  const [buyResult, sellResult] = await Promise.all([
-    quoter.quoteExactInBatch.staticCall(buySteps, buyAmountIn),
-    quoter.quoteExactInBatch.staticCall(sellSteps, sellAmountIn),
-  ]);
+  const blockNumber = BigInt(await provider.getBlockNumber());
 
   return {
-    buyQuotes:   buyResult.quotes as QuoteItem[],
-    sellQuotes:  sellResult.quotes as QuoteItem[],
-    blockNumber: buyResult.blockNumber as bigint,
-    gasUsed:     (buyResult.gasUsed + sellResult.gasUsed) as bigint,
+    buyQuotes: quoteRows.map((x) => x.buy),
+    sellQuotes: quoteRows.map((x) => x.sell),
+    blockNumber,
+    gasUsed: 0n,
   };
 }
 

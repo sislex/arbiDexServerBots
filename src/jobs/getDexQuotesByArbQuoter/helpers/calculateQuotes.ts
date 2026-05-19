@@ -50,7 +50,8 @@ export function calculateQuotes(params: CalculateQuotesParams): DexQuotesByArbQu
     }
 
     if (sell.success && sell.amountOut > 0n) {
-      const wethNum = Number(ethers.formatUnits(sellAmountIn, realOutDec));
+      const sellInAmount = sell.amountIn ?? sellAmountIn;
+      const wethNum = Number(ethers.formatUnits(sellInAmount, realOutDec));
       const usdcNum = Number(ethers.formatUnits(sell.amountOut, inDec));
       sellPrice = usdcNum / wethNum;
     }

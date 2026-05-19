@@ -5,6 +5,7 @@ export const BlastPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
   rpcUrl: 'https://rpc.blast.io',
   extraSettings: {
     amountIn: 0.01,
+    amountOut: 25,
   },
   opts: {
     tokenIn: {

@@ -4,7 +4,8 @@ export const ArbitrumPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
   "source": "dex:arbitrum",
   "rpcUrl": "https://arb1.arbitrum.io/rpc",
   "extraSettings": {
-    amountIn: 0.01,
+    amountIn: 0.1,
+    amountOut: 250,
   },
   "opts": {
     "tokenIn": {

@@ -1,30 +1,30 @@
 import 'dotenv/config';
 import { getDexQuotesByArbQuoter } from '../jobs/getDexQuotesByArbQuoter/getDexQuotesByArbQuoter';
 import { toAmount } from '../jobs/getDexQuotesByArbQuoter/helpers/toAmount';
-import { IJobParams_get_Dex_Quotes_By_Arb_Quoter, IJobType } from '../store/state.types';
-import {BotListTestArbitrum, BotListTestOptimism} from '../store/stabs/bots-list.stabs';
-import { printQuotesTable } from '../jobs/getDexQuotesByArbQuoter/helpers/printQuotesTable';
-import { printUnifiedQuotesTable, marketDataClient } from '../jobs/shared';
-
-const parseExtraSettings = (extraSettings: unknown): Record<string, unknown> => {
-  if (!extraSettings) return {};
-  if (typeof extraSettings === 'string') {
-    try {
-      return JSON.parse(extraSettings) as Record<string, unknown>;
-    } catch {
-      return {};
-    }
-  }
-  if (typeof extraSettings === 'object') {
-    return extraSettings as Record<string, unknown>;
-  }
-  return {};
-};
+import { marketDataClient } from '../jobs/shared';
+import { buildArbSummary } from './arbQuoter/networks/helpers/buildArbSummary';
+import { printImpactQuoteResults } from './arbQuoter/networks/helpers/printImpactQuoteResults';
+import {
+  formatNumberFixed,
+  parseExtraSettings,
+  resolveConfigFromArgs,
+  resolveQuoterEnvKeyBySource,
+  toJobParams,
+} from './arbQuoter/networks/helpers/runArbQuoter.helpers';
 
 async function main() {
-  const dexBot = BotListTestOptimism.find(b => b.jobParams.jobType === IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER);
-  if (!dexBot) throw new Error('DEX bot not found in BotListTestArbitrum');
-  const jobParams = dexBot.jobParams as IJobParams_get_Dex_Quotes_By_Arb_Quoter;
+  const { config, key: selectedConfigKey } = resolveConfigFromArgs();
+
+
+  const jobParams = toJobParams(config);
+
+  const quoterEnvKey = resolveQuoterEnvKeyBySource(jobParams.source);
+  const selectedQuoterAddress = process.env[quoterEnvKey] ?? process.env.QUOTER_ADDRESS;
+
+  // Для source, отличных от optimism, core-джоба смотрит на QUOTER_ADDRESS.
+  if (selectedQuoterAddress) {
+    process.env.QUOTER_ADDRESS = selectedQuoterAddress;
+  }
 
   // Берём amountIn / amountOut из extraSettings бота
   const parsedSettings = parseExtraSettings(jobParams.extraSettings);
@@ -37,6 +37,8 @@ async function main() {
 
   const amountInValue = Number(parsedSettings?.amountIn ?? 0);
   const amountOutValue = Number(parsedSettings?.amountOut ?? 0);
+  const hasAmountOutFallback = !(amountOutValue > 0);
+  const effectiveAmountOutValue = hasAmountOutFallback ? 1 : amountOutValue;
 
   const TOKEN_PAIR = {
     tokenIn: {
@@ -47,7 +49,7 @@ async function main() {
     },
     tokenOut: {
       address:  tokenOutAddress,
-      amount:   toAmount(amountOutValue, outDecimals),
+      amount:   toAmount(effectiveAmountOutValue, outDecimals),
       decimals: outDecimals,
       symbol:   jobParams.opts?.tokenOut?.symbol ?? tokenOutAddress,
     },
@@ -55,29 +57,57 @@ async function main() {
 
   const consoleOutput = true;
   const humanReadable = true;
-  const normalizedSource = (jobParams.source ?? '').trim().toLowerCase();
-  const selectedQuoterAddress = normalizedSource.startsWith('dex:optimism')
-    ? process.env.OPTIMISM_QUOTER_ADDRESS
-    : process.env.QUOTER_ADDRESS;
-
   const result = await getDexQuotesByArbQuoter(jobParams, { humanReadable });
 
+  if (!result.ok) {
+    throw new Error(result.error ?? 'getDexQuotesByArbQuoter failed');
+  }
+
   if (consoleOutput) {
-    console.log(`\n📋 Конфигурация:`);
-    console.log(`  source:          ${jobParams.source}`);
-    console.log(`  selectedQuoter:  ${selectedQuoterAddress ?? '❌ не задан'}`);
-    console.log(`  QUOTER_ADDRESS:  ${process.env.QUOTER_ADDRESS ?? '❌ не задан'}`);
-    console.log(`  OPTIMISM_QUOTER: ${process.env.OPTIMISM_QUOTER_ADDRESS ?? '❌ не задан'}`);
-    console.log(`  RPC:             ${jobParams.rpcUrl}`);
-    console.log(`  Пулов в конфиге: ${jobParams.pairsToQuote.length}`);
-    console.log(`  tokenIn:         ${TOKEN_PAIR.tokenIn.symbol}  amount=${amountInValue}`);
-    console.log(`  tokenOut:        ${TOKEN_PAIR.tokenOut.symbol}  amount=${amountOutValue}`);
-
-    printQuotesTable(result, { tokenPair: TOKEN_PAIR, humanReadable });
-
-    if (result.unified) {
-      printUnifiedQuotesTable(result.unified);
+    console.log('===========================================');
+    console.log(`ArbQuoter quote job (${selectedConfigKey})`);
+    console.log('===========================================');
+    console.log('RPC:', jobParams.rpcUrl);
+    console.log('Source:', jobParams.source);
+    console.log('Quoter env key:', quoterEnvKey);
+    console.log('Selected quoter:', selectedQuoterAddress ?? 'not set');
+    console.log('Pair:', `${TOKEN_PAIR.tokenIn.symbol} -> ${TOKEN_PAIR.tokenOut.symbol}`);
+    console.log('Amount in:', `${amountInValue} ${TOKEN_PAIR.tokenIn.symbol}`);
+    console.log('Amount out:', `${effectiveAmountOutValue} ${TOKEN_PAIR.tokenOut.symbol}`);
+    if (hasAmountOutFallback) {
+      console.log('Note: amountOut <= 0, fallback amountOut=1 is used for sell quotes');
     }
+
+    const amountInLabel = `${amountInValue} ${TOKEN_PAIR.tokenIn.symbol}`;
+    const table = result.allQuotes.map((q) => ({
+      amountIn: amountInLabel,
+      dex: q.dex,
+      version: q.version,
+      pool: q.poolAddress,
+      amountOut: q.buyAmountOutFormatted,
+      sellAmountOut: q.sellAmountOutFormatted,
+      priceOutPerIn: formatNumberFixed(q.sellPrice),
+      sellPriceOutPerIn: formatNumberFixed(q.buyPrice),
+      priceImpactPpm: 'n/a',
+      impactLevel: 'n/a',
+      canTradeAmountIn: q.buySuccess && q.sellSuccess,
+      success: q.buySuccess && q.sellSuccess,
+    }));
+
+    const arbSummary = buildArbSummary(
+      result.allQuotes
+        .filter((q) => q.buySuccess && q.sellSuccess)
+        .map((q) => ({
+          amountIn: amountInLabel,
+          dex: q.dex,
+          version: q.version,
+          pool: q.poolAddress,
+          sellPriceOutPerIn: q.sellPrice,
+          buyPriceOutPerIn: q.buyPrice,
+        })),
+    );
+
+    printImpactQuoteResults(table, arbSummary, result.allQuotes.filter((q) => q.buySuccess && q.sellSuccess).length, result.allQuotes.length);
   }
 
   marketDataClient.disconnect();

@@ -46,6 +46,8 @@ export async function getDexQuotes(params: GetDexQuotesParams): Promise<DexQuote
     // ── Fetch ──
     const fetchResult = await fetchBuySellQuotes(pairsToQuote, rpcUrl, tokenPair, validation.quoterAddress);
 
+    console.log('fetchResult', fetchResult);
+
     // ── Calculate ──
     const latencyMs = Math.round(performance.now() - totalStart);
 

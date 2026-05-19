@@ -5,6 +5,7 @@ export const BasePoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
   rpcUrl: 'https://mainnet.base.org',
   extraSettings: {
     amountIn: 0.01,
+    amountOut: 25,
   },
   opts: {
     tokenIn: {

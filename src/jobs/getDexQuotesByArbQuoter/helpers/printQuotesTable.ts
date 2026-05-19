@@ -33,7 +33,7 @@ export function printQuotesTable(
       q.sellSuccess ? `${q.sellPrice.toFixed(priceFmt)} ${inSym}` : '❌ failed',
   }));
 
-  console.log(`\n📊 ArbQuoter quoteExactInBatch  |  block: ${result.blockNumber}  |  gasUsed: ${result.allQuotes[0]?.gasUsed ?? '—'}`);
+  console.log(`\n📊 ArbQuoter quoteExactInWithImpact  |  block: ${result.blockNumber}  |  gasUsed: ${result.allQuotes[0]?.gasUsed ?? '—'}`);
   console.table(rows);
 
   console.log(`\n✅ Готово за ${result.latencyMs} ms  |  block: ${result.blockNumber}`);

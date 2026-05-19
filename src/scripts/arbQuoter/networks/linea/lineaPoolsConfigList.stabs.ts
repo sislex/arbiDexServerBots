@@ -5,6 +5,7 @@ export const LineaPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
   rpcUrl: 'https://rpc.linea.build',
   extraSettings: {
     amountIn: 0.01,
+    amountOut: 25,
   },
   opts: {
     tokenIn: {
