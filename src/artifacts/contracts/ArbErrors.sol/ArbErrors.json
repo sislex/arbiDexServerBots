@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh3-artifact-1",
   "contractName": "ArbErrors",
   "sourceName": "contracts/ArbErrors.sol",
   "abi": [
@@ -49,8 +49,11 @@
       "type": "error"
     }
   ],
-  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea2646970667358221220673dadd41cd72121e15712e19076f981ed3289a4a8a246ff75edcebbfb91924164736f6c634300081c0033",
-  "deployedBytecode": "0x600080fdfea2646970667358221220673dadd41cd72121e15712e19076f981ed3289a4a8a246ff75edcebbfb91924164736f6c634300081c0033",
+  "bytecode": "0x6080806040523460175760399081601c823930815050f35b5f80fdfe5f80fdfea2646970667358221220c57614004dd14681e627bbd7dec4e00deeff16d2f5267a206a58ecffd079d69464736f6c634300081c0033",
+  "deployedBytecode": "0x5f80fdfea2646970667358221220c57614004dd14681e627bbd7dec4e00deeff16d2f5267a206a58ecffd079d69464736f6c634300081c0033",
   "linkReferences": {},
-  "deployedLinkReferences": {}
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/ArbErrors.sol",
+  "buildInfoId": "solc-0_8_28-a952fd7f856c40be8b8a3761b53df823bf5588f3"
 }

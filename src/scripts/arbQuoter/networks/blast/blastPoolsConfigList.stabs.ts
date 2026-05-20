@@ -1,22 +1,22 @@
-import { DeployedImpactQuoteStabsConfig } from '../helpers/types';
-
-export const BlastPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
-  source: 'dex:blast',
-  rpcUrl: 'https://rpc.blast.io',
+export const BlastPoolsConfigListStabs = {
+  jobType: "get_Dex_Quotes_By_Arb_Quoter",
+  source: "dex:blast",
+  rpcUrl: "https://rpc.blast.io",
   extraSettings: {
     amountIn: 0.01,
     amountOut: 25,
+    referenceDivisor: 100,
   },
   opts: {
     tokenIn: {
-      symbol: 'WETH',
+      symbol: "WETH",
       decimals: 18,
-      address: '0x4300000000000000000000000000000000000004',
+      address: "0x4300000000000000000000000000000000000004",
     },
     tokenOut: {
-      symbol: 'USDB',
+      symbol: "USDB",
       decimals: 18,
-      address: '0x4300000000000000000000000000000000000003',
+      address: "0x4300000000000000000000000000000000000003",
     },
   },
   pairsToQuote: [
@@ -52,5 +52,4 @@ export const BlastPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
     },
   ],
 };
-
 

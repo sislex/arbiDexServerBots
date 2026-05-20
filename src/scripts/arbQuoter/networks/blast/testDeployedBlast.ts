@@ -1,15 +1,15 @@
-import { BlastPoolsConfigListStabs } from './blastPoolsConfigList.stabs';
-import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
+import {
+  runDeployedImpactQuoteTest,
+  type DeployedImpactQuoteStabsConfig,
+} from "../helpers/runDeployedImpactQuoteTest";
+import { BlastPoolsConfigListStabs } from "./blastPoolsConfigList.stabs";
 
 runDeployedImpactQuoteTest({
-  networkName: 'Blast',
-  envPrefix: 'BLAST',
-  configName: 'BlastPoolsConfigListStabs',
-  config: BlastPoolsConfigListStabs,
+  networkName: "Blast",
+  quoterEnvKey: "BLAST_QUOTER_ADDRESS",
+  configName: "BlastPoolsConfigListStabs",
+  config: BlastPoolsConfigListStabs as DeployedImpactQuoteStabsConfig,
 }).catch((e) => {
-  console.error('Quote script failed:', e);
+  console.error("Quote script failed:", e);
   process.exitCode = 1;
 });
-
-
-

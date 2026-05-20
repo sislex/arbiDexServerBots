@@ -1,15 +1,15 @@
-import { OptimismPoolsConfigListStabs } from './optimismPoolsConfigList.stabs';
-import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
+import {
+  runDeployedImpactQuoteTest,
+  type DeployedImpactQuoteStabsConfig,
+} from "../helpers/runDeployedImpactQuoteTest";
+import { OptimismPoolsConfigListStabs } from "./optimismPoolsConfigList.stabs";
 
 runDeployedImpactQuoteTest({
-  networkName: 'Optimism',
-  envPrefix: 'OPTIMISM',
-  configName: 'OptimismPoolsConfigListStabs',
-  config: OptimismPoolsConfigListStabs,
+  networkName: "Optimism",
+  quoterEnvKey: "OPTIMISM_QUOTER_ADDRESS",
+  configName: "OptimismPoolsConfigListStabs",
+  config: OptimismPoolsConfigListStabs as DeployedImpactQuoteStabsConfig,
 }).catch((e) => {
-  console.error('Quote script failed:', e);
+  console.error("Quote script failed:", e);
   process.exitCode = 1;
 });
-
-
-

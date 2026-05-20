@@ -1,146 +1,168 @@
-import 'dotenv/config';
-import { ethers } from 'ethers';
-import ArbQuoterAbi from '../../../../artifacts/contracts/ArbQuoter.sol/ArbQuoter.json';
-import { ArbSummaryCandidate, buildArbSummary } from './buildArbSummary';
-import { buildStoreStep } from './buildStoreStep';
-import { impactLevel } from './impactLevel';
-import { printImpactQuoteResults } from './printImpactQuoteResults';
 import {
-  baseFailureRow,
-  formatNumberFixed,
-  formatUnitsFixed,
-  parseAmountList,
-  ratioNumber,
-  resolvePair,
-} from './runDeployedImpactQuoteTestHelpers';
-import { RunDeployedImpactQuoteTestOptions } from './types';
+  stabsConfigToQuoteInput,
+  type DeployedImpactQuoteStabsConfig,
+  type PoolQuoteMeta,
+} from "./configQuoteInput";
+import { buildArbSummary, type ArbSummaryCandidate } from "./buildArbSummary";
+import {
+  buildQuoteRowsFromResult,
+  type ConfigImpactQuoteBatchResultStruct,
+  type QuoteTableRow,
+} from "./buildQuoteRowsFromResult";
+import { resolveQuoter } from "./resolveQuoter";
 
-const IMPACT_FN =
-  'quoteExactInWithImpact((uint8,address,address[],address,address,address,uint24,int24,address),uint256,uint256)';
+export type { DeployedImpactQuoteStabsConfig } from "./configQuoteInput";
 
+type RunDeployedImpactQuoteTestOptions = {
+  networkName: string;
+  quoterEnvKey: string;
+  configName: string;
+  config: DeployedImpactQuoteStabsConfig;
+  includeRevertHint?: boolean;
+};
 
-export async function runDeployedImpactQuoteTest(options: RunDeployedImpactQuoteTestOptions): Promise<void> {
-  const { networkName, envPrefix, configName, config, includeRevertHint = true } = options;
+function parseAmountList(configAmountIn: number | number[], configName: string): string[] {
+  const amounts = (Array.isArray(configAmountIn) ? configAmountIn : [configAmountIn])
+    .map((x) => String(x).trim())
+    .filter(Boolean);
 
-  const quoterAddress = process.env[`${envPrefix}_QUOTER_ADDRESS`] ?? process.env.QUOTER_ADDRESS;
-  const rpcUrl = process.env[`${envPrefix}_RPC`] ?? config.rpcUrl;
-
-  if (!quoterAddress) {
-    throw new Error(`Missing ${envPrefix}_QUOTER_ADDRESS (or QUOTER_ADDRESS fallback) in .env`);
+  if (!amounts.length) {
+    throw new Error(`Missing extraSettings.amountIn in ${configName}`);
   }
 
-  if (!rpcUrl) {
-    throw new Error(`Missing ${envPrefix}_RPC and config.rpcUrl for ${configName}`);
+  return amounts;
+}
+
+function parseOptionalAmountOut(configAmountOut: number | undefined): string | undefined {
+  if (configAmountOut === undefined || configAmountOut <= 0) return undefined;
+  return String(configAmountOut);
+}
+
+function baseFailureRow(
+  meta: PoolQuoteMeta,
+  inSymbol: string,
+  outSymbol: string,
+  includeRevertHint: boolean,
+  revertHint: string,
+) {
+  const row: Record<string, string | boolean | number> = {
+    dex: meta.dex,
+    version: meta.version,
+    pool: meta.poolAddress,
+    kind: "n/a",
+    buyAmountOut: `0 ${outSymbol}`,
+    buyPriceOutPerIn: "0",
+    buyImpactPpm: "0",
+    buyImpactLevel: "REVERT",
+    sellEnabled: false,
+    sellAmountOut: `0 ${inSymbol}`,
+    sellPriceOutPerIn: "n/a",
+    sellImpactPpm: "0",
+    sellImpactLevel: "n/a",
+    success: false,
+  };
+
+  if (includeRevertHint) {
+    row.revertHint = revertHint;
   }
 
-  const { tokenIn, tokenOut } = resolvePair(config);
+  return row;
+}
 
-  const inDecimals = config.opts?.tokenIn?.decimals ?? 6;
-  const outDecimals = config.opts?.tokenOut?.decimals ?? 18;
-  const inSymbol = config.opts?.tokenIn?.symbol ?? 'tokenIn';
-  const outSymbol = config.opts?.tokenOut?.symbol ?? 'tokenOut';
+
+export async function runDeployedImpactQuoteTest(options: RunDeployedImpactQuoteTestOptions) {
+  const { networkName, quoterEnvKey, configName, config, includeRevertHint = true } = options;
+
+  const inSymbol = config.opts?.tokenIn?.symbol ?? "tokenIn";
+  const outSymbol = config.opts?.tokenOut?.symbol ?? "tokenOut";
 
   const configAmountIn = config.extraSettings?.amountIn;
   if (configAmountIn === undefined) {
     throw new Error(`Missing extraSettings.amountIn in ${configName}`);
   }
+  const configReferenceDivisor = config.extraSettings?.referenceDivisor ?? 100;
 
   if (!config.pairsToQuote.length) {
     throw new Error(`${configName}.pairsToQuote is empty`);
   }
 
-  const amountInHumans = parseAmountList(configAmountIn);
-  const referenceDivisor = BigInt(process.env.REFERENCE_DIVISOR ?? '100');
-
+  const amountInHumans = parseAmountList(configAmountIn, configName);
+  const amountOutHuman = parseOptionalAmountOut(config.extraSettings?.amountOut);
+  const referenceDivisor = BigInt(configReferenceDivisor);
   if (referenceDivisor <= 0n) {
-    throw new Error('REFERENCE_DIVISOR must be > 0');
+    throw new Error(`extraSettings.referenceDivisor must be > 0 in ${configName}`);
   }
 
-  const provider = new ethers.JsonRpcProvider(rpcUrl);
-  const quoter = new ethers.Contract(quoterAddress, ArbQuoterAbi.abi, provider);
+  const { quoter, quoterAddress, deployedLocally } = await resolveQuoter(quoterEnvKey);
 
-  const code = await provider.getCode(quoterAddress);
-  if (code === '0x') {
-    throw new Error(`No contract code at quoter ${quoterAddress}. Check ${envPrefix}_QUOTER_ADDRESS and ${envPrefix}_RPC.`);
-  }
+  console.log("===========================================");
+  console.log(`ArbQuoter config impact quote test (${networkName})`);
+  console.log("===========================================");
+  console.log("Quoter:", quoterAddress, deployedLocally ? "(deployed locally on fork)" : "(deployed)");
+  console.log("Amounts in:", amountInHumans.map((x) => `${x} ${inSymbol}`).join(", "));
+  console.log("Amount out sell input:", amountOutHuman ? `${amountOutHuman} ${outSymbol}` : "disabled (ExactIn buy only)");
+  console.log("Reference divisor:", referenceDivisor.toString());
+  console.log("Expected contract calls:", amountInHumans.length);
 
-  const steps = config.pairsToQuote.map((pool) => buildStoreStep(pool, tokenIn, tokenOut, envPrefix));
-
-  console.log('===========================================');
-  console.log(`ArbQuoter impact quote test (${networkName})`);
-  console.log('===========================================');
-  console.log('RPC:', rpcUrl);
-  console.log('Quoter:', quoterAddress);
-  console.log('Pair:', `${tokenIn} -> ${tokenOut}`);
-  console.log('Amounts in:', amountInHumans.map((x) => `${x} ${inSymbol}`).join(', '));
-  console.log('Reference divisor:', referenceDivisor.toString());
-
-  const table: Array<Record<string, string | boolean>> = [];
+  const table: QuoteTableRow[] = [];
   const arbSummaryCandidates: ArbSummaryCandidate[] = [];
-
-  let successCount = 0;
-  let callsCount = 0;
+  let contractCallsCount = 0;
+  let successQuotesCount = 0;
+  let totalQuotesCount = 0;
 
   for (const amountInHuman of amountInHumans) {
-    const amountIn = ethers.parseUnits(amountInHuman, inDecimals);
-    const referenceAmountIn = amountIn / referenceDivisor || 1n;
+    const { quoteInput, poolMetas } = stabsConfigToQuoteInput(config, {
+      amountInHuman,
+      amountOutHuman,
+      referenceDivisor,
+    });
 
-    for (let i = 0; i < steps.length; i++) {
-      const pool = config.pairsToQuote[i];
-      callsCount += 1;
+    contractCallsCount++;
 
-      try {
-        const r = await quoter[IMPACT_FN].staticCall(steps[i], amountIn, referenceAmountIn) as {
-          amountOut: bigint;
-          outPerInX18: bigint;
-          referenceOutPerInX18: bigint;
-          priceImpactPpm: bigint;
-          sellAmountOut: bigint;
-          canTradeAmountIn: boolean;
-          success: boolean;
-        };
+    try {
+      const result = await (quoter as any).quoteConfigExactInWithImpact.staticCall(quoteInput) as ConfigImpactQuoteBatchResultStruct;
+      const built = buildQuoteRowsFromResult({
+        result,
+        poolMetas,
+        amountInHuman,
+        amountOutHuman,
+        inSymbol,
+        outSymbol,
+        includeRevertHint,
+      });
 
-        if (r.success) successCount += 1;
 
-        const sellPriceOutPerIn = ratioNumber(r.amountOut, outDecimals, amountInHuman);
-        const buyPriceOutPerIn = ratioNumber(r.sellAmountOut, outDecimals, amountInHuman);
+      totalQuotesCount += built.totalQuotesCount;
+      successQuotesCount += built.successQuotesCount;
+      arbSummaryCandidates.push(...built.arbSummaryCandidates);
+      table.push(...built.tableRows);
 
-        if (r.success && r.canTradeAmountIn) {
-          arbSummaryCandidates.push({
-            amountIn: `${amountInHuman} ${inSymbol}`,
-            dex: pool.dex,
-            version: pool.version,
-            pool: pool.poolAddress,
-            sellPriceOutPerIn,
-            buyPriceOutPerIn,
-          });
-        }
-
-        table.push({
-          amountIn: `${amountInHuman} ${inSymbol}`,
-          dex: pool.dex,
-          version: pool.version,
-          pool: pool.poolAddress,
-          amountOut: `${formatUnitsFixed(r.amountOut, outDecimals)} ${outSymbol}`,
-          sellAmountOut: `${formatUnitsFixed(r.sellAmountOut, outDecimals)} ${outSymbol}`,
-          priceOutPerIn: formatNumberFixed(sellPriceOutPerIn),
-          sellPriceOutPerIn: formatNumberFixed(buyPriceOutPerIn),
-          priceImpactPpm: r.priceImpactPpm.toString(),
-          impactLevel: impactLevel(r.priceImpactPpm),
-          canTradeAmountIn: r.canTradeAmountIn,
-          success: r.success,
-          ...(includeRevertHint ? { revertHint: '' } : {}),
-        });
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        table.push(baseFailureRow(pool.dex, pool.version, pool.poolAddress, outSymbol, message.slice(0, 160), includeRevertHint));
+      console.log(`Call result: block=${result.blockNumber} gas=${result.gasUsed} quotes=${result.quotes.length}`);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      totalQuotesCount += poolMetas.length;
+      for (const meta of poolMetas) {
+        table.push(baseFailureRow(meta, inSymbol, outSymbol, includeRevertHint, msg.slice(0, 160)));
       }
     }
   }
 
-  const arbSummary = buildArbSummary(arbSummaryCandidates);
-  printImpactQuoteResults(table, arbSummary, successCount, callsCount);
+  console.table(table);
+
+  if (amountOutHuman) {
+    const arbSummary = buildArbSummary(arbSummaryCandidates);
+    console.log("\nBest buy price (reverse sell quote, lower is better)");
+    console.table(arbSummary.bestBuyRows);
+    console.log("\nBest sell price (forward buy quote, higher is better)");
+    console.table(arbSummary.bestSellRows);
+    console.log("\nCross-pool arbitrage");
+    for (const line of arbSummary.arbLines) {
+      console.log(line);
+    }
+  } else {
+    console.log("\nCross-pool arbitrage skipped: amountOut is not set, only ExactIn buy quotes were requested.");
+  }
+
+  console.log(`Contract calls: ${contractCallsCount}`);
+  console.log(`Quote rows success: ${successQuotesCount}/${totalQuotesCount}`);
 }
-
-
-

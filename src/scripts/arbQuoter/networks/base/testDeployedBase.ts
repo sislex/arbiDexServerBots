@@ -1,15 +1,15 @@
-import { BasePoolsConfigListStabs } from './basePoolsConfigList.stabs';
-import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
+import {
+  runDeployedImpactQuoteTest,
+  type DeployedImpactQuoteStabsConfig,
+} from "../helpers/runDeployedImpactQuoteTest";
+import { BasePoolsConfigListStabs } from "./basePoolsConfigList.stabs";
 
 runDeployedImpactQuoteTest({
-  networkName: 'Base',
-  envPrefix: 'BASE',
-  configName: 'BasePoolsConfigListStabs',
-  config: BasePoolsConfigListStabs,
+  networkName: "Base",
+  quoterEnvKey: "BASE_QUOTER_ADDRESS",
+  configName: "BasePoolsConfigListStabs",
+  config: BasePoolsConfigListStabs as DeployedImpactQuoteStabsConfig,
 }).catch((e) => {
-  console.error('Quote script failed:', e);
+  console.error("Quote script failed:", e);
   process.exitCode = 1;
 });
-
-
-

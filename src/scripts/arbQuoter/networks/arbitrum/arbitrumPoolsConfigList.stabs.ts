@@ -1,11 +1,11 @@
-import { DeployedImpactQuoteStabsConfig } from '../helpers/types';
-
-export const ArbitrumPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
+export const ArbitrumPoolsConfigListStabs = {
+  "jobType": "get_Dex_Quotes_By_Arb_Quoter",
   "source": "dex:arbitrum",
   "rpcUrl": "https://arb1.arbitrum.io/rpc",
   "extraSettings": {
-    amountIn: 0.1,
-    amountOut: 250,
+    amountIn: 0.01,
+    amountOut: 25,
+    referenceDivisor: 100,
   },
   "opts": {
     "tokenIn": {

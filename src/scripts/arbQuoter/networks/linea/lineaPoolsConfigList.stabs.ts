@@ -1,23 +1,23 @@
-import { DeployedImpactQuoteStabsConfig } from '../helpers/types';
-
-export const LineaPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
-  source: 'dex:linea',
-  rpcUrl: 'https://rpc.linea.build',
-  extraSettings: {
+export const LineaPoolsConfigListStabs = {
+  "jobType": "get_Dex_Quotes_By_Arb_Quoter",
+  "source": "dex:linea",
+  "rpcUrl": "https://rpc.linea.build",
+  "extraSettings": {
     amountIn: 0.01,
     amountOut: 25,
+    referenceDivisor: 100,
   },
-  opts: {
-    tokenIn: {
-      symbol: 'WETH',
-      decimals: 18,
-      address: '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f',
+  "opts": {
+    "tokenIn": {
+      "symbol": "WETH",
+      "decimals": 18,
+      "address": "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f"
     },
-    tokenOut: {
-      symbol: 'USDC',
-      decimals: 6,
-      address: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
-    },
+    "tokenOut": {
+      "symbol": "USDC",
+      "decimals": 6,
+      "address": "0x176211869cA2b568f2A7D4EE941E073a821EE1ff"
+    }
   },
   "pairsToQuote": [
     {
@@ -33,6 +33,4 @@ export const LineaPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
       "feePpm": 3000
     }
   ]
-};
-
-
+}

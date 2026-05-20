@@ -1,15 +1,15 @@
-import { ArbitrumPoolsConfigListStabs } from './arbitrumPoolsConfigList.stabs';
-import { runDeployedImpactQuoteTest } from '../helpers/runDeployedImpactQuoteTest';
+import {
+  runDeployedImpactQuoteTest,
+  type DeployedImpactQuoteStabsConfig,
+} from "../helpers/runDeployedImpactQuoteTest";
+import { ArbitrumPoolsConfigListStabs } from "./arbitrumPoolsConfigList.stabs";
 
 runDeployedImpactQuoteTest({
-  networkName: 'Arbitrum',
-  envPrefix: 'ARBITRUM',
-  configName: 'ArbitrumPoolsConfigListStabs',
-  config: ArbitrumPoolsConfigListStabs,
+  networkName: "Arbitrum",
+  quoterEnvKey: "ARBITRUM_QUOTER_ADDRESS",
+  configName: "ArbitrumPoolsConfigListStabs",
+  config: ArbitrumPoolsConfigListStabs as DeployedImpactQuoteStabsConfig,
 }).catch((e) => {
-  console.error('Quote script failed:', e);
+  console.error("Quote script failed:", e);
   process.exitCode = 1;
 });
-
-
-

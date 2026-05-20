@@ -1,10 +1,13 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh3-artifact-1",
   "contractName": "V3SwapLib",
   "sourceName": "contracts/V3SwapLib.sol",
   "abi": [],
-  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea2646970667358221220053b9b8c1f487785ebc75560f174f0b0ca33d2314ba49accaddd75807adc3e6364736f6c634300081c0033",
-  "deployedBytecode": "0x600080fdfea2646970667358221220053b9b8c1f487785ebc75560f174f0b0ca33d2314ba49accaddd75807adc3e6364736f6c634300081c0033",
+  "bytecode": "0x6080806040523460175760399081601c823930815050f35b5f80fdfe5f80fdfea26469706673582212201d1f1ac1fe89c9c79e9958f97600641afd9551a9b9c3e327afb4e85bc1e136a364736f6c634300081c0033",
+  "deployedBytecode": "0x5f80fdfea26469706673582212201d1f1ac1fe89c9c79e9958f97600641afd9551a9b9c3e327afb4e85bc1e136a364736f6c634300081c0033",
   "linkReferences": {},
-  "deployedLinkReferences": {}
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/V3SwapLib.sol",
+  "buildInfoId": "solc-0_8_28-a952fd7f856c40be8b8a3761b53df823bf5588f3"
 }

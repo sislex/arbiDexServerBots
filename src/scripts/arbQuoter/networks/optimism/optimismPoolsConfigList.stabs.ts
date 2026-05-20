@@ -1,23 +1,23 @@
-import { DeployedImpactQuoteStabsConfig } from '../helpers/types';
-
-export const OptimismPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
-  source: 'dex:optimism',
-  rpcUrl: 'https://mainnet.optimism.io',
-  extraSettings: {
+export const OptimismPoolsConfigListStabs = {
+  "jobType": "get_Dex_Quotes_By_Arb_Quoter",
+  "source": "dex:optimism",
+  "rpcUrl": "https://mainnet.optimism.io",
+  "extraSettings": {
     amountIn: 0.01,
     amountOut: 25,
+    referenceDivisor: 100,
   },
-  opts: {
-    tokenIn: {
-      symbol: 'WETH',
-      decimals: 18,
-      address: '0x4200000000000000000000000000000000000006',
+  "opts": {
+    "tokenIn": {
+      "symbol": "WETH",
+      "decimals": 18,
+      "address": "0x4200000000000000000000000000000000000006"
     },
-    tokenOut: {
-      symbol: 'USDC',
-      decimals: 6,
-      address: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
-    },
+    "tokenOut": {
+      "symbol": "USDC",
+      "decimals": 6,
+      "address": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+    }
   },
   "pairsToQuote": [
     {
@@ -40,5 +40,3 @@ export const OptimismPoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
     },
   ]
 };
-
-

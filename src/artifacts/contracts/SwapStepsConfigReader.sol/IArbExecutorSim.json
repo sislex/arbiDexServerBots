@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh3-artifact-1",
   "contractName": "IArbExecutorSim",
   "sourceName": "contracts/SwapStepsConfigReader.sol",
   "abi": [
@@ -182,5 +182,8 @@
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "linkReferences": {},
-  "deployedLinkReferences": {}
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/SwapStepsConfigReader.sol",
+  "buildInfoId": "solc-0_8_28-a952fd7f856c40be8b8a3761b53df823bf5588f3"
 }

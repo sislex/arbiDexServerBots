@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh3-artifact-1",
   "contractName": "IV3PoolLike",
   "sourceName": "contracts/V3SwapLib.sol",
   "abi": [
@@ -77,5 +77,8 @@
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "linkReferences": {},
-  "deployedLinkReferences": {}
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/V3SwapLib.sol",
+  "buildInfoId": "solc-0_8_28-a952fd7f856c40be8b8a3761b53df823bf5588f3"
 }
