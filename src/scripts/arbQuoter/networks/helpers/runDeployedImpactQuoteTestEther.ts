@@ -24,16 +24,17 @@ type RunDeployedImpactQuoteTestEtherOptions = {
   rpcUrl?: string;
 };
 
-function parseAmountList(configAmountIn: number | number[], configName: string): string[] {
-  const amounts = (Array.isArray(configAmountIn) ? configAmountIn : [configAmountIn])
-    .map((x) => String(x).trim())
-    .filter(Boolean);
+function parseSingleAmountIn(configAmountIn: number | number[], configName: string): string {
+  if (Array.isArray(configAmountIn)) {
+    throw new Error(`extraSettings.amountIn must be a single number in ${configName}`);
+  }
 
-  if (!amounts.length) {
+  const amount = String(configAmountIn).trim();
+  if (!amount) {
     throw new Error(`Missing extraSettings.amountIn in ${configName}`);
   }
 
-  return amounts;
+  return amount;
 }
 
 function parseOptionalAmountOut(configAmountOut: number | undefined): string | undefined {
@@ -96,7 +97,7 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     throw new Error(`${configName}.pairsToQuote is empty`);
   }
 
-  const amountInHumans = parseAmountList(configAmountIn, configName);
+  const amountInHuman = parseSingleAmountIn(configAmountIn, configName);
   const amountOutHuman = parseOptionalAmountOut(config.extraSettings?.amountOut);
   const referenceDivisor = BigInt(configReferenceDivisor);
   if (referenceDivisor <= 0n) {
@@ -114,10 +115,10 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
   console.log("===========================================");
   console.log("Chain id:", providerNetwork.chainId.toString());
   console.log("Quoter:", quoterAddress, "(deployed)");
-  console.log("Amounts in:", amountInHumans.map((x) => `${x} ${inSymbol}`).join(", "));
+  console.log("Amount in:", `${amountInHuman} ${inSymbol}`);
   console.log("Amount out sell input:", amountOutHuman ? `${amountOutHuman} ${outSymbol}` : "disabled (ExactIn buy only)");
   console.log("Reference divisor:", referenceDivisor.toString());
-  console.log("Expected contract calls:", amountInHumans.length);
+  console.log("Expected contract calls:", 1);
 
   const table: QuoteTableRow[] = [];
   const arbSummaryCandidates: ArbSummaryCandidate[] = [];
@@ -125,42 +126,40 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
   let successQuotesCount = 0;
   let totalQuotesCount = 0;
 
-  for (const amountInHuman of amountInHumans) {
-    const { quoteInput, poolMetas } = stabsConfigToQuoteInput(config, {
+  const { quoteInput, poolMetas } = stabsConfigToQuoteInput(config, {
+    amountInHuman,
+    amountOutHuman,
+    referenceDivisor,
+  });
+
+  contractCallsCount++;
+
+  try {
+    const result = await (quoter as any)
+      .quoteConfigExactInWithImpact
+      .staticCall(quoteInput) as ConfigImpactQuoteBatchResultStruct;
+
+    const built = buildQuoteRowsFromResult({
+      result,
+      poolMetas,
       amountInHuman,
       amountOutHuman,
-      referenceDivisor,
+      inSymbol,
+      outSymbol,
+      includeRevertHint,
     });
 
-    contractCallsCount++;
+    totalQuotesCount += built.totalQuotesCount;
+    successQuotesCount += built.successQuotesCount;
+    arbSummaryCandidates.push(...built.arbSummaryCandidates);
+    table.push(...built.tableRows);
 
-    try {
-      const result = await (quoter as any)
-        .quoteConfigExactInWithImpact
-        .staticCall(quoteInput) as ConfigImpactQuoteBatchResultStruct;
-
-      const built = buildQuoteRowsFromResult({
-        result,
-        poolMetas,
-        amountInHuman,
-        amountOutHuman,
-        inSymbol,
-        outSymbol,
-        includeRevertHint,
-      });
-
-      totalQuotesCount += built.totalQuotesCount;
-      successQuotesCount += built.successQuotesCount;
-      arbSummaryCandidates.push(...built.arbSummaryCandidates);
-      table.push(...built.tableRows);
-
-      console.log(`Call result: block=${result.blockNumber} gas=${result.gasUsed} quotes=${result.quotes.length}`);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      totalQuotesCount += poolMetas.length;
-      for (const meta of poolMetas) {
-        table.push(baseFailureRow(meta, inSymbol, outSymbol, includeRevertHint, msg.slice(0, 160)));
-      }
+    console.log(`Call result: block=${result.blockNumber} gas=${result.gasUsed} quotes=${result.quotes.length}`);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    totalQuotesCount += poolMetas.length;
+    for (const meta of poolMetas) {
+      table.push(baseFailureRow(meta, inSymbol, outSymbol, includeRevertHint, msg.slice(0, 160)));
     }
   }
 
