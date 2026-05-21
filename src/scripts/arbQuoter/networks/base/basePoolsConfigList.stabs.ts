@@ -1,22 +1,22 @@
-import { DeployedImpactQuoteStabsConfig } from '../helpers/types';
-
-export const BasePoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
-  source: 'dex:base',
-  rpcUrl: 'https://mainnet.base.org',
+export const BasePoolsConfigListStabs = {
+  jobType: "get_Dex_Quotes_By_Arb_Quoter",
+  source: "dex:base",
+  rpcUrl: "https://mainnet.base.org",
   extraSettings: {
     amountIn: 0.01,
     amountOut: 25,
+    referenceDivisor: 100,
   },
   opts: {
     tokenIn: {
-      symbol: 'WETH',
+      symbol: "WETH",
       decimals: 18,
-      address: '0x4200000000000000000000000000000000000006',
+      address: "0x4200000000000000000000000000000000000006",
     },
     tokenOut: {
-      symbol: 'USDC',
+      symbol: "USDC",
       decimals: 6,
-      address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     },
   },
   pairsToQuote: [
@@ -52,5 +52,3 @@ export const BasePoolsConfigListStabs: DeployedImpactQuoteStabsConfig = {
     },
   ],
 };
-
-

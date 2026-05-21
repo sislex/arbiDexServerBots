@@ -1,10 +1,13 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh3-artifact-1",
   "contractName": "AlgebraSwapLib",
   "sourceName": "contracts/AlgebraSwapLib.sol",
   "abi": [],
-  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea2646970667358221220f4d675cc842ec4f5f70ba3c0fa0c4c5c2a9461ed2d07e772592c0b16c3f5787464736f6c634300081c0033",
-  "deployedBytecode": "0x600080fdfea2646970667358221220f4d675cc842ec4f5f70ba3c0fa0c4c5c2a9461ed2d07e772592c0b16c3f5787464736f6c634300081c0033",
+  "bytecode": "0x6080806040523460175760399081601c823930815050f35b5f80fdfe5f80fdfea2646970667358221220deb79f9749802b2eafc907b625f9e941343fa7c1ca4677bf394ad465ff261ec664736f6c634300081c0033",
+  "deployedBytecode": "0x5f80fdfea2646970667358221220deb79f9749802b2eafc907b625f9e941343fa7c1ca4677bf394ad465ff261ec664736f6c634300081c0033",
   "linkReferences": {},
-  "deployedLinkReferences": {}
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/AlgebraSwapLib.sol",
+  "buildInfoId": "solc-0_8_28-a952fd7f856c40be8b8a3761b53df823bf5588f3"
 }
