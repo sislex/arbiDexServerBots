@@ -21,6 +21,8 @@
 - `jobType`: `get_Dex_Quotes_By_Arb_Quoter_Script`
 - Входные поля совместимы с `get_Dex_Quotes_By_Arb_Quoter`:
   - `source`, `rpcUrl`, `token0`, `token1`, `opts`, `pairsToQuote`, `extraSettings`
+- Если `pairsToQuote` не передан или пустой, job автоматически подставляет network-конфиг из:
+  - `src/scripts/arbQuoter/networks/{network}/*PoolsConfigList.stabs.ts`
 - `source` ожидается в формате:
   - `dex:arbitrum`
   - `dex:optimism`

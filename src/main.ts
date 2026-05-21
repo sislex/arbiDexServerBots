@@ -6,9 +6,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: true, // разрешает любой origin
+    origin: '*', // Строго разрешаем любые домены без проверок
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
+    credentials: false, // ВАЖНО: при origin: '*' credentials должен быть false
   });
 
   // ── Swagger / OpenAPI ───────────────────────────────────

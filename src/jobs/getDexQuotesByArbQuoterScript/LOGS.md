@@ -13,3 +13,17 @@
   - `dexToUnified(...)`
   - `marketDataClient.writeQuote(...)`
 
+## 2026-05-21
+
+- Fixed startup issue `pairsToQuote пуст` for script job.
+- Added fallback config resolver by `source`:
+  - `dex:arbitrum|dex:optimism|dex:base|dex:linea|dex:blast`
+- If `pairsToQuote` is empty in runtime params, job now loads pools from
+  `src/scripts/arbQuoter/networks/*/*PoolsConfigList.stabs.ts`.
+- Added token address fallback from first pool (`pairsToQuote[0].token0/token1`).
+- Improved source matching to prefix mode (`source.startsWith(...)`) so
+  extended values like `dex:arbitrum:*` still resolve network config.
+- Added robust address resolver that ignores empty strings (`""`) and picks
+  first non-empty value across params/config/pool fallbacks.
+- Added early diagnostic error in job when token addresses still unresolved.
+
