@@ -2,8 +2,8 @@ import "dotenv/config";
 import {
   runDeployedImpactQuoteTestEther,
   type DeployedImpactQuoteStabsConfig,
-} from "../helpers/runDeployedImpactQuoteTestEther";
-import { ArbitrumPoolsConfigListStabs } from "./arbitrumPoolsConfigList.stabs";
+} from "../helpers/runDeployedImpactQuoteTestEther.ts";
+import { ArbitrumPoolsConfigListStabs } from "./arbitrumPoolsConfigList.stabs.ts";
 
 runDeployedImpactQuoteTestEther({
   networkName: "Arbitrum",

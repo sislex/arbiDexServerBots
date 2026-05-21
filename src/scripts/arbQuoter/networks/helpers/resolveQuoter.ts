@@ -1,12 +1,19 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { network } from "hardhat";
 
+const arbQuoterArtifact = JSON.parse(
+  readFileSync(join(process.cwd(), "src/artifacts/contracts/ArbQuoter.sol/ArbQuoter.json"), "utf8"),
+);
+
 export async function resolveQuoter(quoterEnvKey: string) {
-  const { ethers } = await network.connect();
-  const deployLocalOnFork = network.name === "hardhat" && process.env.USE_DEPLOYED_QUOTER_ON_FORK !== "1";
+  const connection = await network.connect();
+  const { ethers } = connection as any;
+  const deployLocalOnFork = connection.networkName === "hardhat" && process.env.USE_DEPLOYED_QUOTER_ON_FORK !== "1";
 
   if (deployLocalOnFork) {
     const [owner] = await ethers.getSigners();
-    const factory = await ethers.getContractFactory("ArbQuoter", owner);
+    const factory = await ethers.getContractFactory(arbQuoterArtifact.abi, arbQuoterArtifact.bytecode, owner);
     const quoter = await factory.deploy(owner.address);
     await quoter.waitForDeployment();
 
@@ -33,7 +40,7 @@ export async function resolveQuoter(quoterEnvKey: string) {
   }
 
   return {
-    quoter: await ethers.getContractAt("ArbQuoter", quoterAddress),
+    quoter: await ethers.getContractAt(arbQuoterArtifact.abi, quoterAddress),
     quoterAddress,
     deployedLocally: false,
   };
