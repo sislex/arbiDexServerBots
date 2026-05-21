@@ -46,6 +46,7 @@ export enum IJobType {
   GET_EXECUTOR_BALANCES = 'get_Executor_Balances',
   GET_BEST_SELL_QUOTES= 'get_Best_Sell_Quotes',
   GET_DEX_QUOTES_BY_ARB_QUOTER= 'get_Dex_Quotes_By_Arb_Quoter',
+  GET_DEX_QUOTES_BY_ARB_QUOTER_SCRIPT= 'get_Dex_Quotes_By_Arb_Quoter_Script',
   GET_CEX_QUOTES= 'get_Cex_Quotes',
 }
 
@@ -201,6 +202,20 @@ export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter extends IJobDefaultPara
   extraSettings?: any;
 }
 
+export interface IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script extends IJobDefaultParams {
+  jobType: IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER_SCRIPT;
+  source: string;
+  rpcUrl: string;
+  /** @deprecated Используйте opts.tokenIn.address */
+  token0?: string;
+  /** @deprecated Используйте opts.tokenOut.address */
+  token1?: string;
+  opts?: ITokenPair;
+  pairsToQuote: IPool[];
+  stepPrefundPct?: number;
+  extraSettings?: any;
+}
+
 export interface IJobParams_resolve_Pools_For_Pairs extends IJobDefaultParams {
   jobType: IJobType.RESOLVE_POOLS_FOR_PAIRS;
 
@@ -316,6 +331,7 @@ export interface BuildQuotesParams {
 
 export type IJobParams =
   | IJobParams_get_Dex_Quotes_By_Arb_Quoter
+  | IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script
   | IJobParams_get_Best_Sell_Quotes
   | IJobParams_get_Arbitrum_Arb_Executor_Quotes
   | IJobParams_get_Pool_State
