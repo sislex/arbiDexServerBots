@@ -11,6 +11,7 @@ import {
   IJobParams_get_Pools_Reserves,
   IJobParams_get_New_Dex_Pools_Reserves,
   IJobParams_get_Executor_Balances, IJobParams_get_Best_Sell_Quotes, IJobParams_get_Dex_Quotes_By_Arb_Quoter,
+  IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script,
   IJobParams_get_Cex_Quotes,
 } from '../store/state.types';
 import {
@@ -28,6 +29,7 @@ import { getPoolsReserves } from './getPoolsReserves/getPoolsReserves';
 import { getNewDexPoolsFromFactory } from './getPoolsFromFactory/getNewDexPoolsFromFactory';
 import { getExecutorBalances } from './getExecutorBalances/getExecutorBalances';
 import {getDexQuotesByArbQuoter} from './getDexQuotesByArbQuoter/getDexQuotesByArbQuoter';
+import {getDexQuotesByArbQuoterScript} from './getDexQuotesByArbQuoterScript/getDexQuotesByArbQuoterScript';
 import {getCexQuotes} from './getCexQuotes/getCexQuotes';
 
 // Реэкспорт общих unified-типов
@@ -69,6 +71,8 @@ const handlers = {
     async (params: IJobParams_get_Cex_Quotes) => getCexQuotes(params),
   [IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER]:
     async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter): Promise<QuoteResult> => getDexQuotesByArbQuoter(params),
+  [IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER_SCRIPT]:
+    async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script): Promise<QuoteResult> => getDexQuotesByArbQuoterScript(params),
   [IJobType.GET_ARB_EXECUTOR_QUOTES]:
     async (params: IJobParams_get_Arbitrum_Arb_Executor_Quotes): Promise<QuoteResult> => getArbExecutorQuotes(params),
   [IJobType.GET_POOL_STATE]:
