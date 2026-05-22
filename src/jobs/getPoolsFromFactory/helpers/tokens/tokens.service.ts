@@ -77,7 +77,9 @@ export class TokensService {
         }),
         chain: { chainId: chainId },
       },
-      relations: ['chain'],
+      relations: {
+        chain: true,
+      },
     });
 
     if (!token) throw new Error(`Token ${tokenAddress} not found`);
@@ -100,7 +102,9 @@ export class TokensService {
         address: In(normalizedAddresses),
         chain: { chainId: chainId },
       },
-      select: ['address'],
+      select: {
+        address: true,
+      },
     });
 
     return existing.map((t) => t.address.toLowerCase());

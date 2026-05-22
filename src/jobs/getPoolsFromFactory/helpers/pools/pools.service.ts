@@ -111,7 +111,11 @@ export class PoolsService {
           poolAddress: r.address,
           chain: { chainId: r.chainId },
         })),
-        relations: ['token0', 'token1', 'chain'],
+        relations: {
+          token0: true,
+          token1: true,
+          chain: true,
+        },
       });
 
       const poolsMap = new Map<string, Pools>();
