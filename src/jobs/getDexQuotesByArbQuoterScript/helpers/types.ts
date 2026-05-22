@@ -1,4 +1,4 @@
-import { UnifiedQuoteResult } from '../../shared';
+import type { UnifiedQuoteResult } from '../../shared/types';
 
 export interface IDexTokenConfig {
   address?: string;

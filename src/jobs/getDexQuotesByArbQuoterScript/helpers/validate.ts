@@ -1,4 +1,4 @@
-import { IPool } from '../../../store/state.types';
+import type { IPool } from '../../../store/state.types';
 
 export type ValidateParamsOk = {
   ok: true;

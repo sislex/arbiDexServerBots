@@ -2,12 +2,17 @@
 
 ## Что это
 
-Новая DEX job, которая повторяет контракт и сохранение текущей `getDexQuotesByArbQuoter`, но исполняет получение котировок по "скриптовой" логике (`quoteExactInWithImpact` + `buildStoreStep` с сетевыми роутерами).
+Новая DEX job, которая повторяет контракт и сохранение текущей `getDexQuotesByArbQuoter`, но исполняет получение котировок по новой `*Ether`-логике (батч-вызов `quoteConfigExactInWithImpact`).
 
 ## Отличия от текущей job
 
 - Текущая job: использует существующий поток `fetchBuySellQuotes`.
-- Эта job: строит `SwapStep` по подходу из скриптов `src/scripts/arbQuoter/networks/helpers`.
+- Эта job: формирует `ConfigQuoteInput` и вызывает `quoteConfigExactInWithImpact` как в
+  `src/scripts/arbQuoter/networks/helpers/runDeployedImpactQuoteTestEther.ts`.
+- В ответе контракта использует:
+  - `buyAmountOutHumanX18` как buy amountOut
+  - `sellAmountOutHumanX18` как sell amountOut
+  - `gasUsed` из batch-ответа
 
 ## Совместимость сохранения
 

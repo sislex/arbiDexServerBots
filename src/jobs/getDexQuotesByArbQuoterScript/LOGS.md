@@ -26,4 +26,11 @@
 - Added robust address resolver that ignores empty strings (`""`) and picks
   first non-empty value across params/config/pool fallbacks.
 - Added early diagnostic error in job when token addresses still unresolved.
+- Switched quote execution to `*Ether` script logic:
+  - one batch call `quoteConfigExactInWithImpact(quoteInput)`
+  - mapped `buyAmountOutHumanX18/sellAmountOutHumanX18` into job quotes
+  - passed through `gasUsed` from batch response
+- Added runtime fallback: if batch `quoteConfigExactInWithImpact` reverts
+  (e.g. one broken pool), job auto-falls back to per-pool
+  `quoteExactInWithImpact` with isolated try/catch per pool.
 

@@ -1,7 +1,7 @@
-import { IPool } from '../../../store/state.types';
+import type { IPool } from '../../../store/state.types';
 import { calculateScriptQuotes } from './calculate';
 import { fetchBuySellQuotesByScript } from './fetchQuotes';
-import { DexQuotesByArbQuoterScriptResult, ITokenPair } from './types';
+import type { DexQuotesByArbQuoterScriptResult, ITokenPair } from './types';
 
 export async function getDexQuotesByScript(params: {
   pairsToQuote: IPool[];
@@ -10,8 +10,9 @@ export async function getDexQuotesByScript(params: {
   humanReadable: boolean;
   quoterAddress: string;
   envPrefix: 'ARBITRUM' | 'OPTIMISM' | 'BASE' | 'LINEA' | 'BLAST';
+  referenceDivisor?: bigint;
 }): Promise<DexQuotesByArbQuoterScriptResult> {
-  const { pairsToQuote, rpcUrl, tokenPair, humanReadable, quoterAddress, envPrefix } = params;
+  const { pairsToQuote, rpcUrl, tokenPair, humanReadable, quoterAddress, envPrefix, referenceDivisor } = params;
   const totalStart = performance.now();
 
   try {
@@ -21,6 +22,7 @@ export async function getDexQuotesByScript(params: {
       tokenPair,
       quoterAddress,
       envPrefix,
+      referenceDivisor,
     );
 
     const latencyMs = Math.round(performance.now() - totalStart);

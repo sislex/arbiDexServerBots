@@ -1,10 +1,10 @@
-import { IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script, IPool } from '../../store/state.types';
+import type { IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script, IPool } from '../../store/state.types';
 import { dexToUnified, marketDataClient } from '../shared';
 import { getDexQuotesByScript } from './helpers/getDexQuotes';
 import { normalizeSource, parseExtraSettings, resolveEnvPrefixBySource, resolveUnifiedDexSource } from './helpers/parse';
 import { getScriptNetworkConfig } from './helpers/networkConfig';
 import { toAmount } from './helpers/toAmount';
-import { DexQuotesByArbQuoterScriptResult } from './helpers/types';
+import type { DexQuotesByArbQuoterScriptResult } from './helpers/types';
 import { validateScriptQuoterParams } from './helpers/validate';
 
 const pickFirstNonEmpty = (...values: Array<string | undefined>): string => {
@@ -30,6 +30,7 @@ export async function getDexQuotesByArbQuoterScript(
   const envPrefix = resolveEnvPrefixBySource(source);
 
   const parsedSettings = parseExtraSettings(params.extraSettings ?? networkConfig?.extraSettings);
+  const referenceDivisor = BigInt(Number(parsedSettings?.referenceDivisor ?? process.env.REFERENCE_DIVISOR ?? 100));
 
   const tokenInAddress = pickFirstNonEmpty(
     params.opts?.tokenIn?.address,
@@ -115,6 +116,7 @@ export async function getDexQuotesByArbQuoterScript(
     humanReadable: opts?.humanReadable ?? true,
     quoterAddress: validation.quoterAddress,
     envPrefix: validation.envPrefix,
+    referenceDivisor,
   });
 
   result.unified = dexToUnified(result, tokenInAddress, tokenOutAddress, unifiedSource);

@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
-import { IPool } from '../../../store/state.types';
-import { FetchBuySellQuotesResult } from './fetchQuotes';
-import { DexQuotesByArbQuoterScriptResult, ITokenPair, PoolQuoteResult } from './types';
+import type { IPool } from '../../../store/state.types';
+import type { FetchBuySellQuotesResult } from './fetchQuotes';
+import type { DexQuotesByArbQuoterScriptResult, ITokenPair, PoolQuoteResult } from './types';
 
 export function calculateScriptQuotes(params: {
   pairsToQuote: IPool[];
