@@ -33,4 +33,8 @@
 - Added runtime fallback: if batch `quoteConfigExactInWithImpact` reverts
   (e.g. one broken pool), job auto-falls back to per-pool
   `quoteExactInWithImpact` with isolated try/catch per pool.
+- Fixed extraSettings merge behavior:
+  - network config settings are now base values
+  - runtime extraSettings override only when present/valid
+  - prevents accidental `amountIn=0` when runtime sends empty string/object.
 

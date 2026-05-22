@@ -29,7 +29,12 @@ export async function getDexQuotesByArbQuoterScript(
   const unifiedSource = resolveUnifiedDexSource(source);
   const envPrefix = resolveEnvPrefixBySource(source);
 
-  const parsedSettings = parseExtraSettings(params.extraSettings ?? networkConfig?.extraSettings);
+  const networkSettings = parseExtraSettings(networkConfig?.extraSettings);
+  const runtimeSettings = parseExtraSettings(params.extraSettings);
+  const parsedSettings = {
+    ...networkSettings,
+    ...runtimeSettings,
+  };
   const referenceDivisor = BigInt(Number(parsedSettings?.referenceDivisor ?? process.env.REFERENCE_DIVISOR ?? 100));
 
   const tokenInAddress = pickFirstNonEmpty(
