@@ -11,6 +11,7 @@ import {
 import { resolveQuoterEther } from "./resolveQuoterEther.ts";
 import { buildArbSummary } from './buildArbSummary.ts';
 import type { ArbSummaryCandidate } from './buildArbSummary.ts';
+import type { ArbSummaryResult } from './types.ts';
 
 type RunDeployedImpactQuoteTestEtherOptions = {
   networkEnvPrefix: string;
@@ -68,7 +69,7 @@ function baseFailureRow(
   return row;
 }
 
-export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpactQuoteTestEtherOptions) {
+export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpactQuoteTestEtherOptions): Promise<ArbSummaryResult> {
   const {
     networkEnvPrefix,
     config,
@@ -136,6 +137,12 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     for (const meta of poolMetas) {
       table.push(baseFailureRow(meta, inSymbol, outSymbol, includeRevertHint, msg.slice(0, 160)));
     }
+
+    return {
+      bestBuyRows: [],
+      bestSellRows: [],
+      arbLines: [msg],
+    };
   }
 }
 

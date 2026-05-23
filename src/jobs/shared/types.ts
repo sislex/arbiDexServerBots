@@ -22,11 +22,14 @@ export type QuoteSourceName =
   | 'gateio'
   | 'dzengi'
   | 'dex:arbitrum'
+  | 'dex:base'
+  | 'dex:blast'
+  | 'dex:linea'
   | 'dex:optimism';
 
 export interface UnifiedQuoteResult {
   /** Тип источника */
-  sourceType: QuoteSourceType;
+  sourceType?: QuoteSourceType;
 
   /** Имя источника */
   source: QuoteSourceName;

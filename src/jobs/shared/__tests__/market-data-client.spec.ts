@@ -209,6 +209,49 @@ describe('MarketDataClient', () => {
       expect(calls).toContain('mexc|ETH/USDT|bidPrice');
       expect(calls).toContain('mexc|ETH/USDT|askPrice');
     });
+
+    it('для DEX отправляет адреса пулов в bidPool и askPool', () => {
+      const client = new MarketDataClient();
+      client.writeQuote(makeQuote({
+        sourceType: 'dex',
+        source: 'dex:arbitrum',
+        token0: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+        token1: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+        bestBuyPool: {
+          dex: 'uniswap',
+          version: 'v3',
+          poolAddress: '0x6f38e884725a116c9c7fbf208e79fe8828a2595f',
+        },
+        bestSellPool: {
+          dex: 'camelot',
+          version: 'v3',
+          poolAddress: '0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526',
+        },
+      }));
+
+      expect(mockSocketEmit).toHaveBeenCalledTimes(4);
+      expect(mockSocketEmit).toHaveBeenCalledWith('write', {
+        key: 'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPool',
+        value: '0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526',
+        timestamp: 1700000001000,
+      });
+      expect(mockSocketEmit).toHaveBeenCalledWith('write', {
+        key: 'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPool',
+        value: '0x6f38e884725a116c9c7fbf208e79fe8828a2595f',
+        timestamp: 1700000001000,
+      });
+    });
+
+    it('для DEX не отправляет bidPool/askPool если адреса пулов отсутствуют', () => {
+      const client = new MarketDataClient();
+      client.writeQuote(makeQuote({ sourceType: 'dex', source: 'dex:arbitrum' }));
+
+      const keys = mockSocketEmit.mock.calls.map((c) => c[1].key);
+      expect(keys).toContain('dex:arbitrum|ETH/USDC|bidPrice');
+      expect(keys).toContain('dex:arbitrum|ETH/USDC|askPrice');
+      expect(keys).not.toContain('dex:arbitrum|ETH/USDC|bidPool');
+      expect(keys).not.toContain('dex:arbitrum|ETH/USDC|askPool');
+    });
   });
 
   // ── 5. writeQuote() пропускает quote с ok=false ───────────

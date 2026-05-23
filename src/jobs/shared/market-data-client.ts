@@ -66,16 +66,38 @@ export class MarketDataClient {
     if (!this.url) return;
     if (!quote.ok) return;
 
+    const baseKey = `${quote.source}|${quote.token0}/${quote.token1}`;
+
     this.write(
-      `${quote.source}|${quote.token0}/${quote.token1}|bidPrice`,
+      `${baseKey}|bidPrice`,
       quote.bidPrice,
       quote.timestamp,
     );
     this.write(
-      `${quote.source}|${quote.token0}/${quote.token1}|askPrice`,
+      `${baseKey}|askPrice`,
       quote.askPrice,
       quote.timestamp,
     );
+
+    if (quote.sourceType === 'dex') {
+      const socket = this.getSocket();
+
+      console.log(`${baseKey}|bidPool`);
+
+      if (quote.bestSellPool?.poolAddress) {
+        socket.emit('write', {
+          key: `${baseKey}|bidPool`,
+          value: quote.bestSellPool.poolAddress,
+        });
+      }
+
+      if (quote.bestBuyPool?.poolAddress) {
+        socket.emit('write', {
+          key: `${baseKey}|askPool`,
+          value: quote.bestBuyPool.poolAddress,
+        });
+      }
+    }
   }
 
   /**
