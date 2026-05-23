@@ -2,16 +2,16 @@ import {
   stabsConfigToQuoteInput,
   type DeployedImpactQuoteStabsConfig,
   type PoolQuoteMeta,
-} from "./configQuoteInput.ts";
+} from "./configQuoteInput.js";
 import {
   buildQuoteRowsFromResult,
   type ConfigImpactQuoteBatchResultStruct,
   type QuoteTableRow,
-} from "./buildQuoteRowsFromResult.ts";
-import { resolveQuoterEther } from "./resolveQuoterEther.ts";
-import { buildArbSummary } from './buildArbSummary.ts';
-import type { ArbSummaryCandidate } from './buildArbSummary.ts';
-import type { ArbSummaryResult } from './types.ts';
+} from "./buildQuoteRowsFromResult.js";
+import { resolveQuoterEther } from "./resolveQuoterEther.js";
+import { buildArbSummary } from './buildArbSummary.js';
+import type { ArbSummaryCandidate } from './buildArbSummary';
+import type { ArbSummaryResult } from './types';
 
 type RunDeployedImpactQuoteTestEtherOptions = {
   networkEnvPrefix: string;

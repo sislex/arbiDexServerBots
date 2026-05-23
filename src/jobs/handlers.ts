@@ -72,7 +72,7 @@ const handlers = {
   [IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER]:
     async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter): Promise<QuoteResult> => getDexQuotesByArbQuoter(params),
   [IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER_SCRIPT]:
-    async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script): Promise<QuoteResult> => getDexQuotesByArbQuoterScript(params),
+    async (params: IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script) => getDexQuotesByArbQuoterScript(params),
   [IJobType.GET_ARB_EXECUTOR_QUOTES]:
     async (params: IJobParams_get_Arbitrum_Arb_Executor_Quotes): Promise<QuoteResult> => getArbExecutorQuotes(params),
   [IJobType.GET_POOL_STATE]:

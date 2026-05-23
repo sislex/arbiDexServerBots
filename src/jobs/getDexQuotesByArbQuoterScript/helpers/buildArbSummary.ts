@@ -1,3 +1,9 @@
+import type {
+  ArbSummaryBestBuyRow,
+  ArbSummaryBestSellRow,
+  ArbSummaryResult,
+} from './types';
+
 export type ArbSummaryCandidate = {
   amountIn: string;
   amountOut: string;
@@ -20,7 +26,7 @@ function formatPercent(value: number, precision = 4): string {
   return `${value.toFixed(precision)}%`;
 }
 
-export function buildArbSummary(candidates: ArbSummaryCandidate[]) {
+export function buildArbSummary(candidates: ArbSummaryCandidate[]): ArbSummaryResult {
   const byAmount = new Map<string, ArbSummaryCandidate[]>();
   for (const candidate of candidates) {
     const key = `${candidate.amountIn} / ${candidate.amountOut}`;
@@ -29,8 +35,8 @@ export function buildArbSummary(candidates: ArbSummaryCandidate[]) {
     byAmount.set(key, rows);
   }
 
-  const bestBuyRows: Array<Record<string, string>> = [];
-  const bestSellRows: Array<Record<string, string>> = [];
+  const bestBuyRows: ArbSummaryBestBuyRow[] = [];
+  const bestSellRows: ArbSummaryBestSellRow[] = [];
   const arbLines: string[] = [];
 
   for (const [amountKey, rows] of byAmount.entries()) {

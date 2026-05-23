@@ -1,10 +1,10 @@
 import type { IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script } from '../../store/state.types';
 import type { DexQuotesByArbQuoterScriptResult } from './helpers/types';
-import {runDeployedImpactQuoteTestEther} from './helpers/runDeployedImpactQuoteTestEther.ts';
-import type {DeployedImpactQuoteStabsConfig} from './helpers/configQuoteInput.ts';
-import { arbSummaryToUnified } from './helpers/arbSummaryToUnified.ts';
-import type { UnifiedQuoteResult } from '../shared/types.ts';
-import { marketDataClient } from '../shared/market-data-client.ts';
+import {runDeployedImpactQuoteTestEther} from './helpers/runDeployedImpactQuoteTestEther.js';
+import type {DeployedImpactQuoteStabsConfig} from './helpers/configQuoteInput';
+import { arbSummaryToUnified } from './helpers/arbSummaryToUnified.js';
+import type { UnifiedQuoteResult } from '../shared/types';
+import { marketDataClient } from '../shared/market-data-client.js';
 
 export async function getDexQuotesByArbQuoterScript(
   params: IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script,
