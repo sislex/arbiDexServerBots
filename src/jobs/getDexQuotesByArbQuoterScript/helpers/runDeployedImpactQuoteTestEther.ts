@@ -10,8 +10,8 @@ import {
 } from "./buildQuoteRowsFromResult.js";
 import { resolveQuoterEther } from "./resolveQuoterEther.js";
 import { buildArbSummary } from './buildArbSummary.js';
-import type { ArbSummaryCandidate } from './buildArbSummary';
-import type { ArbSummaryResult } from './types';
+import type { ArbSummaryCandidate } from './buildArbSummary.js';
+import type { ArbSummaryResult } from './types.js';
 
 type RunDeployedImpactQuoteTestEtherOptions = {
   networkEnvPrefix: string;
@@ -19,6 +19,33 @@ type RunDeployedImpactQuoteTestEtherOptions = {
   includeRevertHint?: boolean;
   rpcUrl?: string;
 };
+
+function parseExtraSettings(extraSettings: unknown): {
+  amountIn?: number | number[];
+  amountOut?: number;
+  referenceDivisor?: number;
+} {
+  if (!extraSettings) return {};
+  if (typeof extraSettings === 'string') {
+    try {
+      return JSON.parse(extraSettings) as {
+        amountIn?: number | number[];
+        amountOut?: number;
+        referenceDivisor?: number;
+      };
+    } catch {
+      return {};
+    }
+  }
+  if (typeof extraSettings === 'object') {
+    return extraSettings as {
+      amountIn?: number | number[];
+      amountOut?: number;
+      referenceDivisor?: number;
+    };
+  }
+  return {};
+}
 
 function parseSingleAmountIn(configAmountIn: number | number[], configName: string): string {
   if (Array.isArray(configAmountIn)) {
@@ -80,19 +107,20 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
   const quoterEnvKey = `${networkEnvPrefix}_QUOTER_ADDRESS`;
   const inSymbol = config.opts?.tokenIn?.symbol ?? "tokenIn";
   const outSymbol = config.opts?.tokenOut?.symbol ?? "tokenOut";
+  const parsedExtraSettings = parseExtraSettings(config.extraSettings);
 
-  const configAmountIn = config.extraSettings?.amountIn;
+  const configAmountIn = parsedExtraSettings.amountIn;
   if (configAmountIn === undefined) {
     throw new Error(`Missing extraSettings.amountIn in ${networkEnvPrefix}`);
   }
-  const configReferenceDivisor = config.extraSettings?.referenceDivisor ?? 100;
+  const configReferenceDivisor = parsedExtraSettings.referenceDivisor ?? 100;
 
   if (!config.pairsToQuote.length) {
     throw new Error(`${networkEnvPrefix}.pairsToQuote is empty`);
   }
 
   const amountInHuman = parseSingleAmountIn(configAmountIn, networkEnvPrefix);
-  const amountOutHuman = parseOptionalAmountOut(config.extraSettings?.amountOut);
+  const amountOutHuman = parseOptionalAmountOut(parsedExtraSettings.amountOut);
   const referenceDivisor = BigInt(configReferenceDivisor);
   if (referenceDivisor <= 0n) {
     throw new Error(`extraSettings.referenceDivisor must be > 0 in ${networkEnvPrefix}`);
