@@ -63,6 +63,7 @@ const V2_ROUTERS_DEFAULT: Record<string, string> = {
   uniswap: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
   sushi: "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
   camelot: "0xc873fEcbd354f5A56E00E710B90EF4201db2448d",
+  pancake: "0x8cFe327CEc66d1C090Dd72bd0FF11d690C33a2Eb",
 };
 
 const NETWORK_PREFIX: Record<string, string> = {
@@ -86,6 +87,7 @@ function v2RouterEnvBaseKey(dex: string): string | undefined {
   if (dex === "uniswap") return "UNISWAP_V2_ROUTER";
   if (dex === "sushi") return "SUSHISWAP_V2_ROUTER";
   if (dex === "camelot") return "CAMELOT_V2_ROUTER";
+  if (dex === "pancake") return "PANCAKESWAP_V2_ROUTER";
   return undefined;
 }
 
