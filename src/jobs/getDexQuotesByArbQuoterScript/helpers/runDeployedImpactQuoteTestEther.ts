@@ -132,6 +132,10 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     rpcUrl,
   });
 
+  console.log(
+    `[ArbQuoterScript] start network=${networkEnvPrefix} rpc=${rpcUrl} pools=${config.pairsToQuote.length} amountIn=${amountInHuman} ${inSymbol} amountOut=${amountOutHuman ?? "disabled"} ${outSymbol} refDiv=${referenceDivisor.toString()}`,
+  );
+
   const table: QuoteTableRow[] = [];
 
   const { quoteInput, poolMetas } = stabsConfigToQuoteInput(config, {
@@ -140,10 +144,19 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     referenceDivisor,
   });
 
-  try {
-    const result = await (quoter as any)
+  const callBatchQuote = async (pairsOverride?: typeof quoteInput.pairs) => {
+    const input = pairsOverride ? { ...quoteInput, pairs: pairsOverride } : quoteInput;
+    return await (quoter as any)
       .quoteConfigExactInWithImpact
-      .staticCall(quoteInput) as ConfigImpactQuoteBatchResultStruct;
+      .staticCall(input) as ConfigImpactQuoteBatchResultStruct;
+  };
+
+  try {
+    console.log("[ArbQuoterScript] batch call quoteConfigExactInWithImpact...");
+    const result = await callBatchQuote();
+    console.log(
+      `[ArbQuoterScript] batch success block=${result.blockNumber.toString()} gas=${result.gasUsed.toString()} quotes=${result.quotes.length}`,
+    );
 
     const built = buildQuoteRowsFromResult({
       result,
@@ -158,18 +171,91 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     const arbSummaryCandidates: ArbSummaryCandidate[] = [];
     arbSummaryCandidates.push(...built.arbSummaryCandidates);
     const arbSummary = buildArbSummary(arbSummaryCandidates);
+    console.log(
+      `[ArbQuoterScript] summary rows buy=${arbSummary.bestBuyRows.length} sell=${arbSummary.bestSellRows.length} lines=${arbSummary.arbLines.length}`,
+    );
 
     return arbSummary;
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const batchMsg = e instanceof Error ? e.message : String(e);
+    console.error(`[ArbQuoterScript] batch reverted: ${batchMsg}`);
+    console.log("[ArbQuoterScript] switching to fallback single-pool mode...");
+    const isolatedQuotes: ConfigImpactQuoteBatchResultStruct["quotes"] = [];
+    const isolatedPoolMetas: PoolQuoteMeta[] = [];
+    const isolatedErrors: string[] = [];
+    let lastBlockNumber = 0n;
+    let totalGasUsed = 0n;
+
+    for (let i = 0; i < quoteInput.pairs.length; i++) {
+      const pairInput = quoteInput.pairs[i];
+      const meta = poolMetas[i];
+      console.log(
+        `[ArbQuoterScript] fallback pool[${i}] dex=${meta.dex} version=${meta.version} address=${meta.poolAddress}`,
+      );
+      try {
+        const single = await callBatchQuote([pairInput]);
+        const quote = single.quotes[0];
+        if (!quote) {
+          isolatedErrors.push(`${meta.poolAddress}: empty quote result`);
+          console.warn(`[ArbQuoterScript] fallback pool[${i}] empty quote result`);
+          continue;
+        }
+        isolatedQuotes.push(quote);
+        isolatedPoolMetas.push(meta);
+        lastBlockNumber = single.blockNumber;
+        totalGasUsed += single.gasUsed;
+        console.log(
+          `[ArbQuoterScript] fallback pool[${i}] success block=${single.blockNumber.toString()} gas=${single.gasUsed.toString()}`,
+        );
+      } catch (singleErr: unknown) {
+        const singleMsg = singleErr instanceof Error ? singleErr.message : String(singleErr);
+        isolatedErrors.push(`${meta.poolAddress}: ${singleMsg.slice(0, 140)}`);
+        console.warn(`[ArbQuoterScript] fallback pool[${i}] failed: ${singleMsg}`);
+      }
+    }
+
+    if (isolatedQuotes.length > 0) {
+      const isolatedResult: ConfigImpactQuoteBatchResultStruct = {
+        quotes: isolatedQuotes,
+        blockNumber: lastBlockNumber,
+        gasUsed: totalGasUsed,
+      };
+      const built = buildQuoteRowsFromResult({
+        result: isolatedResult,
+        poolMetas: isolatedPoolMetas,
+        amountInHuman,
+        amountOutHuman,
+        inSymbol,
+        outSymbol,
+        includeRevertHint,
+      });
+      const arbSummaryCandidates: ArbSummaryCandidate[] = [];
+      arbSummaryCandidates.push(...built.arbSummaryCandidates);
+      const arbSummary = buildArbSummary(arbSummaryCandidates);
+      console.log(
+        `[ArbQuoterScript] fallback completed successPools=${isolatedQuotes.length}/${quoteInput.pairs.length} failedPools=${isolatedErrors.length}`,
+      );
+      if (isolatedErrors.length > 0) {
+        arbSummary.arbLines.push(
+          `fallback single-pool mode: ${isolatedErrors.length} pool(s) failed`,
+          ...isolatedErrors.slice(0, 5),
+        );
+      }
+      return arbSummary;
+    }
+
+    console.error(
+      `[ArbQuoterScript] all pools failed in fallback mode totalPools=${quoteInput.pairs.length} errors=${isolatedErrors.length}`,
+    );
+
     for (const meta of poolMetas) {
-      table.push(baseFailureRow(meta, inSymbol, outSymbol, includeRevertHint, msg.slice(0, 160)));
+      table.push(baseFailureRow(meta, inSymbol, outSymbol, includeRevertHint, batchMsg.slice(0, 160)));
     }
 
     return {
       bestBuyRows: [],
       bestSellRows: [],
-      arbLines: [msg],
+      arbLines: [batchMsg, ...isolatedErrors.slice(0, 10)],
     };
   }
 }
