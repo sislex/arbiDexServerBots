@@ -1,5 +1,5 @@
 export const OptimismPoolsConfigListStabs = {
-  "jobType": "get_Dex_Quotes_By_Arb_Quoter",
+  "jobType": "get_Dex_Quotes_By_Arb_Quoter_Script",
   "source": "dex:optimism",
   "rpcUrl": "https://mainnet.optimism.io",
   "extraSettings": {

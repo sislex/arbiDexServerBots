@@ -1,5 +1,5 @@
 export const BlastPoolsConfigListStabs = {
-  jobType: "get_Dex_Quotes_By_Arb_Quoter",
+  jobType: "get_Dex_Quotes_By_Arb_Quoter_Script",
   source: "dex:blast",
   rpcUrl: "https://rpc.blast.io",
   extraSettings: {

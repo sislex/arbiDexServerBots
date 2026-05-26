@@ -1,5 +1,5 @@
 export const BasePoolsConfigListStabs = {
-  jobType: "get_Dex_Quotes_By_Arb_Quoter",
+  jobType: "get_Dex_Quotes_By_Arb_Quoter_Script",
   source: "dex:base",
   rpcUrl: "https://mainnet.base.org",
   extraSettings: {

@@ -1,5 +1,5 @@
 export const LineaPoolsConfigListStabs = {
-  "jobType": "get_Dex_Quotes_By_Arb_Quoter",
+  "jobType": "get_Dex_Quotes_By_Arb_Quoter_Script",
   "source": "dex:linea",
   "rpcUrl": "https://rpc.linea.build",
   "extraSettings": {
