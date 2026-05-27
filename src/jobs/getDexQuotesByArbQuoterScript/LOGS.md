@@ -37,4 +37,8 @@
   - network config settings are now base values
   - runtime extraSettings override only when present/valid
   - prevents accidental `amountIn=0` when runtime sends empty string/object.
+- Added strict numeric resolver for runtime settings:
+  - `amountIn/amountOut/referenceDivisor` now accept only finite positive numbers
+  - non-positive or invalid runtime values no longer overwrite network defaults.
+- Added explicit early error when resolved `amountIn <= 0`.
 

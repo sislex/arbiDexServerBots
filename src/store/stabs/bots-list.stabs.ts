@@ -174,397 +174,108 @@ export const BotListTestArbitrum: IBotsRule[] = [
 
 export const BotList10: IBotsRule[] = [
   {
-    "id": "168",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 250,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
+    id: 'BOT-DEX-001',
+    botParams: {
+      botType: IBotType.TEST_BOT, // Замените на актуальный тип, если отличается
+      paused: false,
+      isRepeat: true,
+      delayBetweenRepeat: 60,
+      maxJobs: 1000000,
+      maxErrors: 100,
+      timeoutMs: 30000,
+      description: 'DEX quotes bot (Arbitrum WBTC/ARB)',
     },
-    "jobParams": {
-      "source": "dex:arbitrum",
-      "jobType": IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER,
-      "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-      "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-      "rpcUrl": "https://arb-mainnet.g.alchemy.com/v2/_T_Qkk4fOdQ7jQbGjSW2F",
-      "stepPrefundPct": 2,
-      "pairsToQuote": [
-        {
-          "dex": "pancake",
-          "version": "v3",
-          "poolAddress": "0x0bacc7a9717e70ea0da5ac075889bd87d4c81197",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 500
+    jobParams: {
+      jobType: IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER_SCRIPT,
+      source: 'dex:arbitrum',
+      rpcUrl: 'https://arb1.arbitrum.io/rpc',
+      extraSettings: {
+        amountIn: 0.01,
+        amountOut: 25,
+        referenceDivisor: 100
+      },
+      opts: {
+        tokenIn: {
+          decimals: 8,
+          symbol: 'WBTC',
+          address: '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'
         },
-        {
-          "dex": "pancake",
-          "version": "v3",
-          "poolAddress": "0xaeab1336efc2bf74bc89fcf0e33e6013f3c8587e",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 2500
-        },
-        {
-          "dex": "pancake",
-          "version": "v3",
-          "poolAddress": "0x5b7dd61f102280c6c121650e328f1e9f0af2543f",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 10000
-        },
-        {
-          "dex": "pancake",
-          "version": "v3",
-          "poolAddress": "0x389938cf14be379217570d8e4619e51fbdafaa21",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 100
-        },
-        // {
-        //   "dex": "pancake",
-        //   "version": "v2",
-        //   "poolAddress": "0x630388b8a8d22bb401e0c6a91c3a7956535cb30e",
-        //   "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-        //   "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-        //   "feePpm": 3000
-        // },
-        {
-          "dex": "camelot",
-          "version": "v3",
-          "poolAddress": "0x7cccba38e2d959fe135e79aebb57ccb27b128358",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 0
-        },
-        {
-          "dex": "camelot",
-          "version": "v2",
-          "poolAddress": "0x97b192198d164c2a1834295e302b713bc32c8f1d",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 3000
-        },
-        {
-          "dex": "sushi",
-          "version": "v3",
-          "poolAddress": "0x824d9bc425c599f46c700afdcae0867596f48ce2",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 100
-        },
-        {
-          "dex": "sushi",
-          "version": "v3",
-          "poolAddress": "0x7f9061b253545103b80698e579c9891718057dfc",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 10000
-        },
-        {
-          "dex": "sushi",
-          "version": "v3",
-          "poolAddress": "0x92d543a8a158a6bc2c7018ae17803819cb9150b2",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 3000
-        },
-        {
-          "dex": "sushi",
-          "version": "v3",
-          "poolAddress": "0x96ada81328abce21939a51d971a63077e16db26e",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 500
-        },
-        {
-          "dex": "sushi",
-          "version": "v2",
-          "poolAddress": "0xcb0e5bfa72bbb4d16ab5aa0c60601c438f04b4ad",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 3000
-        },
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "poolAddress": "0x42161084d0672e1d3f26a9b53e653be2084ff19c",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 100
-        },
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "poolAddress": "0x58039203442c9f2a45d5536bd021a383c7f3035c",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 10000
-        },
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "poolAddress": "0x641c00a822e8b671738d32a431a4fb6074e5c79d",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 500
-        },
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "poolAddress": "0xc82819f72a9e77e2c0c3a69b3196478f44303cf4",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 3000
-        },
-        {
-          "dex": "uniswap",
-          "version": "v2",
-          "poolAddress": "0xd04bc65744306a5c149414dd3cd5c984d9d3470d",
-          "token0": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          "token1": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-          "feePpm": 3000
+        tokenOut: {
+          decimals: 18,
+          symbol: 'ARB',
+          address: '0x912ce59144191c1204e64559fe8253a0e49e6548'
         }
-      ] as IPool[]
+      },
+      pairsToQuote: [
+        {
+          dex: 'uniswap',
+          version: 'v3',
+          poolAddress: '0x214fb3fef13e49b01abd4504c23defb735168341',
+          feePpm: 100
+        },
+        {
+          dex: 'camelot',
+          version: 'v3',
+          poolAddress: '0x5d6bd8b091c14432abee34b726ff226168adfdb8',
+          feePpm: 0
+        },
+        {
+          dex: 'uniswap',
+          version: 'v3',
+          poolAddress: '0x689c96ceab93f5e131631d225d75dea3fd37747e',
+          feePpm: 3000
+        },
+        {
+          dex: 'uniswap',
+          version: 'v3',
+          poolAddress: '0x12c796f54c13183ed00e394036509349126f3a07',
+          feePpm: 10000
+        },
+        {
+          dex: 'sushi',
+          version: 'v3',
+          poolAddress: '0xec9d135a8d404cbc528f8a92115b9d67e26cf6ea',
+          feePpm: 10000
+        },
+        {
+          dex: 'sushi',
+          version: 'v3',
+          poolAddress: '0xe65ac00dd2a781780e1902fb7e9f77509602f22c',
+          feePpm: 3000
+        },
+        {
+          dex: 'sushi',
+          version: 'v2',
+          poolAddress: '0x91f0f14370c83bc108cc03cf35cd0b9ccea4b1a5',
+          feePpm: 3000
+        },
+        {
+          dex: 'uniswap',
+          version: 'v3',
+          poolAddress: '0x0b040426b92c405d39c31263f1f98680e84cb699',
+          feePpm: 500
+        }
+      ]
     }
   },
   {
-    "id": "159",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
+    id: 'BOT-CEX-001',
+    botParams: {
+      botType: IBotType.TEST_BOT,
+      paused: false,
+      isRepeat: true,
+      delayBetweenRepeat: 600,
+      maxJobs: 1000000,
+      maxErrors: 100,
+      timeoutMs: 30000,
+      description: 'CEX quotes bot (Binance ETH/USDT)',
     },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "gateio",
-      "token0": "ETH",
-      "token1": "USDC"
-    }
+    jobParams: {
+      jobType: IJobType.GET_CEX_QUOTES,
+      source: 'binance',
+      token0: 'ETH',
+      token1: 'USDT',
+    },
   },
-  {
-    "id": "158",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "kucoin",
-      "token0": "ETH",
-      "token1": "USDC"
-    }
-  },
-  {
-    "id": "157",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "okx",
-      "token0": "ETH",
-      "token1": "USDC"
-    }
-  },
-  {
-    "id": "156",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "bybit",
-      "token0": "ETH",
-      "token1": "USDC"
-    }
-  },
-  {
-    "id": "155",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "mexc",
-      "token0": "ETH",
-      "token1": "USDC"
-    }
-  },
-  {
-    "id": "146",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "dzengi",
-      "token0": "ETH",
-      "token1": "USDT"
-    }
-  },
-  {
-    "id": "145",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "binance",
-      "token0": "ETH",
-      "token1": "USDT"
-    }
-  },
-  {
-    "id": "55",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "gateio",
-      "token0": "ETH",
-      "token1": "USDT"
-    }
-  },
-  {
-    "id": "54",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "kucoin",
-      "token0": "ETH",
-      "token1": "USDT"
-    }
-  },
-  {
-    "id": "53",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "okx",
-      "token0": "ETH",
-      "token1": "USDT"
-    }
-  },
-  {
-    "id": "52",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "bybit",
-      "token0": "ETH",
-      "token1": "USDT"
-    }
-  },
-  {
-    "id": "26",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "mexc",
-      "token0": "ETH",
-      "token1": "USDT"
-    }
-  },
-  {
-    "id": "25",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": {
-      "jobType": IJobType.GET_CEX_QUOTES,
-      "source": "binance",
-      "token0": "ETH",
-      "token1": "USDC"
-    }
-  }
 ];
-
 

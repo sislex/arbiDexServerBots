@@ -4,7 +4,7 @@ import {runDeployedImpactQuoteTestEther} from './helpers/runDeployedImpactQuoteT
 import type {DeployedImpactQuoteStabsConfig} from './helpers/configQuoteInput';
 import { arbSummaryToUnified } from './helpers/arbSummaryToUnified.js';
 import type { UnifiedQuoteResult } from '../shared/types';
-import { marketDataClient } from '../shared/market-data-client.js';
+import { marketDataClient } from '../shared/index.js';
 
 export async function getDexQuotesByArbQuoterScript(
   params: IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script,
@@ -40,11 +40,29 @@ export async function getDexQuotesByArbQuoterScript(
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e);
     process.exitCode = 1;
-
-    return {
+    const unified: UnifiedQuoteResult = {
+      sourceType: 'dex',
+      source: params.source as UnifiedQuoteResult['source'],
+      token0: params.opts?.tokenIn?.address ?? '',
+      token1: params.opts?.tokenOut?.address ?? '',
       ok: false,
       latencyMs: Date.now() - startedAt,
       error,
+      timestamp: Date.now(),
+      bidPrice: 0,
+      askPrice: 0,
+      midPrice: 0,
+      spread: 0,
+      spreadPct: 0,
+    };
+
+    marketDataClient.writeQuote(unified);
+
+    return {
+      ok: false,
+      latencyMs: unified.latencyMs,
+      error,
+      unified,
     };
   }
 }
