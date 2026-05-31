@@ -105,7 +105,7 @@ export const BotListTestArbitrum: IBotsRule[] = [
       "botType": IBotType.TEST_BOT,
       "paused": false,
       "isRepeat": true,
-      "delayBetweenRepeat": 300,
+      "delayBetweenRepeat": 1000,
       "maxJobs": 1000000,
       "maxErrors": 100,
       "timeoutMs": 30000
