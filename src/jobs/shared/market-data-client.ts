@@ -82,7 +82,7 @@ export class MarketDataClient {
     if (quote.sourceType === 'dex') {
       const socket = this.getSocket();
 
-      console.log(`${baseKey}|bidPool`);
+      // console.log(`${baseKey}|bidPool`);
 
       if (quote.bestSellPool?.poolAddress) {
         socket.emit('write', {

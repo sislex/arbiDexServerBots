@@ -132,9 +132,9 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     rpcUrl,
   });
 
-  console.log(
-    `[ArbQuoterScript] start network=${networkEnvPrefix} rpc=${rpcUrl} pools=${config.pairsToQuote.length} amountIn=${amountInHuman} ${inSymbol} amountOut=${amountOutHuman ?? "disabled"} ${outSymbol} refDiv=${referenceDivisor.toString()}`,
-  );
+  // console.log(
+  //   `[ArbQuoterScript] start network=${networkEnvPrefix} rpc=${rpcUrl} pools=${config.pairsToQuote.length} amountIn=${amountInHuman} ${inSymbol} amountOut=${amountOutHuman ?? "disabled"} ${outSymbol} refDiv=${referenceDivisor.toString()}`,
+  // );
 
   const table: QuoteTableRow[] = [];
 
@@ -152,11 +152,10 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
   };
 
   try {
-    console.log("[ArbQuoterScript] batch call quoteConfigExactInWithImpact...");
     const result = await callBatchQuote();
-    console.log(
-      `[ArbQuoterScript] batch success block=${result.blockNumber.toString()} gas=${result.gasUsed.toString()} quotes=${result.quotes.length}`,
-    );
+    // console.log(
+    //   `[ArbQuoterScript] batch success block=${result.blockNumber.toString()} gas=${result.gasUsed.toString()} quotes=${result.quotes.length}`,
+    // );
 
     const built = buildQuoteRowsFromResult({
       result,
@@ -171,9 +170,9 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     const arbSummaryCandidates: ArbSummaryCandidate[] = [];
     arbSummaryCandidates.push(...built.arbSummaryCandidates);
     const arbSummary = buildArbSummary(arbSummaryCandidates);
-    console.log(
-      `[ArbQuoterScript] summary rows buy=${arbSummary.bestBuyRows.length} sell=${arbSummary.bestSellRows.length} lines=${arbSummary.arbLines.length}`,
-    );
+    // console.log(
+    //   `[ArbQuoterScript] summary rows buy=${arbSummary.bestBuyRows.length} sell=${arbSummary.bestSellRows.length} lines=${arbSummary.arbLines.length}`,
+    // );
 
     return arbSummary;
   } catch (e: unknown) {
@@ -189,9 +188,9 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     for (let i = 0; i < quoteInput.pairs.length; i++) {
       const pairInput = quoteInput.pairs[i];
       const meta = poolMetas[i];
-      console.log(
-        `[ArbQuoterScript] fallback pool[${i}] dex=${meta.dex} version=${meta.version} address=${meta.poolAddress}`,
-      );
+      // console.log(
+      //   `[ArbQuoterScript] fallback pool[${i}] dex=${meta.dex} version=${meta.version} address=${meta.poolAddress}`,
+      // );
       try {
         const single = await callBatchQuote([pairInput]);
         const quote = single.quotes[0];
@@ -204,9 +203,9 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
         isolatedPoolMetas.push(meta);
         lastBlockNumber = single.blockNumber;
         totalGasUsed += single.gasUsed;
-        console.log(
-          `[ArbQuoterScript] fallback pool[${i}] success block=${single.blockNumber.toString()} gas=${single.gasUsed.toString()}`,
-        );
+        // console.log(
+        //   `[ArbQuoterScript] fallback pool[${i}] success block=${single.blockNumber.toString()} gas=${single.gasUsed.toString()}`,
+        // );
       } catch (singleErr: unknown) {
         const singleMsg = singleErr instanceof Error ? singleErr.message : String(singleErr);
         isolatedErrors.push(`${meta.poolAddress}: ${singleMsg.slice(0, 140)}`);

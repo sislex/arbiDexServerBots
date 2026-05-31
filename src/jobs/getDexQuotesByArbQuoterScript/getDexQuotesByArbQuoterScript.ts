@@ -3,6 +3,7 @@ import type { DexQuotesByArbQuoterScriptResult } from './helpers/types';
 import {runDeployedImpactQuoteTestEther} from './helpers/runDeployedImpactQuoteTestEther.js';
 import type {DeployedImpactQuoteStabsConfig} from './helpers/configQuoteInput';
 import { arbSummaryToUnified } from './helpers/arbSummaryToUnified.js';
+import { getNetworkEnvPrefix } from './helpers/getNetworkEnvPrefix.js';
 import type { UnifiedQuoteResult } from '../shared/types';
 import { marketDataClient } from '../shared/index.js';
 
@@ -13,8 +14,9 @@ export async function getDexQuotesByArbQuoterScript(
   const startedAt = Date.now();
 
   try {
+    const networkEnvPrefix = getNetworkEnvPrefix(params.source);
     const result = await runDeployedImpactQuoteTestEther({
-      networkEnvPrefix: "ARBITRUM",
+      networkEnvPrefix,
       config: params as DeployedImpactQuoteStabsConfig,
     });
 
@@ -26,7 +28,7 @@ export async function getDexQuotesByArbQuoterScript(
       latencyMs: Date.now() - startedAt,
     });
 
-    console.log('unified', unified);
+    // console.log('unified', unified);
 
     marketDataClient.writeQuote(unified);
 

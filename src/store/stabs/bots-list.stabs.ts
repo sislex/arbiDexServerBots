@@ -1,4 +1,9 @@
 import {IBotsRule, IBotType, IJobType, IPool} from '../state.types';
+import {ArbitrumPoolsConfigListStabs} from '../../scripts/arbQuoter/networks/arbitrum/arbitrumPoolsConfigList.stabs.js';
+import {BasePoolsConfigListStabs} from '../../scripts/arbQuoter/networks/base/basePoolsConfigList.stabs.js';
+import {BlastPoolsConfigListStabs} from '../../scripts/arbQuoter/networks/blast/blastPoolsConfigList.stabs.js';
+import {LineaPoolsConfigListStabs} from '../../scripts/arbQuoter/networks/linea/lineaPoolsConfigList.stabs.js';
+import {OptimismPoolsConfigListStabs} from '../../scripts/arbQuoter/networks/optimism/optimismPoolsConfigList.stabs.js';
 
 export const BotListTestOptimism: IBotsRule[] = [
   {
@@ -43,132 +48,69 @@ export const BotListTestOptimism: IBotsRule[] = [
 
 export const BotListTestArbitrum: IBotsRule[] = [
   {
-    "id": "168",
+    "id": "1",
     "botParams": {
       "botType": IBotType.TEST_BOT,
       "paused": false,
       "isRepeat": true,
-      "delayBetweenRepeat": 250,
+      "delayBetweenRepeat": 200,
       "maxJobs": 1000000,
       "maxErrors": 100,
       "timeoutMs": 30000
     },
-    "jobParams": {
-      "extraSettings": "{\n  \"amountIn\": 100,\n  \"amountOut\": 0.03\n}",
-      "jobType": IJobType.GET_DEX_QUOTES_BY_ARB_QUOTER,
-      "rpcUrl": "https://arb1.arbitrum.io/rpc",
-      "source": "dex:arbitrum",
-      "opts": {
-        "tokenIn": {
-          "decimals": 6,
-          "symbol": "USDC",
-          "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831"
-        },
-        "tokenOut": {
-          "decimals": 18,
-          "symbol": "WETH",
-          "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"
-        }
-      },
-      "pairsToQuote": [
-        {
-          "dex": "sushi",
-          "version": "v3",
-          "poolAddress": "0xb658ee5c63922d2852f24458effa2bfa2cba3574",
-          "feePpm": 100
-        },
-        {
-          "dex": "uniswap",
-          "version": "v2",
-          "poolAddress": "0xf64dfe17c8b87f012fcf50fbda1d62bfa148366a",
-          "feePpm": 3000
-        },
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "poolAddress": "0xc473e2aee3441bf9240be85eb122abb059a3b57c",
-          "feePpm": 3000
-        },
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "poolAddress": "0xc6962004f452be9203591991d15f6b388e09e8d0",
-          "feePpm": 500
-        },
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "poolAddress": "0x6f38e884725a116c9c7fbf208e79fe8828a2595f",
-          "feePpm": 100
-        },
-        {
-          "dex": "uniswap",
-          "version": "v3",
-          "poolAddress": "0x42fc852a750ba93d5bf772ecdc857e87a86403a9",
-          "feePpm": 10000
-        },
-        {
-          "dex": "sushi",
-          "version": "v2",
-          "poolAddress": "0x57b85fef094e10b5eecdf350af688299e9553378",
-          "feePpm": 3000
-        },
-        {
-          "dex": "sushi",
-          "version": "v3",
-          "poolAddress": "0xf3eb87c1f6020982173c908e7eb31aa66c1f0296",
-          "feePpm": 500
-        },
-        {
-          "dex": "sushi",
-          "version": "v3",
-          "poolAddress": "0xc96525298419f7e00da8826b733ee52e271662b5",
-          "feePpm": 3000
-        },
-        {
-          "dex": "sushi",
-          "version": "v3",
-          "poolAddress": "0x0ed17087175a677c05328a37b9795728e9cd8821",
-          "feePpm": 10000
-        },
-        {
-          "dex": "camelot",
-          "version": "v2",
-          "poolAddress": "0x54b26faf3671677c19f70c4b879a6f7b898f732c",
-          "feePpm": 3000
-        },
-        {
-          "dex": "camelot",
-          "version": "v3",
-          "poolAddress": "0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526",
-          "feePpm": 0
-        },
-        {
-          "dex": "pancake",
-          "version": "v3",
-          "poolAddress": "0xd9e2a1a61b6e61b275cec326465d417e52c1b95c",
-          "feePpm": 500
-        },
-        {
-          "dex": "pancake",
-          "version": "v3",
-          "poolAddress": "0xb3d494d53aac707c469318f15cfd5d7857a61388",
-          "feePpm": 2500
-        },
-        {
-          "dex": "pancake",
-          "version": "v3",
-          "poolAddress": "0x7fcdc35463e3770c2fb992716cd070b63540b947",
-          "feePpm": 100
-        },
-        {
-          "dex": "pancake",
-          "version": "v3",
-          "poolAddress": "0xbedb464ef776fe208e3f2b5c0bafbe7983ef49db",
-          "feePpm": 10000
-        }
-      ] as IPool[]
-    }
+    "jobParams": ArbitrumPoolsConfigListStabs as any
+  },
+  {
+    "id": "2",
+    "botParams": {
+      "botType": IBotType.TEST_BOT,
+      "paused": false,
+      "isRepeat": true,
+      "delayBetweenRepeat": 1000,
+      "maxJobs": 1000000,
+      "maxErrors": 100,
+      "timeoutMs": 30000
+    },
+    "jobParams": BasePoolsConfigListStabs as any
+  },
+  {
+    "id": "3",
+    "botParams": {
+      "botType": IBotType.TEST_BOT,
+      "paused": false,
+      "isRepeat": true,
+      "delayBetweenRepeat": 200,
+      "maxJobs": 1000000,
+      "maxErrors": 100,
+      "timeoutMs": 30000
+    },
+    "jobParams": BlastPoolsConfigListStabs as any
+  },
+  {
+    "id": "4",
+    "botParams": {
+      "botType": IBotType.TEST_BOT,
+      "paused": false,
+      "isRepeat": true,
+      "delayBetweenRepeat": 200,
+      "maxJobs": 1000000,
+      "maxErrors": 100,
+      "timeoutMs": 30000
+    },
+    "jobParams": LineaPoolsConfigListStabs as any
+  },
+  {
+    "id": "5",
+    "botParams": {
+      "botType": IBotType.TEST_BOT,
+      "paused": false,
+      "isRepeat": true,
+      "delayBetweenRepeat": 200,
+      "maxJobs": 1000000,
+      "maxErrors": 100,
+      "timeoutMs": 30000
+    },
+    "jobParams": OptimismPoolsConfigListStabs as any
   },
 ];
 
