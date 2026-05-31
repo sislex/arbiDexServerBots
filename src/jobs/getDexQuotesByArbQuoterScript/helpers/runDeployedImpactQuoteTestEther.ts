@@ -177,7 +177,7 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     return arbSummary;
   } catch (e: unknown) {
     const batchMsg = e instanceof Error ? e.message : String(e);
-    console.error(`[ArbQuoterScript] batch reverted: ${batchMsg}`);
+    // console.error(`[ArbQuoterScript] batch reverted: ${batchMsg}`);
     console.log("[ArbQuoterScript] switching to fallback single-pool mode...");
     const isolatedQuotes: ConfigImpactQuoteBatchResultStruct["quotes"] = [];
     const isolatedPoolMetas: PoolQuoteMeta[] = [];
@@ -209,7 +209,8 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
       } catch (singleErr: unknown) {
         const singleMsg = singleErr instanceof Error ? singleErr.message : String(singleErr);
         isolatedErrors.push(`${meta.poolAddress}: ${singleMsg.slice(0, 140)}`);
-        console.warn(`[ArbQuoterScript] fallback pool[${i}] failed: ${singleMsg}`);
+        // console.warn(`[ArbQuoterScript] fallback pool[${i}] failed: ${singleMsg}`);
+        console.warn(`[ArbQuoterScript] fallback pool[${i}] failed`);
       }
     }
 

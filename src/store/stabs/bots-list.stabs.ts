@@ -66,7 +66,7 @@ export const BotListTestArbitrum: IBotsRule[] = [
       "botType": IBotType.TEST_BOT,
       "paused": false,
       "isRepeat": true,
-      "delayBetweenRepeat": 1000,
+      "delayBetweenRepeat": 1500,
       "maxJobs": 1000000,
       "maxErrors": 100,
       "timeoutMs": 30000
@@ -79,7 +79,7 @@ export const BotListTestArbitrum: IBotsRule[] = [
       "botType": IBotType.TEST_BOT,
       "paused": false,
       "isRepeat": true,
-      "delayBetweenRepeat": 200,
+      "delayBetweenRepeat": 300,
       "maxJobs": 1000000,
       "maxErrors": 100,
       "timeoutMs": 30000
@@ -105,7 +105,7 @@ export const BotListTestArbitrum: IBotsRule[] = [
       "botType": IBotType.TEST_BOT,
       "paused": false,
       "isRepeat": true,
-      "delayBetweenRepeat": 200,
+      "delayBetweenRepeat": 300,
       "maxJobs": 1000000,
       "maxErrors": 100,
       "timeoutMs": 30000
