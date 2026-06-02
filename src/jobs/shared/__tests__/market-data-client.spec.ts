@@ -55,9 +55,11 @@ function makeQuote(overrides: Partial<UnifiedQuoteResult> = {}): UnifiedQuoteRes
 
 describe('MarketDataClient', () => {
   let originalUrl: string | undefined;
+  let originalBaseUniswapV2Router: string | undefined;
 
   beforeEach(() => {
     originalUrl = process.env.MARKET_DATA_URL;
+    originalBaseUniswapV2Router = process.env.BASE_UNISWAP_V2_ROUTER;
     jest.clearAllMocks();
     // Сбрасываем connected
     mockSocket.connected = false;
@@ -68,6 +70,12 @@ describe('MarketDataClient', () => {
       process.env.MARKET_DATA_URL = originalUrl;
     } else {
       delete process.env.MARKET_DATA_URL;
+    }
+
+    if (originalBaseUniswapV2Router !== undefined) {
+      process.env.BASE_UNISWAP_V2_ROUTER = originalBaseUniswapV2Router;
+    } else {
+      delete process.env.BASE_UNISWAP_V2_ROUTER;
     }
   });
 
@@ -232,12 +240,20 @@ describe('MarketDataClient', () => {
       expect(mockSocketEmit).toHaveBeenCalledTimes(4);
       expect(mockSocketEmit).toHaveBeenCalledWith('write', {
         key: 'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|bidPool',
-        value: '0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526',
+        value: {
+          dex: 'camelot',
+          version: 'v3',
+          poolAddress: '0xc873fEcbd354f5A56E00E710B90EF4201db2448d',
+        },
         timestamp: 1700000001000,
       });
       expect(mockSocketEmit).toHaveBeenCalledWith('write', {
         key: 'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPool',
-        value: '0x6f38e884725a116c9c7fbf208e79fe8828a2595f',
+        value: {
+          dex: 'uniswap',
+          version: 'v3',
+          poolAddress: '0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24',
+        },
         timestamp: 1700000001000,
       });
     });
@@ -251,6 +267,31 @@ describe('MarketDataClient', () => {
       expect(keys).toContain('dex:arbitrum|ETH/USDC|askPrice');
       expect(keys).not.toContain('dex:arbitrum|ETH/USDC|bidPool');
       expect(keys).not.toContain('dex:arbitrum|ETH/USDC|askPool');
+    });
+
+    it('для version=v3 выбирает router по source (сети) + dex', () => {
+      process.env.BASE_UNISWAP_V2_ROUTER = '0x00000000000000000000000000000000000000B1';
+
+      const client = new MarketDataClient();
+      client.writeQuote(makeQuote({
+        sourceType: 'dex',
+        source: 'dex:base',
+        bestBuyPool: {
+          dex: 'uniswap',
+          version: 'v3',
+          poolAddress: '0x6f38e884725a116c9c7fbf208e79fe8828a2595f',
+        },
+      }));
+
+      expect(mockSocketEmit).toHaveBeenCalledWith('write', {
+        key: 'dex:base|ETH/USDC|askPool',
+        value: {
+          dex: 'uniswap',
+          version: 'v3',
+          poolAddress: '0x00000000000000000000000000000000000000B1',
+        },
+        timestamp: 1700000001000,
+      });
     });
   });
 

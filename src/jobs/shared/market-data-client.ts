@@ -12,11 +12,33 @@
 import { io, Socket } from 'socket.io-client';
 import type { UnifiedQuoteResult } from './types';
 
+const V2_ROUTERS_BY_SOURCE: Record<string, Record<string, string>> = {
+  'dex:arbitrum': {
+    uniswap: '0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24',
+    sushi: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
+    camelot: '0xc873fEcbd354f5A56E00E710B90EF4201db2448d',
+  },
+};
+
+const NETWORK_PREFIX_BY_SOURCE: Record<string, string> = {
+  'dex:arbitrum': 'ARBITRUM',
+  'dex:optimism': 'OPTIMISM',
+  'dex:base': 'BASE',
+  'dex:blast': 'BLAST',
+  'dex:linea': 'LINEA',
+};
+
 export interface WritePoint {
   key: string;
   value: number;
   timestamp?: number;
 }
+
+type PoolValue = {
+  dex: string;
+  version: string;
+  poolAddress: string;
+};
 
 export class MarketDataClient {
   private socket: Socket | null = null;
@@ -82,19 +104,21 @@ export class MarketDataClient {
     if (quote.sourceType === 'dex') {
       const socket = this.getSocket();
 
-      // console.log(`${baseKey}|bidPool`);
-
       if (quote.bestSellPool?.poolAddress) {
+        const bidPoolValue = this.poolToStoreValue(quote.source, quote.bestSellPool);
         socket.emit('write', {
           key: `${baseKey}|bidPool`,
-          value: quote.bestSellPool.poolAddress,
+          value: bidPoolValue,
+          timestamp: quote.timestamp,
         });
       }
 
       if (quote.bestBuyPool?.poolAddress) {
+        const askPoolValue = this.poolToStoreValue(quote.source, quote.bestBuyPool);
         socket.emit('write', {
           key: `${baseKey}|askPool`,
-          value: quote.bestBuyPool.poolAddress,
+          value: askPoolValue,
+          timestamp: quote.timestamp,
         });
       }
     }
@@ -158,6 +182,46 @@ export class MarketDataClient {
     socket.on('error', (payload: { message: string }) => {
       console.error(`[MarketDataClient] ❌ server error: ${payload?.message ?? payload}`);
     });
+  }
+
+  private poolToStoreValue(
+    source: UnifiedQuoteResult['source'],
+    pool: NonNullable<UnifiedQuoteResult['bestBuyPool']>,
+  ): PoolValue {
+    const isV3 = pool.version === 'v3';
+    const v2Router = this.resolveV2Router(source, pool.dex);
+
+    return {
+      dex: pool.dex,
+      version: pool.version,
+      poolAddress: isV3 ? (v2Router ?? pool.poolAddress) : pool.poolAddress,
+    };
+  }
+
+  private resolveV2Router(source: UnifiedQuoteResult['source'], dex: string): string | undefined {
+    const normalizedDex = dex.toLowerCase();
+    const baseKey = this.v2RouterEnvBaseKey(normalizedDex);
+    const networkPrefix = NETWORK_PREFIX_BY_SOURCE[source];
+
+    if (baseKey && networkPrefix) {
+      const prefixedEnvRouter = process.env[`${networkPrefix}_${baseKey}`];
+      if (prefixedEnvRouter) return prefixedEnvRouter;
+    }
+
+    if (baseKey) {
+      const genericEnvRouter = process.env[baseKey];
+      if (genericEnvRouter) return genericEnvRouter;
+    }
+
+    return V2_ROUTERS_BY_SOURCE[source]?.[normalizedDex];
+  }
+
+  private v2RouterEnvBaseKey(dex: string): string | undefined {
+    if (dex === 'uniswap') return 'UNISWAP_V2_ROUTER';
+    if (dex === 'sushi') return 'SUSHISWAP_V2_ROUTER';
+    if (dex === 'camelot') return 'CAMELOT_V2_ROUTER';
+    if (dex === 'pancake') return 'PANCAKESWAP_V2_ROUTER';
+    return undefined;
   }
 }
 
