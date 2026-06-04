@@ -58,12 +58,6 @@ export const ArbitrumPoolsConfigListStabs = {
     },
     {
       "dex": "camelot",
-      "version": "v2",
-      "poolAddress": "0x54b26faf3671677c19f70c4b879a6f7b898f732c",
-      "feePpm": 3000
-    },
-    {
-      "dex": "camelot",
       "version": "v3",
       "poolAddress": "0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526",
       "feePpm": 3000
