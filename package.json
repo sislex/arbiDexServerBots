@@ -31,6 +31,8 @@
     "quote:deployed:blast:ethers": "npx ts-node --project tsconfig.ts-node.json src/scripts/arbQuoter/networks/blast/testDeployedBlastEther.ts",
     "quote:deployed:linea:ethers": "npx ts-node --project tsconfig.ts-node.json src/scripts/arbQuoter/networks/linea/testDeployedLineaEther.ts",
     "execute:deployed:arbitrum:ethers": "npx ts-node --project tsconfig.ts-node.json src/scripts/arbQuoter/networks/arbitrum/executeDeployedArbitrumExecutorEther.ts",
+    "execute:deployed:arbitrum:cross-pool:ethers": "npx ts-node --project tsconfig.ts-node.json src/scripts/arbQuoter/networks/arbitrum/executeDeployedArbitrumCrossPoolExecutorEther.ts",
+    "execute:deployed:arbitrum:cross-pool:loop:ethers": "npx ts-node --project tsconfig.ts-node.json src/scripts/arbQuoter/networks/arbitrum/executeDeployedArbitrumCrossPoolExecutorEtherLoop.ts",
     "quote:deployed:all:ethers": "npm run quote:deployed:arbitrum:ethers && npm run quote:deployed:optimism:ethers && npm run quote:deployed:base:ethers && npm run quote:deployed:blast:ethers && npm run quote:deployed:linea:ethers",
     "quote:deployed:arbitrum": "npx hardhat run src/scripts/arbQuoter/networks/arbitrum/testDeployedArbitrum.ts --network arbitrum",
     "quote:deployed:optimism": "npx hardhat run src/scripts/arbQuoter/networks/optimism/testDeployedOptimism.ts --network optimism",

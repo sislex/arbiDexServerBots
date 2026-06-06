@@ -3,20 +3,20 @@ export const ArbitrumPoolsConfigListStabs = {
   "source": "dex:arbitrum",
   "rpcUrl": "https://arb1.arbitrum.io/rpc",
   "extraSettings": {
-    amountIn: 0.01,
-    amountOut: 25,
+    amountIn: [10, 20, 35, 50, 70, 82],
+    amountOut: 0.04,
     referenceDivisor: 100,
   },
   "opts": {
     "tokenIn": {
-      "symbol": "WETH",
-      "decimals": 18,
-      "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"
-    },
-    "tokenOut": {
       "symbol": "USDC",
       "decimals": 6,
       "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+    },
+    "tokenOut": {
+      "symbol": "WETH",
+      "decimals": 18,
+      "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"
     }
   },
   "pairsToQuote": [
