@@ -84,24 +84,13 @@ function logSkip(reason: SkipReason, details?: string) {
   }
 }
 
-function asAmountList(value: number | number[] | undefined, fallback: number): string[] {
-  if (Array.isArray(value)) {
-    return value
-      .map((v) => String(v).trim())
-      .filter((v) => v.length > 0);
+function parsePositiveAmountIn(value: number | undefined, fallback: number, decimals: number): { human: string; raw: bigint } {
+  const human = String(value ?? fallback).trim();
+  const raw = ethers.parseUnits(human, decimals);
+  if (raw <= 0n) {
+    throw new Error("config.extraSettings.amountIn must be a positive number");
   }
-
-  if (value === undefined) {
-    return [String(fallback)];
-  }
-
-  return [String(value).trim()];
-}
-
-function parsePositiveUnitsList(amounts: string[], decimals: number): Array<{ human: string; raw: bigint }> {
-  return amounts
-    .map((human) => ({ human, raw: ethers.parseUnits(human, decimals) }))
-    .filter((a) => a.raw > 0n);
+  return { human, raw };
 }
 
 function formatSignedAmount(value: bigint, decimals: number): string {
@@ -230,45 +219,29 @@ async function estimateGasCostInTokenInRaw(
 }
 
 async function selectBestOpportunity(quoter: Contract): Promise<Opportunity | null> {
-  const amountInCandidatesHuman = asAmountList(config.extraSettings?.amountIn, 0.01);
-  const amountInCandidates = parsePositiveUnitsList(amountInCandidatesHuman, tokenInDecimals);
+  const amount = parsePositiveAmountIn(config.extraSettings?.amountIn, 0.01, tokenInDecimals);
 
-  if (amountInCandidates.length === 0) {
-    throw new Error("No valid amountIn candidates in config.extraSettings.amountIn");
+  const forward = await findBestForwardQuote(quoter, amount.human);
+  if (forward.bestIdx < 0 || forward.bestAmountOut <= 0n) {
+    console.log(`Skip amount ${amount.human}: no successful buy quote`);
+    return null;
   }
 
-  let best: Opportunity | null = null;
-
-  for (const amount of amountInCandidates) {
-    const forward = await findBestForwardQuote(quoter, amount.human);
-    if (forward.bestIdx < 0 || forward.bestAmountOut <= 0n) {
-      console.log(`Skip amount ${amount.human}: no successful buy quote`);
-      continue;
-    }
-
-    const reverse = await findBestReverseQuoteForBoughtAmount(quoter, forward.bestAmountOut);
-    if (reverse.bestIdx < 0 || reverse.bestAmountOut <= 0n) {
-      console.log(`Skip amount ${amount.human}: no successful sell quote for bought amount`);
-      continue;
-    }
-
-    const expectedProfitRaw = reverse.bestAmountOut - amount.raw;
-    const candidate: Opportunity = {
-      amountInHuman: amount.human,
-      amountInRaw: amount.raw,
-      buyPoolIdx: forward.bestIdx,
-      buyAmountOutRaw: forward.bestAmountOut,
-      sellPoolIdx: reverse.bestIdx,
-      sellAmountOutRaw: reverse.bestAmountOut,
-      expectedProfitRaw,
-    };
-
-    if (!best || candidate.expectedProfitRaw > best.expectedProfitRaw) {
-      best = candidate;
-    }
+  const reverse = await findBestReverseQuoteForBoughtAmount(quoter, forward.bestAmountOut);
+  if (reverse.bestIdx < 0 || reverse.bestAmountOut <= 0n) {
+    console.log(`Skip amount ${amount.human}: no successful sell quote for bought amount`);
+    return null;
   }
 
-  return best;
+  return {
+    amountInHuman: amount.human,
+    amountInRaw: amount.raw,
+    buyPoolIdx: forward.bestIdx,
+    buyAmountOutRaw: forward.bestAmountOut,
+    sellPoolIdx: reverse.bestIdx,
+    sellAmountOutRaw: reverse.bestAmountOut,
+    expectedProfitRaw: reverse.bestAmountOut - amount.raw,
+  };
 }
 
 export async function runArbitrumCrossPoolArbExecutorOnce() {
@@ -457,7 +430,6 @@ main().catch((e) => {
   console.error("Cross-pool executor script failed:", e);
   process.exitCode = 1;
 });
-
 
 
 
