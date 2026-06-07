@@ -53,65 +53,65 @@ export const BotListTestArbitrum: IBotsRule[] = [
       "botType": IBotType.TEST_BOT,
       "paused": false,
       "isRepeat": true,
-      "delayBetweenRepeat": 200,
+      "delayBetweenRepeat": 100,
       "maxJobs": 1000000,
       "maxErrors": 100,
       "timeoutMs": 30000
     },
     "jobParams": ArbitrumPoolsConfigListStabs as any
   },
-  {
-    "id": "2",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 1500,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": BasePoolsConfigListStabs as any
-  },
-  {
-    "id": "3",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 300,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": BlastPoolsConfigListStabs as any
-  },
-  {
-    "id": "4",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 200,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": LineaPoolsConfigListStabs as any
-  },
-  {
-    "id": "5",
-    "botParams": {
-      "botType": IBotType.TEST_BOT,
-      "paused": false,
-      "isRepeat": true,
-      "delayBetweenRepeat": 1000,
-      "maxJobs": 1000000,
-      "maxErrors": 100,
-      "timeoutMs": 30000
-    },
-    "jobParams": OptimismPoolsConfigListStabs as any
-  },
+  // {
+  //   "id": "2",
+  //   "botParams": {
+  //     "botType": IBotType.TEST_BOT,
+  //     "paused": false,
+  //     "isRepeat": true,
+  //     "delayBetweenRepeat": 1500,
+  //     "maxJobs": 1000000,
+  //     "maxErrors": 100,
+  //     "timeoutMs": 30000
+  //   },
+  //   "jobParams": BasePoolsConfigListStabs as any
+  // },
+  // {
+  //   "id": "3",
+  //   "botParams": {
+  //     "botType": IBotType.TEST_BOT,
+  //     "paused": false,
+  //     "isRepeat": true,
+  //     "delayBetweenRepeat": 300,
+  //     "maxJobs": 1000000,
+  //     "maxErrors": 100,
+  //     "timeoutMs": 30000
+  //   },
+  //   "jobParams": BlastPoolsConfigListStabs as any
+  // },
+  // {
+  //   "id": "4",
+  //   "botParams": {
+  //     "botType": IBotType.TEST_BOT,
+  //     "paused": false,
+  //     "isRepeat": true,
+  //     "delayBetweenRepeat": 200,
+  //     "maxJobs": 1000000,
+  //     "maxErrors": 100,
+  //     "timeoutMs": 30000
+  //   },
+  //   "jobParams": LineaPoolsConfigListStabs as any
+  // },
+  // {
+  //   "id": "5",
+  //   "botParams": {
+  //     "botType": IBotType.TEST_BOT,
+  //     "paused": false,
+  //     "isRepeat": true,
+  //     "delayBetweenRepeat": 1000,
+  //     "maxJobs": 1000000,
+  //     "maxErrors": 100,
+  //     "timeoutMs": 30000
+  //   },
+  //   "jobParams": OptimismPoolsConfigListStabs as any
+  // },
 ];
 
 export const BotList10: IBotsRule[] = [

@@ -236,7 +236,81 @@ socket.on('subscribed', (info) => {
 | `unsubscribed` | `{}` | Подтверждение отписки |
 | `dataChange` | `{ key: string, point: DataPoint }` | Новая точка данных по ключу |
 
-### 5.5 Пример Python-клиента
+### 5.5 Локальный WebSocket arbiDexServerBots
+
+Кроме пересылки котировок во внешний `arbiDexMarketData`, текущий сервер публикует
+те же обновления через локальный Socket.IO namespace `/store`.
+
+Это отдельный real-time поток для клиентов, которым не нужна история и которые хотят
+слушать только будущие события напрямую от работающих ботов.
+
+Свойства локального потока:
+
+- данные **не сохраняются** в локальный store;
+- snapshot, replay и история **не поддерживаются**;
+- клиент получает только события, пришедшие **после** `subscribe`;
+- контракт событий совпадает с `arbiDexMarketData`, поэтому код подписки можно переиспользовать.
+
+**Namespace:** `/store`  
+**URL:** `ws://localhost:3000/store`
+
+```typescript
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:3000/store');
+
+socket.on('connect', () => {
+  socket.emit('subscribe', {
+    keys: [
+      'binance|ETH/USDC|bidPrice',
+      'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice',
+    ],
+  });
+});
+
+socket.on('subscribed', (info) => {
+  console.log('Subscribed to:', info.keys);
+});
+
+socket.on('dataChange', ({ key, point }) => {
+  console.log(key, point);
+});
+```
+
+Подписка на все будущие события:
+
+```typescript
+socket.emit('subscribe', {});
+// или
+socket.emit('subscribe', { keys: [] });
+```
+
+Формат ключей:
+
+- цены: `<source>|<token0>/<token1>|bidPrice` и `<source>|<token0>/<token1>|askPrice`
+- DEX пулы: `<source>|<token0>/<token1>|bidPool` и `<source>|<token0>/<token1>|askPool`
+- для `getDexQuotesByArbQuoterScript` в ключе используются адреса токенов из `params.opts.tokenIn.address` и `params.opts.tokenOut.address`
+
+Примеры payload:
+
+```ts
+{ key: 'binance|ETH/USDC|bidPrice', point: { t: 1774548818034, v: 2049.5 } }
+```
+
+```ts
+{
+  key: 'dex:arbitrum|TOKEN0/TOKEN1|askPool',
+  point: {
+    v: {
+      dex: 'uniswap',
+      version: 'v3',
+      poolAddress: '0x...',
+    },
+  },
+}
+```
+
+### 5.6 Пример Python-клиента
 
 ```python
 import socketio

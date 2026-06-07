@@ -8,6 +8,11 @@ import { BotsController } from './controllers/bots.controller';
 import { PricesProxyController } from './controllers/prices-proxy.controller';
 import { PriceProxyGateway } from './controllers/price-proxy.gateway';
 import { JobsController } from './controllers/jobs.controller';
+import {
+  QuoteBroadcasterService,
+  quoteBroadcaster,
+} from './quotes-stream/quote-broadcaster.service';
+import { StoreGateway } from './quotes-stream/store.gateway';
 
 @Module({
   imports: [StoreModule],
@@ -19,6 +24,14 @@ import { JobsController } from './controllers/jobs.controller';
     PricesProxyController,
     JobsController,
   ],
-  providers: [BotRunnerService, PriceProxyGateway],
+  providers: [
+    BotRunnerService,
+    PriceProxyGateway,
+    StoreGateway,
+    {
+      provide: QuoteBroadcasterService,
+      useValue: quoteBroadcaster,
+    },
+  ],
 })
 export class AppModule {}

@@ -78,6 +78,94 @@ BotRunnerService
 
 All quotes flow through `MarketDataClient` — a lazy-singleton Socket.IO client that creates one shared connection on first use and auto-reconnects on failure.
 
+## Local WebSocket Stream
+
+This server also exposes its own real-time Socket.IO namespace at `/store`.
+It is intended for local subscribers that want to receive fresh quotes directly from running bots without reading from `arbiDexMarketData`.
+
+Important behavior:
+
+- The stream is **ephemeral**: no persistence, no replay, no snapshot, no history.
+- A client receives only **future** events that arrive after `subscribe`.
+- The event contract is intentionally the same as in `arbiDexMarketData`, so the same client subscription logic can be reused.
+- Quotes are still forwarded to `arbiDexMarketData`; the local stream is an additional fan-out, not a replacement.
+
+### Connection
+
+```typescript
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:3000/store');
+
+socket.on('connect', () => {
+  console.log('Connected:', socket.id);
+});
+```
+
+### Subscribe to specific keys
+
+```typescript
+socket.emit('subscribe', {
+  keys: [
+    'binance|ETH/USDC|bidPrice',
+    'dex:arbitrum|0x82af49447d8a07e3bd95bd0d56f35241523fbab1/0xaf88d065e77c8cc2239327c5edb3a432268e5831|askPrice',
+  ],
+});
+
+socket.on('subscribed', (info) => {
+  console.log(info.keys);
+});
+
+socket.on('dataChange', ({ key, point }) => {
+  console.log(key, point);
+});
+```
+
+### Subscribe to all future keys
+
+```typescript
+socket.emit('subscribe', {});
+// or
+socket.emit('subscribe', { keys: [] });
+```
+
+### Events
+
+- `subscribe` -> client to server, payload `{ keys?: string[] }`
+- `subscribed` -> server to client, payload `{ keys: string[] | 'all' }`
+- `unsubscribe` -> client to server, no payload required
+- `unsubscribed` -> server to client, payload `{}`
+- `dataChange` -> server to client, payload `{ key, point }`
+
+### Data format
+
+Numeric quote update:
+
+```ts
+{ key: 'binance|ETH/USDC|bidPrice', point: { t: 1774548818034, v: 2049.5 } }
+```
+
+DEX pool metadata update:
+
+```ts
+{
+  key: 'dex:arbitrum|TOKEN0/TOKEN1|askPool',
+  point: {
+    v: {
+      dex: 'uniswap',
+      version: 'v3',
+      poolAddress: '0x...',
+    },
+  },
+}
+```
+
+### Key rules
+
+- Price keys: `<source>|<token0>/<token1>|bidPrice` and `<source>|<token0>/<token1>|askPrice`
+- DEX pool keys: `<source>|<token0>/<token1>|bidPool` and `<source>|<token0>/<token1>|askPool`
+- For `getDexQuotesByArbQuoterScript`, `token0` and `token1` are token addresses from `params.opts.tokenIn.address` and `params.opts.tokenOut.address`
+
 ## Market Data
 
 All price data lives in **arbiDexMarketData**:

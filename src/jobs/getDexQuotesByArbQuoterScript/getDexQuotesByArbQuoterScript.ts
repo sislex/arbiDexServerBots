@@ -6,6 +6,7 @@ import { arbSummaryToUnified } from './helpers/arbSummaryToUnified.js';
 import { getNetworkEnvPrefix } from './helpers/getNetworkEnvPrefix.js';
 import type { UnifiedQuoteResult } from '../shared/types';
 import { marketDataClient } from '../shared/index.js';
+import { quoteBroadcaster } from '../../quotes-stream/quote-broadcaster.service';
 
 function formatDiagnosticNumber(value: number, precision = 12): string {
   if (!Number.isFinite(value)) return 'n/a';
@@ -82,6 +83,7 @@ export async function getDexQuotesByArbQuoterScript(
     printUnifiedQuoteDiagnostics(result, unified);
 
     marketDataClient.writeQuote(unified);
+    quoteBroadcaster.publishQuote(unified);
 
     return {
       ok: unified.ok,
@@ -110,6 +112,7 @@ export async function getDexQuotesByArbQuoterScript(
     };
 
     marketDataClient.writeQuote(unified);
+    quoteBroadcaster.publishQuote(unified);
 
     return {
       ok: false,
