@@ -1,11 +1,62 @@
 import type { IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script } from '../../store/state.types';
 import type { DexQuotesByArbQuoterScriptResult } from './helpers/types';
-import {runDeployedImpactQuoteTestEther} from './helpers/runDeployedImpactQuoteTestEther.js';
-import type {DeployedImpactQuoteStabsConfig} from './helpers/configQuoteInput';
+import { runDeployedImpactQuoteTestEther } from './helpers/runDeployedImpactQuoteTestEther.js';
+import type { DeployedImpactQuoteStabsConfig } from './helpers/configQuoteInput';
 import { arbSummaryToUnified } from './helpers/arbSummaryToUnified.js';
 import { getNetworkEnvPrefix } from './helpers/getNetworkEnvPrefix.js';
 import type { UnifiedQuoteResult } from '../shared/types';
 import { marketDataClient } from '../shared/index.js';
+
+function formatDiagnosticNumber(value: number, precision = 12): string {
+  if (!Number.isFinite(value)) return 'n/a';
+  if (value === 0) return '0';
+  return value.toPrecision(precision);
+}
+
+function formatDiff(value: number): string {
+  if (!Number.isFinite(value)) return 'n/a';
+  if (Math.abs(value) < 1e-12) return '0';
+  return value.toExponential(6);
+}
+
+function printUnifiedQuoteDiagnostics(
+  result: DexQuotesByArbQuoterScriptResult['result'],
+  unified: UnifiedQuoteResult,
+) {
+  const amountKey =
+    result?.bestBuyRows[0]?.amount ?? result?.bestSellRows[0]?.amount;
+  const bestBuyRow =
+    result?.bestBuyRows.find((row) => row.amount === amountKey) ??
+    result?.bestBuyRows[0];
+  const bestSellRow =
+    result?.bestSellRows.find((row) => row.amount === amountKey) ??
+    result?.bestSellRows[0];
+  const contractSellPriceOutPerIn = Number(bestBuyRow?.bestBuyPriceOutPerIn);
+  const contractBuyPriceOutPerIn = Number(bestSellRow?.bestSellPriceOutPerIn);
+  const backFromBid = unified.bidPrice > 0 ? 1 / unified.bidPrice : NaN;
+  const backFromAsk = unified.askPrice > 0 ? 1 / unified.askPrice : NaN;
+
+  console.log('[ArbQuoterScript] unified quote diagnostics');
+  console.table([
+    {
+      side: 'SELL base / bid',
+      contractPriceOutPerIn: formatDiagnosticNumber(contractSellPriceOutPerIn),
+      unifiedPriceInPerOut: formatDiagnosticNumber(unified.bidPrice),
+      backCalculatedOutPerIn: formatDiagnosticNumber(backFromBid),
+      diff: formatDiff(backFromBid - contractSellPriceOutPerIn),
+      pool: bestBuyRow?.pool ?? 'n/a',
+    },
+    {
+      side: 'BUY base / ask',
+      contractPriceOutPerIn: formatDiagnosticNumber(contractBuyPriceOutPerIn),
+      unifiedPriceInPerOut: formatDiagnosticNumber(unified.askPrice),
+      backCalculatedOutPerIn: formatDiagnosticNumber(backFromAsk),
+      diff: formatDiff(backFromAsk - contractBuyPriceOutPerIn),
+      pool: bestSellRow?.pool ?? 'n/a',
+    },
+  ]);
+  console.log('[ArbQuoterScript] unified', unified);
+}
 
 export async function getDexQuotesByArbQuoterScript(
   params: IJobParams_get_Dex_Quotes_By_Arb_Quoter_Script,
@@ -28,7 +79,7 @@ export async function getDexQuotesByArbQuoterScript(
       latencyMs: Date.now() - startedAt,
     });
 
-    // console.log('unified', unified);
+    printUnifiedQuoteDiagnostics(result, unified);
 
     marketDataClient.writeQuote(unified);
 
@@ -68,4 +119,3 @@ export async function getDexQuotesByArbQuoterScript(
     };
   }
 }
-

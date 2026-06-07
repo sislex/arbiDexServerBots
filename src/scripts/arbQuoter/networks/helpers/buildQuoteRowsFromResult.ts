@@ -111,13 +111,14 @@ export function buildQuoteRowsFromResult(options: BuildQuoteRowsFromResultOption
       });
     }
 
+
     tableRows.push({
       dex: meta.dex,
       version: meta.version,
-      pool: meta.poolAddress,
+      // pool: meta.poolAddress,
       kind: Number(item.kind),
-      buyAmountIn: `${amountInHuman} ${inSymbol}`,
-      buyAmountOut: `${formatUnitsFixed(item.buyAmountOutHumanX18, 18)} ${outSymbol}`,
+      buyAmountIn: `${amountInHuman}`,
+      buyAmountOut: `${formatUnitsFixed(item.buyAmountOutHumanX18, 18)}`,
       buyPriceOutPerIn: formatNumberFixed(buyPriceOutPerIn),
       buyImpactPpm: item.buy.priceImpactPpm.toString(),
       buyImpactLevel: impactLevel(item.buy.priceImpactPpm),

@@ -1,5 +1,9 @@
 import type { PoolBrief, UnifiedQuoteResult } from '../../shared';
-import type { ArbSummaryBestBuyRow, ArbSummaryBestSellRow, ArbSummaryResult } from './types';
+import type {
+  ArbSummaryBestBuyRow,
+  ArbSummaryBestSellRow,
+  ArbSummaryResult,
+} from './types';
 
 type ArbSummaryToUnifiedInput = {
   summary: ArbSummaryResult;
@@ -15,7 +19,14 @@ function parsePrice(value: string): number | null {
   return parsed;
 }
 
-function toPoolBrief(row: ArbSummaryBestBuyRow | ArbSummaryBestSellRow | undefined): PoolBrief | null {
+function invertPrice(value: number | null): number | null {
+  if (!value || value <= 0) return null;
+  return 1 / value;
+}
+
+function toPoolBrief(
+  row: ArbSummaryBestBuyRow | ArbSummaryBestSellRow | undefined,
+): PoolBrief | null {
   if (!row?.pool) return null;
   return {
     dex: row.dex,
@@ -24,15 +35,50 @@ function toPoolBrief(row: ArbSummaryBestBuyRow | ArbSummaryBestSellRow | undefin
   };
 }
 
-export function arbSummaryToUnified(input: ArbSummaryToUnifiedInput): UnifiedQuoteResult {
+export function arbSummaryToUnified(
+  input: ArbSummaryToUnifiedInput,
+): UnifiedQuoteResult {
   const { summary, source, token0, token1, latencyMs } = input;
 
-  const amountKey = summary.bestBuyRows[0]?.amount ?? summary.bestSellRows[0]?.amount;
-  const bestBuyRow = summary.bestBuyRows.find((row) => row.amount === amountKey) ?? summary.bestBuyRows[0];
-  const bestSellRow = summary.bestSellRows.find((row) => row.amount === amountKey) ?? summary.bestSellRows[0];
+  const amountKey =
+    summary.bestBuyRows[0]?.amount ?? summary.bestSellRows[0]?.amount;
+  const bestBuyRow =
+    summary.bestBuyRows.find((row) => row.amount === amountKey) ??
+    summary.bestBuyRows[0];
+  const bestSellRow =
+    summary.bestSellRows.find((row) => row.amount === amountKey) ??
+    summary.bestSellRows[0];
 
-  const askPrice = parsePrice(bestBuyRow?.bestBuyPriceOutPerIn ?? '');
-  const bidPrice = parsePrice(bestSellRow?.bestSellPriceOutPerIn ?? '');
+  const contractSellPriceOutPerIn = parsePrice(
+    bestBuyRow?.bestBuyPriceOutPerIn ?? '',
+  );
+  const contractBuyPriceOutPerIn = parsePrice(
+    bestSellRow?.bestSellPriceOutPerIn ?? '',
+  );
+
+  if (!contractSellPriceOutPerIn || !contractBuyPriceOutPerIn) {
+    return {
+      sourceType: 'dex',
+      source,
+      token0,
+      token1,
+      ok: false,
+      latencyMs,
+      error:
+        summary.arbLines[0] ?? 'No valid best buy/sell rows in arb summary',
+      timestamp: Date.now(),
+      bidPrice: 0,
+      askPrice: 0,
+      midPrice: 0,
+      spread: 0,
+      spreadPct: 0,
+      bestBuyPool: toPoolBrief(bestSellRow),
+      bestSellPool: toPoolBrief(bestBuyRow),
+    };
+  }
+
+  const bidPrice = invertPrice(contractSellPriceOutPerIn);
+  const askPrice = invertPrice(contractBuyPriceOutPerIn);
 
   if (!askPrice || !bidPrice) {
     return {
@@ -42,15 +88,15 @@ export function arbSummaryToUnified(input: ArbSummaryToUnifiedInput): UnifiedQuo
       token1,
       ok: false,
       latencyMs,
-      error: summary.arbLines[0] ?? 'No valid best buy/sell rows in arb summary',
+      error: 'Invalid inverted DEX price while building unified quote',
       timestamp: Date.now(),
       bidPrice: 0,
       askPrice: 0,
       midPrice: 0,
       spread: 0,
       spreadPct: 0,
-      bestBuyPool: toPoolBrief(bestBuyRow),
-      bestSellPool: toPoolBrief(bestSellRow),
+      bestBuyPool: toPoolBrief(bestSellRow),
+      bestSellPool: toPoolBrief(bestBuyRow),
     };
   }
 
@@ -71,8 +117,7 @@ export function arbSummaryToUnified(input: ArbSummaryToUnifiedInput): UnifiedQuo
     midPrice,
     spread,
     spreadPct,
-    bestBuyPool: toPoolBrief(bestBuyRow),
-    bestSellPool: toPoolBrief(bestSellRow),
+    bestBuyPool: toPoolBrief(bestSellRow),
+    bestSellPool: toPoolBrief(bestBuyRow),
   };
 }
-

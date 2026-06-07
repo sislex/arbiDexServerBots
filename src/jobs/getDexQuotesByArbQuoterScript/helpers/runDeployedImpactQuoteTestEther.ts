@@ -2,13 +2,14 @@ import {
   stabsConfigToQuoteInput,
   type DeployedImpactQuoteStabsConfig,
   type PoolQuoteMeta,
-} from "./configQuoteInput.js";
+} from './configQuoteInput.js';
+import { ethers } from 'ethers';
 import {
   buildQuoteRowsFromResult,
   type ConfigImpactQuoteBatchResultStruct,
   type QuoteTableRow,
-} from "./buildQuoteRowsFromResult.js";
-import { resolveQuoterEther } from "./resolveQuoterEther.js";
+} from './buildQuoteRowsFromResult.js';
+import { resolveQuoterEther } from './resolveQuoterEther.js';
 import { buildArbSummary } from './buildArbSummary.js';
 import type { ArbSummaryCandidate } from './buildArbSummary.js';
 import type { ArbSummaryResult } from './types.js';
@@ -47,9 +48,14 @@ function parseExtraSettings(extraSettings: unknown): {
   return {};
 }
 
-function parseSingleAmountIn(configAmountIn: number | number[], configName: string): string {
+function parseSingleAmountIn(
+  configAmountIn: number | number[],
+  configName: string,
+): string {
   if (Array.isArray(configAmountIn)) {
-    throw new Error(`extraSettings.amountIn must be a single number in ${configName}`);
+    throw new Error(
+      `extraSettings.amountIn must be a single number in ${configName}`,
+    );
   }
 
   const amount = String(configAmountIn).trim();
@@ -60,9 +66,145 @@ function parseSingleAmountIn(configAmountIn: number | number[], configName: stri
   return amount;
 }
 
-function parseOptionalAmountOut(configAmountOut: number | undefined): string | undefined {
+function parseOptionalAmountOut(
+  configAmountOut: number | undefined,
+): string | undefined {
   if (configAmountOut === undefined || configAmountOut <= 0) return undefined;
   return String(configAmountOut);
+}
+
+function x18ToNumber(value: bigint): number {
+  const parsed = Number(ethers.formatUnits(value, 18));
+  return Number.isFinite(parsed) ? parsed : NaN;
+}
+
+function rawToNumber(value: bigint, decimals: number): number {
+  const parsed = Number(ethers.formatUnits(value, decimals));
+  return Number.isFinite(parsed) ? parsed : NaN;
+}
+
+function formatDiagnosticNumber(value: number, precision = 12): string {
+  if (!Number.isFinite(value)) return 'n/a';
+  if (value === 0) return '0';
+  return value.toPrecision(precision);
+}
+
+function formatDiff(value: number): string {
+  if (!Number.isFinite(value)) return 'n/a';
+  if (Math.abs(value) < 1e-12) return '0';
+  return value.toExponential(6);
+}
+
+function printContractBestQuoteDiagnostics(
+  result: ConfigImpactQuoteBatchResultStruct,
+  poolMetas: PoolQuoteMeta[],
+  amountInHuman: string,
+  amountOutHuman: string | undefined,
+  inSymbol: string,
+  outSymbol: string,
+  inDecimals: number,
+  outDecimals: number,
+) {
+  let bestContractBuy:
+    | {
+        quote: ConfigImpactQuoteBatchResultStruct['quotes'][number];
+        meta?: PoolQuoteMeta;
+      }
+    | undefined;
+  let bestContractSell:
+    | {
+        quote: ConfigImpactQuoteBatchResultStruct['quotes'][number];
+        meta?: PoolQuoteMeta;
+      }
+    | undefined;
+
+  for (let i = 0; i < result.quotes.length; i++) {
+    const quote = result.quotes[i];
+    const meta = poolMetas[i];
+
+    if (quote?.buy?.success && quote.buyPriceOutPerInX18 > 0n) {
+      if (
+        !bestContractBuy ||
+        quote.buyPriceOutPerInX18 > bestContractBuy.quote.buyPriceOutPerInX18
+      ) {
+        bestContractBuy = { quote, meta };
+      }
+    }
+
+    if (
+      quote?.sellEnabled &&
+      quote?.sell?.success &&
+      quote.sellPriceOutPerInX18 > 0n
+    ) {
+      if (
+        !bestContractSell ||
+        quote.sellPriceOutPerInX18 < bestContractSell.quote.sellPriceOutPerInX18
+      ) {
+        bestContractSell = { quote, meta };
+      }
+    }
+  }
+
+  console.log('[ArbQuoterScript] contract best quotes diagnostics');
+  console.log(
+    `[ArbQuoterScript] contract price unit=${outSymbol}/${inSymbol}; unified price unit=${inSymbol}/${outSymbol}`,
+  );
+
+  if (bestContractBuy) {
+    const q = bestContractBuy.quote;
+    const contractPrice = x18ToNumber(q.buyPriceOutPerInX18);
+    const unifiedAsk = contractPrice > 0 ? 1 / contractPrice : NaN;
+    const amountIn = Number(amountInHuman);
+    const amountOut = rawToNumber(q.buy.amountOut, outDecimals);
+    const recalculatedAmountOut = amountIn / unifiedAsk;
+
+    console.table([
+      {
+        side: `BUY ${outSymbol}`,
+        dex: bestContractBuy.meta?.dex,
+        version: bestContractBuy.meta?.version,
+        pool: q.pool,
+        amountIn: `${amountInHuman} ${inSymbol}`,
+        amountOut: `${formatDiagnosticNumber(amountOut)} ${outSymbol}`,
+        contractPriceOutPerIn: formatDiagnosticNumber(contractPrice),
+        unifiedAskInPerOut: formatDiagnosticNumber(unifiedAsk),
+        recalculatedOut: `${formatDiagnosticNumber(recalculatedAmountOut)} ${outSymbol}`,
+        diffOut: formatDiff(recalculatedAmountOut - amountOut),
+      },
+    ]);
+  } else {
+    console.log(
+      `[ArbQuoterScript] no successful contract BUY quotes (${inSymbol} -> ${outSymbol})`,
+    );
+  }
+
+  if (bestContractSell && amountOutHuman) {
+    const q = bestContractSell.quote;
+    const contractPrice = x18ToNumber(q.sellPriceOutPerInX18);
+    const unifiedBid = contractPrice > 0 ? 1 / contractPrice : NaN;
+    const amountOut = Number(amountOutHuman);
+    const sellOut = rawToNumber(q.sell.amountOut, inDecimals);
+    const recalculatedSellOut = amountOut * unifiedBid;
+
+    console.table([
+      {
+        side: `SELL ${outSymbol}`,
+        dex: bestContractSell.meta?.dex,
+        version: bestContractSell.meta?.version,
+        pool: q.pool,
+        amountIn: `${amountOutHuman} ${outSymbol}`,
+        amountOut: `${formatDiagnosticNumber(sellOut)} ${inSymbol}`,
+        contractPriceOutPerIn: formatDiagnosticNumber(contractPrice),
+        unifiedBidInPerOut: formatDiagnosticNumber(unifiedBid),
+        recalculatedOut: `${formatDiagnosticNumber(recalculatedSellOut)} ${inSymbol}`,
+        diffOut: formatDiff(recalculatedSellOut - sellOut),
+      },
+    ]);
+  } else if (amountOutHuman) {
+    console.log(
+      `[ArbQuoterScript] no successful contract SELL quotes (${outSymbol} -> ${inSymbol})`,
+    );
+  }
 }
 
 function baseFailureRow(
@@ -76,16 +218,16 @@ function baseFailureRow(
     dex: meta.dex,
     version: meta.version,
     pool: meta.poolAddress,
-    kind: "n/a",
+    kind: 'n/a',
     buyAmountOut: `0 ${outSymbol}`,
-    buyPriceOutPerIn: "0",
-    buyImpactPpm: "0",
-    buyImpactLevel: "REVERT",
+    buyPriceOutPerIn: '0',
+    buyImpactPpm: '0',
+    buyImpactLevel: 'REVERT',
     sellEnabled: false,
     sellAmountOut: `0 ${inSymbol}`,
-    sellPriceOutPerIn: "n/a",
-    sellImpactPpm: "0",
-    sellImpactLevel: "n/a",
+    sellPriceOutPerIn: 'n/a',
+    sellImpactPpm: '0',
+    sellImpactLevel: 'n/a',
     success: false,
   };
 
@@ -96,17 +238,15 @@ function baseFailureRow(
   return row;
 }
 
-export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpactQuoteTestEtherOptions): Promise<ArbSummaryResult> {
-  const {
-    networkEnvPrefix,
-    config,
-    includeRevertHint = true,
-  } = options;
+export async function runDeployedImpactQuoteTestEther(
+  options: RunDeployedImpactQuoteTestEtherOptions,
+): Promise<ArbSummaryResult> {
+  const { networkEnvPrefix, config, includeRevertHint = true } = options;
 
   const rpcUrl = config.rpcUrl;
   const quoterEnvKey = `${networkEnvPrefix}_QUOTER_ADDRESS`;
-  const inSymbol = config.opts?.tokenIn?.symbol ?? "tokenIn";
-  const outSymbol = config.opts?.tokenOut?.symbol ?? "tokenOut";
+  const inSymbol = config.opts?.tokenIn?.symbol ?? 'tokenIn';
+  const outSymbol = config.opts?.tokenOut?.symbol ?? 'tokenOut';
   const parsedExtraSettings = parseExtraSettings(config.extraSettings);
 
   const configAmountIn = parsedExtraSettings.amountIn;
@@ -123,10 +263,12 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
   const amountOutHuman = parseOptionalAmountOut(parsedExtraSettings.amountOut);
   const referenceDivisor = BigInt(configReferenceDivisor);
   if (referenceDivisor <= 0n) {
-    throw new Error(`extraSettings.referenceDivisor must be > 0 in ${networkEnvPrefix}`);
+    throw new Error(
+      `extraSettings.referenceDivisor must be > 0 in ${networkEnvPrefix}`,
+    );
   }
 
-  const { quoter} = await resolveQuoterEther({
+  const { quoter } = await resolveQuoterEther({
     quoterEnvKey,
     networkEnvPrefix,
     rpcUrl,
@@ -145,14 +287,26 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
   });
 
   const callBatchQuote = async (pairsOverride?: typeof quoteInput.pairs) => {
-    const input = pairsOverride ? { ...quoteInput, pairs: pairsOverride } : quoteInput;
-    return await (quoter as any)
-      .quoteConfigExactInWithImpact
-      .staticCall(input) as ConfigImpactQuoteBatchResultStruct;
+    const input = pairsOverride
+      ? { ...quoteInput, pairs: pairsOverride }
+      : quoteInput;
+    return (await (quoter as any).quoteConfigExactInWithImpact.staticCall(
+      input,
+    )) as ConfigImpactQuoteBatchResultStruct;
   };
 
   try {
     const result = await callBatchQuote();
+    printContractBestQuoteDiagnostics(
+      result,
+      poolMetas,
+      amountInHuman,
+      amountOutHuman,
+      inSymbol,
+      outSymbol,
+      quoteInput.tokenInDecimals,
+      quoteInput.tokenOutDecimals,
+    );
     // console.log(
     //   `[ArbQuoterScript] batch success block=${result.blockNumber.toString()} gas=${result.gasUsed.toString()} quotes=${result.quotes.length}`,
     // );
@@ -178,8 +332,8 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
   } catch (e: unknown) {
     const batchMsg = e instanceof Error ? e.message : String(e);
     // console.error(`[ArbQuoterScript] batch reverted: ${batchMsg}`);
-    console.log("[ArbQuoterScript] switching to fallback single-pool mode...");
-    const isolatedQuotes: ConfigImpactQuoteBatchResultStruct["quotes"] = [];
+    console.log('[ArbQuoterScript] switching to fallback single-pool mode...');
+    const isolatedQuotes: ConfigImpactQuoteBatchResultStruct['quotes'] = [];
     const isolatedPoolMetas: PoolQuoteMeta[] = [];
     const isolatedErrors: string[] = [];
     let lastBlockNumber = 0n;
@@ -196,7 +350,9 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
         const quote = single.quotes[0];
         if (!quote) {
           isolatedErrors.push(`${meta.poolAddress}: empty quote result`);
-          console.warn(`[ArbQuoterScript] fallback pool[${i}] empty quote result`);
+          console.warn(
+            `[ArbQuoterScript] fallback pool[${i}] empty quote result`,
+          );
           continue;
         }
         isolatedQuotes.push(quote);
@@ -207,7 +363,8 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
         //   `[ArbQuoterScript] fallback pool[${i}] success block=${single.blockNumber.toString()} gas=${single.gasUsed.toString()}`,
         // );
       } catch (singleErr: unknown) {
-        const singleMsg = singleErr instanceof Error ? singleErr.message : String(singleErr);
+        const singleMsg =
+          singleErr instanceof Error ? singleErr.message : String(singleErr);
         isolatedErrors.push(`${meta.poolAddress}: ${singleMsg.slice(0, 140)}`);
         // console.warn(`[ArbQuoterScript] fallback pool[${i}] failed: ${singleMsg}`);
         console.warn(`[ArbQuoterScript] fallback pool[${i}] failed`);
@@ -220,6 +377,16 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
         blockNumber: lastBlockNumber,
         gasUsed: totalGasUsed,
       };
+      printContractBestQuoteDiagnostics(
+        isolatedResult,
+        isolatedPoolMetas,
+        amountInHuman,
+        amountOutHuman,
+        inSymbol,
+        outSymbol,
+        quoteInput.tokenInDecimals,
+        quoteInput.tokenOutDecimals,
+      );
       const built = buildQuoteRowsFromResult({
         result: isolatedResult,
         poolMetas: isolatedPoolMetas,
@@ -249,7 +416,15 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     );
 
     for (const meta of poolMetas) {
-      table.push(baseFailureRow(meta, inSymbol, outSymbol, includeRevertHint, batchMsg.slice(0, 160)));
+      table.push(
+        baseFailureRow(
+          meta,
+          inSymbol,
+          outSymbol,
+          includeRevertHint,
+          batchMsg.slice(0, 160),
+        ),
+      );
     }
 
     return {
@@ -259,15 +434,3 @@ export async function runDeployedImpactQuoteTestEther(options: RunDeployedImpact
     };
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
