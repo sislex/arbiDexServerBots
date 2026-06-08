@@ -57,21 +57,21 @@ export function buildArbSummary(candidates: ArbSummaryCandidate[]) {
 
     bestBuyRows.push({
       amount: amountKey,
-      bestBuyPriceOutPerIn: formatNumberFixed(bestBuy.bestBuyPriceOutPerIn),
+      bestBuyPriceOutPerIn: String(bestBuy.bestBuyPriceOutPerIn),
       dex: bestBuy.dex,
       version: bestBuy.version,
       pool: bestBuy.pool,
     });
     bestSellRows.push({
       amount: amountKey,
-      bestSellPriceOutPerIn: formatNumberFixed(bestSell.bestSellPriceOutPerIn),
+      bestSellPriceOutPerIn: String(bestSell.bestSellPriceOutPerIn),
       dex: bestSell.dex,
       version: bestSell.version,
       pool: bestSell.pool,
     });
     arbLines.push(
       `${amountKey}: ${canCrossPoolArb ? "✅ можно" : "❌ нельзя"} арбитражить между пулов `
-      + `(spread ${formatPercent(spreadPct)}; sell ${formatNumberFixed(bestSell.bestSellPriceOutPerIn)} - buy ${formatNumberFixed(bestBuy.bestBuyPriceOutPerIn)})`
+      + `(spread ${formatPercent(spreadPct)}; sell ${formatNumberFixed(1 / bestSell.bestSellPriceOutPerIn, 2)} - buy ${formatNumberFixed(1 / bestBuy.bestBuyPriceOutPerIn, 2)})`
     );
   }
 

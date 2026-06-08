@@ -37,26 +37,26 @@ function printUnifiedQuoteDiagnostics(
   const backFromBid = unified.bidPrice > 0 ? 1 / unified.bidPrice : NaN;
   const backFromAsk = unified.askPrice > 0 ? 1 / unified.askPrice : NaN;
 
-  console.log('[ArbQuoterScript] unified quote diagnostics');
-  console.table([
-    {
-      side: 'SELL base / bid',
-      contractPriceOutPerIn: formatDiagnosticNumber(contractSellPriceOutPerIn),
-      unifiedPriceInPerOut: formatDiagnosticNumber(unified.bidPrice),
-      backCalculatedOutPerIn: formatDiagnosticNumber(backFromBid),
-      diff: formatDiff(backFromBid - contractSellPriceOutPerIn),
-      pool: bestBuyRow?.pool ?? 'n/a',
-    },
-    {
-      side: 'BUY base / ask',
-      contractPriceOutPerIn: formatDiagnosticNumber(contractBuyPriceOutPerIn),
-      unifiedPriceInPerOut: formatDiagnosticNumber(unified.askPrice),
-      backCalculatedOutPerIn: formatDiagnosticNumber(backFromAsk),
-      diff: formatDiff(backFromAsk - contractBuyPriceOutPerIn),
-      pool: bestSellRow?.pool ?? 'n/a',
-    },
-  ]);
-  console.log('[ArbQuoterScript] unified', unified);
+  // console.log('[ArbQuoterScript] unified quote diagnostics');
+  // console.table([
+  //   {
+  //     side: 'SELL base / bid',
+  //     contractPriceOutPerIn: formatDiagnosticNumber(contractSellPriceOutPerIn),
+  //     unifiedPriceInPerOut: formatDiagnosticNumber(unified.bidPrice),
+  //     backCalculatedOutPerIn: formatDiagnosticNumber(backFromBid),
+  //     diff: formatDiff(backFromBid - contractSellPriceOutPerIn),
+  //     pool: bestBuyRow?.pool ?? 'n/a',
+  //   },
+  //   {
+  //     side: 'BUY base / ask',
+  //     contractPriceOutPerIn: formatDiagnosticNumber(contractBuyPriceOutPerIn),
+  //     unifiedPriceInPerOut: formatDiagnosticNumber(unified.askPrice),
+  //     backCalculatedOutPerIn: formatDiagnosticNumber(backFromAsk),
+  //     diff: formatDiff(backFromAsk - contractBuyPriceOutPerIn),
+  //     pool: bestSellRow?.pool ?? 'n/a',
+  //   },
+  // ]);
+  // console.log('[ArbQuoterScript] unified', unified);
 }
 
 export async function getDexQuotesByArbQuoterScript(

@@ -145,10 +145,10 @@ function printContractBestQuoteDiagnostics(
     }
   }
 
-  console.log('[ArbQuoterScript] contract best quotes diagnostics');
-  console.log(
-    `[ArbQuoterScript] contract price unit=${outSymbol}/${inSymbol}; unified price unit=${inSymbol}/${outSymbol}`,
-  );
+  // console.log('[ArbQuoterScript] contract best quotes diagnostics');
+  // console.log(
+  //   `[ArbQuoterScript] contract price unit=${outSymbol}/${inSymbol}; unified price unit=${inSymbol}/${outSymbol}`,
+  // );
 
   if (bestContractBuy) {
     const q = bestContractBuy.quote;
@@ -158,20 +158,20 @@ function printContractBestQuoteDiagnostics(
     const amountOut = rawToNumber(q.buy.amountOut, outDecimals);
     const recalculatedAmountOut = amountIn / unifiedAsk;
 
-    console.table([
-      {
-        side: `BUY ${outSymbol}`,
-        dex: bestContractBuy.meta?.dex,
-        version: bestContractBuy.meta?.version,
-        pool: q.pool,
-        amountIn: `${amountInHuman} ${inSymbol}`,
-        amountOut: `${formatDiagnosticNumber(amountOut)} ${outSymbol}`,
-        contractPriceOutPerIn: formatDiagnosticNumber(contractPrice),
-        unifiedAskInPerOut: formatDiagnosticNumber(unifiedAsk),
-        recalculatedOut: `${formatDiagnosticNumber(recalculatedAmountOut)} ${outSymbol}`,
-        diffOut: formatDiff(recalculatedAmountOut - amountOut),
-      },
-    ]);
+    // console.table([
+    //   {
+    //     side: `BUY ${outSymbol}`,
+    //     dex: bestContractBuy.meta?.dex,
+    //     version: bestContractBuy.meta?.version,
+    //     pool: q.pool,
+    //     amountIn: `${amountInHuman} ${inSymbol}`,
+    //     amountOut: `${formatDiagnosticNumber(amountOut)} ${outSymbol}`,
+    //     contractPriceOutPerIn: formatDiagnosticNumber(contractPrice),
+    //     unifiedAskInPerOut: formatDiagnosticNumber(unifiedAsk),
+    //     recalculatedOut: `${formatDiagnosticNumber(recalculatedAmountOut)} ${outSymbol}`,
+    //     diffOut: formatDiff(recalculatedAmountOut - amountOut),
+    //   },
+    // ]);
   } else {
     console.log(
       `[ArbQuoterScript] no successful contract BUY quotes (${inSymbol} -> ${outSymbol})`,
@@ -186,20 +186,20 @@ function printContractBestQuoteDiagnostics(
     const sellOut = rawToNumber(q.sell.amountOut, inDecimals);
     const recalculatedSellOut = amountOut * unifiedBid;
 
-    console.table([
-      {
-        side: `SELL ${outSymbol}`,
-        dex: bestContractSell.meta?.dex,
-        version: bestContractSell.meta?.version,
-        pool: q.pool,
-        amountIn: `${amountOutHuman} ${outSymbol}`,
-        amountOut: `${formatDiagnosticNumber(sellOut)} ${inSymbol}`,
-        contractPriceOutPerIn: formatDiagnosticNumber(contractPrice),
-        unifiedBidInPerOut: formatDiagnosticNumber(unifiedBid),
-        recalculatedOut: `${formatDiagnosticNumber(recalculatedSellOut)} ${inSymbol}`,
-        diffOut: formatDiff(recalculatedSellOut - sellOut),
-      },
-    ]);
+    // console.table([
+    //   {
+    //     side: `SELL ${outSymbol}`,
+    //     dex: bestContractSell.meta?.dex,
+    //     version: bestContractSell.meta?.version,
+    //     pool: q.pool,
+    //     amountIn: `${amountOutHuman} ${outSymbol}`,
+    //     amountOut: `${formatDiagnosticNumber(sellOut)} ${inSymbol}`,
+    //     contractPriceOutPerIn: formatDiagnosticNumber(contractPrice),
+    //     unifiedBidInPerOut: formatDiagnosticNumber(unifiedBid),
+    //     recalculatedOut: `${formatDiagnosticNumber(recalculatedSellOut)} ${inSymbol}`,
+    //     diffOut: formatDiff(recalculatedSellOut - sellOut),
+    //   },
+    // ]);
   } else if (amountOutHuman) {
     console.log(
       `[ArbQuoterScript] no successful contract SELL quotes (${outSymbol} -> ${inSymbol})`,
