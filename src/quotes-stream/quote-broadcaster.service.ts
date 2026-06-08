@@ -23,7 +23,7 @@ export class QuoteBroadcasterService {
   }
 
   publishQuote(quote: UnifiedQuoteResult): void {
-    console.log('quoteToWritePoints(quote)', quoteToWritePoints(quote));
+    // console.log('quoteToWritePoints(quote)', quoteToWritePoints(quote));
     this.publishPoints(quoteToWritePoints(quote));
   }
 
