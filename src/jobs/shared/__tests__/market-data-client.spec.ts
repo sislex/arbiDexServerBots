@@ -243,7 +243,7 @@ describe('MarketDataClient', () => {
         value: {
           dex: 'camelot',
           version: 'v3',
-          poolAddress: '0xc873fEcbd354f5A56E00E710B90EF4201db2448d',
+          poolAddress: '0xb1026b8e7276e7ac75410f1fcbbe21796e8f7526',
         },
         timestamp: 1700000001000,
       });
@@ -252,7 +252,7 @@ describe('MarketDataClient', () => {
         value: {
           dex: 'uniswap',
           version: 'v3',
-          poolAddress: '0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24',
+          poolAddress: '0x6f38e884725a116c9c7fbf208e79fe8828a2595f',
         },
         timestamp: 1700000001000,
       });
@@ -269,7 +269,32 @@ describe('MarketDataClient', () => {
       expect(keys).not.toContain('dex:arbitrum|ETH/USDC|askPool');
     });
 
-    it('для version=v3 выбирает router по source (сети) + dex', () => {
+    it('для version=v2 выбирает router по source (сети) + dex', () => {
+      process.env.BASE_UNISWAP_V2_ROUTER = '0x00000000000000000000000000000000000000B1';
+
+      const client = new MarketDataClient();
+      client.writeQuote(makeQuote({
+        sourceType: 'dex',
+        source: 'dex:base',
+        bestBuyPool: {
+          dex: 'uniswap',
+          version: 'v2',
+          poolAddress: '0x6f38e884725a116c9c7fbf208e79fe8828a2595f',
+        },
+      }));
+
+      expect(mockSocketEmit).toHaveBeenCalledWith('write', {
+        key: 'dex:base|ETH/USDC|askPool',
+        value: {
+          dex: 'uniswap',
+          version: 'v2',
+          poolAddress: '0x00000000000000000000000000000000000000B1',
+        },
+        timestamp: 1700000001000,
+      });
+    });
+
+    it('для version=v3 сохраняет реальный адрес пула, а не router', () => {
       process.env.BASE_UNISWAP_V2_ROUTER = '0x00000000000000000000000000000000000000B1';
 
       const client = new MarketDataClient();
@@ -288,7 +313,7 @@ describe('MarketDataClient', () => {
         value: {
           dex: 'uniswap',
           version: 'v3',
-          poolAddress: '0x00000000000000000000000000000000000000B1',
+          poolAddress: '0x6f38e884725a116c9c7fbf208e79fe8828a2595f',
         },
         timestamp: 1700000001000,
       });

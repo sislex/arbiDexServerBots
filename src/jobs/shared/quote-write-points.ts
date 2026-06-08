@@ -72,13 +72,13 @@ function poolToStoreValue(
   source: UnifiedQuoteResult['source'],
   pool: NonNullable<UnifiedQuoteResult['bestBuyPool']>,
 ): PoolValue {
-  const isV3 = pool.version === 'v3';
+  const isV2 = pool.version === 'v2';
   const v2Router = resolveV2Router(source, pool.dex);
 
   return {
     dex: pool.dex,
     version: pool.version,
-    poolAddress: isV3 ? (v2Router ?? pool.poolAddress) : pool.poolAddress,
+    poolAddress: isV2 ? (v2Router ?? pool.poolAddress) : pool.poolAddress,
   };
 }
 

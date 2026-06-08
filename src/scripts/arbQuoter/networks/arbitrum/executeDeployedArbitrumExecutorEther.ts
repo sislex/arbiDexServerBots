@@ -31,15 +31,17 @@ const EXECUTOR_ENV_KEY = "ARBITRUM_EXECUTOR_ADDRESS";
 const RPC_ENV_KEY = "ARBITRUM_RPC";
 const PRIVATE_KEY_ENV_KEY = "PRIVATE_KEY";
 const AMOUNT_IN_USDC_HUMAN = process.env.ARBITRUM_EXECUTOR_AMOUNT_IN_USDC ?? "1";
-const DO_REAL_TRANSACTION = true;
+const DO_REAL_TRANSACTION = false;
 
 const config = ArbitrumPoolsConfigListStabs as DeployedImpactQuoteStabsConfig;
 
-const tokenWeth = ethers.getAddress(config.opts?.tokenIn?.address ?? "");
-const tokenUsdc = ethers.getAddress(config.opts?.tokenOut?.address ?? "");
-const wethDecimals = config.opts?.tokenIn?.decimals ?? 18;
-const usdcDecimals = config.opts?.tokenOut?.decimals ?? 6;
+// This config defines tokenIn = USDC, tokenOut = WETH (direction: USDC -> WETH).
+const tokenUsdc = ethers.getAddress(config.opts?.tokenIn?.address ?? "");
+const tokenWeth = ethers.getAddress(config.opts?.tokenOut?.address ?? "");
+const usdcDecimals = config.opts?.tokenIn?.decimals ?? 6;
+const wethDecimals = config.opts?.tokenOut?.decimals ?? 18;
 const amountInUsdc = ethers.parseUnits(AMOUNT_IN_USDC_HUMAN, usdcDecimals);
+const AMOUNT_OUT_MIN_SLIPPAGE_BPS = BigInt(process.env.ARBITRUM_EXECUTOR_SLIPPAGE_BPS ?? "50");
 const CONFIG_USDC_AMOUNT_HUMAN = String(config.extraSettings?.amountOut ?? "1");
 const CONFIG_USDC_AMOUNT_NUM = Number(CONFIG_USDC_AMOUNT_HUMAN);
 
@@ -134,10 +136,10 @@ async function main() {
     throw new Error(`Invalid config amountOut: ${CONFIG_USDC_AMOUNT_HUMAN}`);
   }
 
-  const reverseConfigOneUsdc: DeployedImpactQuoteStabsConfig = {
+  const quoteConfigOneUsdc: DeployedImpactQuoteStabsConfig = {
     opts: {
-      tokenIn: config.opts?.tokenOut,
-      tokenOut: config.opts?.tokenIn,
+      tokenIn: config.opts?.tokenIn,
+      tokenOut: config.opts?.tokenOut,
     },
     extraSettings: {
       amountIn: Number(AMOUNT_IN_USDC_HUMAN),
@@ -148,7 +150,7 @@ async function main() {
   };
 
   const referenceDivisor = BigInt(config.extraSettings?.referenceDivisor ?? 100);
-  const { quoteInput: quoteInputOneUsdc } = stabsConfigToQuoteInput(reverseConfigOneUsdc, {
+  const { quoteInput: quoteInputOneUsdc } = stabsConfigToQuoteInput(quoteConfigOneUsdc, {
     amountInHuman: AMOUNT_IN_USDC_HUMAN,
     referenceDivisor,
   });
@@ -188,12 +190,10 @@ async function main() {
   // Step 4: Run executor for the best pool
   console.log("Step 3: Running executor for the best pool...");
   const rows: PoolExecutionResult[] = [];
-  const startNonce = DO_REAL_TRANSACTION
-    ? await provider.getTransactionCount(caller, "pending")
-    : 0;
 
   const quotedOutOneUsdc = maxOutput;
-  const step = buildExecutorSwapStep(bestPair, amountInUsdc, quotedOutOneUsdc);
+  const amountOutMin = quotedOutOneUsdc - (quotedOutOneUsdc * AMOUNT_OUT_MIN_SLIPPAGE_BPS) / 10_000n;
+  const step = buildExecutorSwapStep(bestPair, amountInUsdc, amountOutMin);
 
   try {
     if (DO_REAL_TRANSACTION) {
@@ -202,7 +202,6 @@ async function main() {
         tokenWeth,
         false,
         true,
-        { nonce: startNonce },
       );
       const receipt = await tx.wait();
       if (!receipt) throw new Error("Transaction receipt is null");
