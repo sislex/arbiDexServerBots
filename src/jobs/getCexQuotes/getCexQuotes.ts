@@ -10,6 +10,7 @@ import { getOkxQuote }     from './helpers/getOkxQuote';
 import { getKucoinQuote }  from './helpers/getKucoinQuote';
 import { getGateioQuote }  from './helpers/getGateioQuote';
 import { getDzengiQuote }  from './helpers/getDzengiQuote';
+import {quoteBroadcaster} from '../../quotes-stream/quote-broadcaster.service.js';
 
 // ── Маппинг source → fetchQuote(token0, token1) ────────
 
@@ -43,6 +44,7 @@ export async function getCexQuotes(
     const result: CexQuotesResult = { ok: true, latencyMs: quote.latencyMs, quote };
     result.unified = cexToUnified(source, result, token0, token1);
     marketDataClient.writeQuote(result.unified);
+    quoteBroadcaster.publishQuote(result.unified);
 
     return result;
   } catch (err: any) {
