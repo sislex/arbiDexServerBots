@@ -1,16 +1,28 @@
 // src/store/bots.controller.ts
-import {Body, Controller, Get, Param, Post, Put} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiBody,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 import { AppStore } from '../store/app.store';
-import {IJobParams, IBotParams, IArbitrage, IBotsRule} from '../store/state.types';
+import {
+  IJobParams,
+  IBotParams,
+  IArbitrage,
+  IBotsRule,
+} from '../store/state.types';
 import { IBot } from '../store/state.types';
 
-import {selectBotsList} from '../store/selectors';
-import {firstValueFrom} from 'rxjs';
-import {getParamsFromBotInstance} from '../store/bots.halpers';
-import {convertBigIntToString} from '../helpers/convertBigIntToString';
-import {IBotError} from '../helpers/createError';
-import {getParsedArbitrage} from '../helpers/getParsedArbitrage.helper';
+import { selectBotsList } from '../store/selectors';
+import { firstValueFrom } from 'rxjs';
+import { getParamsFromBotInstance } from '../store/bots.halpers';
+import { convertBigIntToString } from '../helpers/convertBigIntToString';
+import { IBotError } from '../helpers/createError';
+import { getParsedArbitrage } from '../helpers/getParsedArbitrage.helper';
 
 @ApiTags('bots')
 @Controller('')
@@ -18,17 +30,32 @@ export class BotsController {
   constructor(private readonly store: AppStore) {}
 
   @Get('bots/get-all')
-  @ApiOperation({ summary: 'List all bots', description: 'Returns all active bots with their runtime state (id, running, jobCount, latency, errors, etc.).' })
+  @ApiOperation({
+    summary: 'List all bots',
+    description:
+      'Returns all active bots with their runtime state (id, running, jobCount, latency, errors, etc.).',
+  })
   async getAll() {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
     return botsList.map((bot: IBot) => getParamsFromBotInstance(bot));
   }
 
   @Get('bot/:botId/params')
-  @ApiOperation({ summary: 'Bot runtime parameters', description: 'Returns the runtime state of a specific bot.' })
-  @ApiParam({ name: 'botId', description: 'Bot ID (e.g. "Binance_USDC_WETH")', example: 'Binance_USDC_WETH' })
+  @ApiOperation({
+    summary: 'Bot runtime parameters',
+    description: 'Returns the runtime state of a specific bot.',
+  })
+  @ApiParam({
+    name: 'botId',
+    description: 'Bot ID (e.g. "Binance_USDC_WETH")',
+    example: 'Binance_USDC_WETH',
+  })
   async getBotParams(@Param('botId') botId: string) {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
     const bot = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {
       return { error: 'Bot not found' };
@@ -38,25 +65,48 @@ export class BotsController {
   }
 
   @Get('bot/:botId/errors')
-  @ApiOperation({ summary: 'Bot error list', description: 'Returns the list of errors for a specific bot (newest first).' })
-  @ApiParam({ name: 'botId', description: 'Bot ID', example: 'Binance_USDC_WETH' })
+  @ApiOperation({
+    summary: 'Bot error list',
+    description:
+      'Returns the list of errors for a specific bot (newest first).',
+  })
+  @ApiParam({
+    name: 'botId',
+    description: 'Bot ID',
+    example: 'Binance_USDC_WETH',
+  })
   async getBotErrors(@Param('botId') botId: string) {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
     const bot: IBot | undefined = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {
       return { error: 'Bot not found' };
     }
 
-    const errorList: IBotError[] = bot.botInstance.getErrors().slice().reverse();
+    const errorList: IBotError[] = bot.botInstance
+      .getErrors()
+      .slice()
+      .reverse();
 
     return errorList;
   }
 
   @Get('bot/:botId/settings')
-  @ApiOperation({ summary: 'Bot settings', description: 'Returns botParams + jobParams configuration for a specific bot.' })
-  @ApiParam({ name: 'botId', description: 'Bot ID', example: 'Binance_USDC_WETH' })
+  @ApiOperation({
+    summary: 'Bot settings',
+    description:
+      'Returns botParams + jobParams configuration for a specific bot.',
+  })
+  @ApiParam({
+    name: 'botId',
+    description: 'Bot ID',
+    example: 'Binance_USDC_WETH',
+  })
   async getBotSettings(@Param('botId') botId: string) {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
     const bot = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {
       return { error: 'Bot not found' };
@@ -64,19 +114,37 @@ export class BotsController {
 
     return {
       id: botId,
-      ...convertBigIntToString(bot.botInstance.getSettings())
+      ...convertBigIntToString(bot.botInstance.getSettings()),
     };
   }
 
   @Put('bot/:botId/settings')
-  @ApiOperation({ summary: 'Update bot settings', description: 'Updates botParams and/or jobParams for a running bot. Both are JSON strings.' })
-  @ApiParam({ name: 'botId', description: 'Bot ID', example: 'Binance_USDC_WETH' })
+  @ApiOperation({
+    summary: 'Update bot settings',
+    description:
+      'Updates botParams and/or jobParams for a running bot. Both are JSON strings.',
+  })
+  @ApiParam({
+    name: 'botId',
+    description: 'Bot ID',
+    example: 'Binance_USDC_WETH',
+  })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        botParams: { type: 'string', description: 'JSON-encoded IBotParams', example: '{"botType":"TestBot","paused":false,"isRepeat":true,"delayBetweenRepeat":200,"maxJobs":1000000}' },
-        jobParams: { type: 'string', description: 'JSON-encoded IJobParams', example: '{"jobType":"get_Cex_Quotes","source":"binance","symbol":"ETHUSDC"}' },
+        botParams: {
+          type: 'string',
+          description: 'JSON-encoded IBotParams',
+          example:
+            '{"botType":"TestBot","paused":false,"isRepeat":true,"delayBetweenRepeat":200,"maxJobs":1000000}',
+        },
+        jobParams: {
+          type: 'string',
+          description: 'JSON-encoded IJobParams',
+          example:
+            '{"jobType":"get_Cex_Quotes","source":"binance","symbol":"ETHUSDC"}',
+        },
       },
       required: ['botParams', 'jobParams'],
     },
@@ -85,8 +153,10 @@ export class BotsController {
     @Param('botId') botId: string,
     @Body('botParams') botParams: string,
     @Body('jobParams') jobParams: string,
-    ) {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+  ) {
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
     const bot = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {
       return { error: 'Bot not found' };
@@ -94,74 +164,144 @@ export class BotsController {
 
     return {
       id: botId,
-      ...bot.botInstance.setSettings(JSON.parse(botParams) as IBotParams, JSON.parse(jobParams) as IJobParams)
-    }
+      ...bot.botInstance.setSettings(
+        JSON.parse(botParams) as IBotParams,
+        JSON.parse(jobParams) as IJobParams,
+      ),
+    };
   }
-
-  @Post('bot/:botId/pause')
-  @ApiOperation({ summary: 'Pause / resume bot', description: 'Pauses or resumes a bot. Send { "pause": true } to pause, { "pause": false } to resume.' })
-  @ApiParam({ name: 'botId', description: 'Bot ID', example: 'Binance_USDC_WETH' })
+  @Post('bots/pause')
+  @ApiOperation({
+    summary: 'Pause / resume multiple bots',
+    description:
+      'Pauses or resumes a list of bots. Send an array of botIds and a pause boolean.',
+  })
   @ApiBody({
     schema: {
       type: 'object',
-      properties: { pause: { type: 'boolean', example: true } },
-      required: ['pause'],
+      properties: {
+        botIds: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['Binance_USDC_WETH', 'Arbitrum_USDC_WETH'],
+        },
+        pause: { type: 'boolean', example: true },
+      },
+      required: ['botIds', 'pause'],
     },
   })
   @ApiOkResponse({
     schema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string', example: 'Binance_USDC_WETH' },
-        paused: { type: 'boolean', example: true },
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'Binance_USDC_WETH' },
+          paused: { type: 'boolean', example: true },
+          error: { type: 'string', example: 'Bot not found' },
+        },
       },
     },
   })
-  async pauseBot(@Param('botId') botId: string, @Body('pause') pause: boolean) {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
-    const bot = botsList.find((b: IBot) => b.id === botId);
-    if (!bot) {
-      return { error: 'Bot not found' };
-    }
-    const paused = bot.botInstance.setPaused(pause);
+  async pauseBots(
+    @Body('botIds') botIds: string[],
+    @Body('pause') pause: boolean,
+  ) {
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
 
-    return { id: botId, paused };
+    if (!Array.isArray(botIds)) {
+      return [];
+    }
+
+    return botIds.map((botId) => {
+      const bot = botsList.find((b: IBot) => b.id === botId);
+      if (!bot) {
+        return { id: botId, error: 'Bot not found' };
+      }
+
+      const paused = bot.botInstance.setPaused(pause);
+      return { id: botId, paused };
+    });
   }
 
-  @Post('bot/:botId/restart')
-  @ApiOperation({ summary: 'Restart bot', description: 'Restarts a specific bot (stops and re-runs with current settings).' })
-  @ApiParam({ name: 'botId', description: 'Bot ID', example: 'Binance_USDC_WETH' })
-  @ApiOkResponse({
+  @Post('bots/restart')
+  @ApiOperation({
+    summary: 'Restart multiple bots',
+    description:
+      'Restarts a list of specific bots (stops and re-runs with current settings).',
+  })
+  @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        id: { type: 'string', example: 'Binance_USDC_WETH' },
-        restarted: { type: 'boolean', example: true },
+        botIds: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['Binance_USDC_WETH', 'Arbitrum_USDC_WETH'],
+        },
+      },
+      required: ['botIds'],
+    },
+  })
+  @ApiOkResponse({
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'Binance_USDC_WETH' },
+          restarted: { type: 'boolean', example: true },
+          error: { type: 'string', example: 'Bot not found' },
+        },
       },
     },
   })
-  async restartBot(@Param('botId') botId: string) {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
-    const bot: IBot | undefined = botsList.find((b: IBot) => b.id === botId);
-    if (!bot) {
-      return { error: 'Bot not found' } as any;
-    }
-    bot.botInstance.restart();
+  async restartBots(@Body('botIds') botIds: string[]) {
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
 
-    return { id: botId, restarted: true };
+    if (!Array.isArray(botIds)) {
+      return [];
+    }
+
+    return botIds.map((botId) => {
+      const bot = botsList.find((b: IBot) => b.id === botId);
+      if (!bot) {
+        return { id: botId, error: 'Bot not found' };
+      }
+
+      bot.botInstance.restart();
+      return { id: botId, restarted: true };
+    });
   }
 
   @Get('bot/:botId/arbitrage')
-  @ApiOperation({ summary: 'Bot arbitrage results', description: 'Returns parsed arbitrage opportunities found by this bot (newest first).' })
-  @ApiParam({ name: 'botId', description: 'Bot ID', example: 'Arbitrum_USDC_WETH' })
+  @ApiOperation({
+    summary: 'Bot arbitrage results',
+    description:
+      'Returns parsed arbitrage opportunities found by this bot (newest first).',
+  })
+  @ApiParam({
+    name: 'botId',
+    description: 'Bot ID',
+    example: 'Arbitrum_USDC_WETH',
+  })
   async getBotArbitrage(@Param('botId') botId: string): Promise<any[]> {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
     const bot: IBot | undefined = botsList.find((b: IBot) => b.id === botId);
     if (!bot) {
       return { error: 'Bot not found' } as any;
     }
 
-    const arbitrageList: IArbitrage[] = bot.botInstance.getArbitrage().slice().reverse();
+    const arbitrageList: IArbitrage[] = bot.botInstance
+      .getArbitrage()
+      .slice()
+      .reverse();
 
     // console.log(arbitrageList);
 
@@ -172,7 +312,8 @@ export class BotsController {
   @Post('setBotsRulesList')
   @ApiOperation({
     summary: 'Replace all bot rules',
-    description: 'Stops all current bots, clears the list, and starts new bots based on the provided rules. Each rule defines a bot with its botParams and jobParams.',
+    description:
+      'Stops all current bots, clears the list, and starts new bots based on the provided rules. Each rule defines a bot with its botParams and jobParams.',
   })
   @ApiBody({
     schema: {
@@ -213,19 +354,24 @@ export class BotsController {
   })
   @ApiCreatedResponse({ schema: { type: 'boolean', example: true } })
   async setBotsRulesList(@Body('botsRulesList') botsRulesList: IBotsRule[]) {
-    const botsList: IBot[] = await firstValueFrom(this.store.select$(selectBotsList));
+    const botsList: IBot[] = await firstValueFrom(
+      this.store.select$(selectBotsList),
+    );
     botsList.forEach((bot: IBot) => {
       const paused = bot.botInstance.setPaused(true);
     });
 
     // console.log('botsRulesList', botsRulesList);
 
-    this.store.dispatch({ type: 'BOTS_RULES_LIST/SET_ALL', payload: {botsRulesList: []} }); // reset bots list
-    this.store.dispatch({ type: 'BOTS_RULES_LIST/SET_ALL', payload: {botsRulesList} });
-
+    this.store.dispatch({
+      type: 'BOTS_RULES_LIST/SET_ALL',
+      payload: { botsRulesList: [] },
+    }); // reset bots list
+    this.store.dispatch({
+      type: 'BOTS_RULES_LIST/SET_ALL',
+      payload: { botsRulesList },
+    });
 
     return true;
   }
-
-
 }
