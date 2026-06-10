@@ -3,8 +3,8 @@ export const ArbitrumPoolsConfigListStabs = {
   "source": "dex:arbitrum",
   "rpcUrl": "https://arb1.arbitrum.io/rpc",
   "extraSettings": {
-    amountIn: 70,
-    amountOut: 0.04,
+    amountIn: 230,
+    amountOut: 0.14,
     referenceDivisor: 100,
   },
   "opts": {
