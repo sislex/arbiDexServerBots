@@ -280,12 +280,21 @@ export async function runDeployedImpactQuoteTestEther(
 
   const table: QuoteTableRow[] = [];
 
-  const { quoteInput, poolMetas } = stabsConfigToQuoteInput(config, {
-    amountInHuman,
-    amountOutHuman,
-    referenceDivisor,
-    networkEnvPrefix,
-  });
+  const { quoteInput, poolMetas, skippedPairs } = stabsConfigToQuoteInput(
+    config,
+    {
+      amountInHuman,
+      amountOutHuman,
+      referenceDivisor,
+      networkEnvPrefix,
+    },
+  );
+
+  if (skippedPairs.length) {
+    console.warn(
+      `[ArbQuoterScript] skipped ${skippedPairs.length} unsupported pool(s): ${skippedPairs.slice(0, 3).join('; ')}`,
+    );
+  }
 
   const callBatchQuote = async (pairsOverride?: typeof quoteInput.pairs) => {
     const input = pairsOverride
@@ -325,6 +334,12 @@ export async function runDeployedImpactQuoteTestEther(
     const arbSummaryCandidates: ArbSummaryCandidate[] = [];
     arbSummaryCandidates.push(...built.arbSummaryCandidates);
     const arbSummary = buildArbSummary(arbSummaryCandidates);
+    if (skippedPairs.length) {
+      arbSummary.arbLines.unshift(
+        `skipped unsupported pools: ${skippedPairs.length}`,
+        ...skippedPairs.slice(0, 5),
+      );
+    }
     // console.log(
     //   `[ArbQuoterScript] summary rows buy=${arbSummary.bestBuyRows.length} sell=${arbSummary.bestSellRows.length} lines=${arbSummary.arbLines.length}`,
     // );
@@ -403,6 +418,12 @@ export async function runDeployedImpactQuoteTestEther(
       console.log(
         `[ArbQuoterScript] fallback completed successPools=${isolatedQuotes.length}/${quoteInput.pairs.length} failedPools=${isolatedErrors.length}`,
       );
+      if (skippedPairs.length > 0) {
+        arbSummary.arbLines.unshift(
+          `skipped unsupported pools: ${skippedPairs.length}`,
+          ...skippedPairs.slice(0, 5),
+        );
+      }
       if (isolatedErrors.length > 0) {
         arbSummary.arbLines.push(
           `fallback single-pool mode: ${isolatedErrors.length} pool(s) failed`,
@@ -431,7 +452,11 @@ export async function runDeployedImpactQuoteTestEther(
     return {
       bestBuyRows: [],
       bestSellRows: [],
-      arbLines: [batchMsg, ...isolatedErrors.slice(0, 10)],
+      arbLines: [
+        batchMsg,
+        ...skippedPairs.slice(0, 5),
+        ...isolatedErrors.slice(0, 10),
+      ],
     };
   }
 }

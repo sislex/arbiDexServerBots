@@ -234,6 +234,45 @@ function referenceAmount(amount: bigint, referenceDivisor: bigint): bigint {
   return ref === 0n ? 1n : ref;
 }
 
+/** Camelot V2-style router (kind 2). */
+const CAMELOT_V2_DEXES = new Set(['camelot']);
+
+/**
+ * Algebra / Camelot-V3 pool swap interface (kind=3).
+ * HorizonDEX / Metavault are Algebra forks; Camelot V3 too.
+ */
+const ALGEBRA_V3_DEXES = new Set([
+  'camelot',
+  'horizondex',
+  'horizon',
+  'metavault',
+]);
+
+/**
+ * Solidly forks: router has getAmountOut(amount, tokenIn, tokenOut), NOT UniV2
+ * getAmountsOut(amount, path). ArbQuoter kind=0 will revert on these.
+ */
+const SOLIDLY_V2_DEXES = new Set([
+  'velodrome',
+  'aerodrome',
+  'nile',
+  'nuri',
+  'hydrex',
+]);
+
+/** SyncSwap / iZi are not UniV2 getAmountsOut-compatible. */
+const NON_UNIV2_ROUTER_DEXES = new Set(['syncswap', 'iziswap', 'izi']);
+
+function unsupportedV2Reason(dex: string): string | undefined {
+  if (SOLIDLY_V2_DEXES.has(dex)) {
+    return `dex=${dex} v2 is Solidly-style (no UniV2 getAmountsOut); ArbQuoter kind=0 unsupported`;
+  }
+  if (NON_UNIV2_ROUTER_DEXES.has(dex)) {
+    return `dex=${dex} v2 is not UniV2-router compatible; ArbQuoter kind=0 unsupported`;
+  }
+  return undefined;
+}
+
 export function configPairToInput(
   pair: DeployedImpactQuoteStabsConfig['pairsToQuote'][number],
   networkEnvPrefix?: string,
@@ -244,8 +283,13 @@ export function configPairToInput(
   const pool = ethers.getAddress(pair.poolAddress);
 
   if (version === 'v2') {
+    const unsupported = unsupportedV2Reason(dex);
+    if (unsupported) {
+      throw new Error(unsupported);
+    }
+
     return {
-      kind: dex === 'camelot' ? 2 : 0,
+      kind: CAMELOT_V2_DEXES.has(dex) ? 2 : 0,
       router: resolveV2Router(dex, networkEnvPrefix),
       pool,
       v4Fee: 0,
@@ -256,7 +300,7 @@ export function configPairToInput(
 
   if (version === 'v3') {
     return {
-      kind: dex === 'camelot' ? 3 : 1,
+      kind: ALGEBRA_V3_DEXES.has(dex) ? 3 : 1,
       router: ZERO,
       pool,
       v4Fee: 0,
@@ -282,7 +326,11 @@ export function configPairToInput(
 export function stabsConfigToQuoteInput(
   config: DeployedImpactQuoteStabsConfig,
   options: BuildConfigQuoteInputOptions,
-): { quoteInput: ConfigQuoteInput; poolMetas: PoolQuoteMeta[] } {
+): {
+  quoteInput: ConfigQuoteInput;
+  poolMetas: PoolQuoteMeta[];
+  skippedPairs: string[];
+} {
   if (options.referenceDivisor <= 0n) {
     throw new Error('REFERENCE_DIVISOR must be > 0');
   }
@@ -295,15 +343,41 @@ export function stabsConfigToQuoteInput(
   const { hasValue: hasAmountOut, parsed: amountOut } =
     parseOptionalPositiveUnits(options.amountOutHuman, outDecimals);
 
-  const pairs = config.pairsToQuote.map((pair) =>
-    configPairToInput(pair, options.networkEnvPrefix),
-  );
-  const poolMetas = config.pairsToQuote.map((p) => ({
-    dex: p.dex,
-    version: p.version,
-    poolAddress: p.poolAddress,
-    feePpm: p.feePpm,
-  }));
+  const pairs: ConfigPairInput[] = [];
+  const poolMetas: PoolQuoteMeta[] = [];
+  const skippedPairs: string[] = [];
+
+  for (const pair of config.pairsToQuote) {
+    const dex = pair.dex.toLowerCase();
+    const version = pair.version.toLowerCase();
+    if (version === 'v2') {
+      const reason = unsupportedV2Reason(dex);
+      if (reason) {
+        skippedPairs.push(`${pair.poolAddress}: ${reason}`);
+        continue;
+      }
+    }
+
+    try {
+      pairs.push(configPairToInput(pair, options.networkEnvPrefix));
+      poolMetas.push({
+        dex: pair.dex,
+        version: pair.version,
+        poolAddress: pair.poolAddress,
+        feePpm: pair.feePpm,
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      skippedPairs.push(`${pair.poolAddress}: ${msg}`);
+    }
+  }
+
+  if (!pairs.length) {
+    throw new Error(
+      `No quotable pairs left after filtering unsupported DEX pools` +
+        (skippedPairs.length ? `: ${skippedPairs.slice(0, 5).join('; ')}` : ''),
+    );
+  }
 
   return {
     quoteInput: {
@@ -321,5 +395,6 @@ export function stabsConfigToQuoteInput(
       pairs,
     },
     poolMetas,
+    skippedPairs,
   };
 }

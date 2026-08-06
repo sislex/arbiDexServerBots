@@ -57,6 +57,9 @@ export function arbSummaryToUnified(
   );
 
   if (!contractSellPriceOutPerIn || !contractBuyPriceOutPerIn) {
+    const detail =
+      summary.arbLines.find((line) => line && !line.startsWith('fallback')) ??
+      summary.arbLines[0];
     return {
       sourceType: 'dex',
       source,
@@ -65,7 +68,8 @@ export function arbSummaryToUnified(
       ok: false,
       latencyMs,
       error:
-        summary.arbLines[0] ?? 'No valid best buy/sell rows in arb summary',
+        detail ??
+        'No valid best buy/sell rows in arb summary (need successful buy+sell quotes; check amountOut and pool compatibility)',
       timestamp: Date.now(),
       bidPrice: 0,
       askPrice: 0,

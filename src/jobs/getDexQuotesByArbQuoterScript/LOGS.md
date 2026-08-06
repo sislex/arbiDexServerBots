@@ -42,19 +42,18 @@
   - non-positive or invalid runtime values no longer overwrite network defaults.
 - Added explicit early error when resolved `amountIn <= 0`.
 
-## 2026-06-06
+## 2026-08-06
 
-- Синхронизирован README с текущей реализацией в
-  `src/jobs/getDexQuotesByArbQuoterScript`.
-- Зафиксировано, что текущий helper job требует непустой `pairsToQuote` и не
-  подгружает network stabs-конфиги автоматически.
-- Зафиксировано, что `extraSettings.amountIn` в helper должен быть одиночным
-  положительным числом; массивы там сейчас не поддерживаются.
-- Исправлено описание unified-маппинга с `dexToUnified(...)` на
-  `arbSummaryToUnified(...)`.
-- Исправлено описание env: текущий quoter resolver читает
-  `<NETWORK>_QUOTER_ADDRESS` напрямую и не читает generic `QUOTER_ADDRESS`.
-- Добавлено актуальное покрытие v2 router env, включая pancakeswap router keys.
+- V2 routers: network-aware map (`ARBITRUM/OPTIMISM/BASE/BLAST/LINEA`) +
+  env overrides; hardhat no longer blocks lookup when `networkEnvPrefix` is set.
+- Unsupported for ArbQuoter `kind=0` (skipped with clear reason):
+  Solidly forks (`velodrome`, `aerodrome`, `nile`, `nuri`, `hydrex`),
+  `syncswap`, `iziswap`.
+- Algebra V3 kind=3 for `camelot`, `horizondex`, `metavault`.
+- UniV2-compatible on supported nets: `blaster`, `thruster`, `monoswap`,
+  `echodex`, plus classic `uniswap`/`sushi`/`camelot`/`pancake`.
+- UI: `testBot` now puts `jobResult.error` into ERROR MESSAGE (was `undefined`).
+
 
 ## 2026-08-06
 
