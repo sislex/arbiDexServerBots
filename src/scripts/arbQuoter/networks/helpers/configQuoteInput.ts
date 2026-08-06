@@ -230,6 +230,21 @@ export function configPairToInput(
   const pool = ethers.getAddress(pair.poolAddress);
 
   if (version === "v2") {
+    if (
+      dex === "velodrome"
+      || dex === "aerodrome"
+      || dex === "nile"
+      || dex === "nuri"
+      || dex === "hydrex"
+      || dex === "syncswap"
+      || dex === "iziswap"
+      || dex === "izi"
+    ) {
+      throw new Error(
+        `dex=${dex} v2 is not UniV2 getAmountsOut-compatible; ArbQuoter kind=0 unsupported`,
+      );
+    }
+
     return {
       kind: dex === "camelot" ? 2 : 0,
       router: resolveV2Router(dex, networkEnvPrefix),
@@ -241,8 +256,13 @@ export function configPairToInput(
   }
 
   if (version === "v3") {
+    const algebra =
+      dex === "camelot"
+      || dex === "horizondex"
+      || dex === "horizon"
+      || dex === "metavault";
     return {
-      kind: dex === "camelot" ? 3 : 1,
+      kind: algebra ? 3 : 1,
       router: ZERO,
       pool,
       v4Fee: 0,
@@ -268,7 +288,11 @@ export function configPairToInput(
 export function stabsConfigToQuoteInput(
   config: DeployedImpactQuoteStabsConfig,
   options: BuildConfigQuoteInputOptions,
-): { quoteInput: ConfigQuoteInput; poolMetas: PoolQuoteMeta[] } {
+): {
+  quoteInput: ConfigQuoteInput;
+  poolMetas: PoolQuoteMeta[];
+  skippedPairs: string[];
+} {
   if (options.referenceDivisor <= 0n) {
     throw new Error("REFERENCE_DIVISOR must be > 0");
   }
@@ -283,15 +307,31 @@ export function stabsConfigToQuoteInput(
     outDecimals,
   );
 
-  const pairs = config.pairsToQuote.map((pair) =>
-    configPairToInput(pair, options.networkEnvPrefix),
-  );
-  const poolMetas = config.pairsToQuote.map((p) => ({
-    dex: p.dex,
-    version: p.version,
-    poolAddress: p.poolAddress,
-    feePpm: p.feePpm,
-  }));
+  const pairs: ConfigPairInput[] = [];
+  const poolMetas: PoolQuoteMeta[] = [];
+  const skippedPairs: string[] = [];
+
+  for (const pair of config.pairsToQuote) {
+    try {
+      pairs.push(configPairToInput(pair, options.networkEnvPrefix));
+      poolMetas.push({
+        dex: pair.dex,
+        version: pair.version,
+        poolAddress: pair.poolAddress,
+        feePpm: pair.feePpm,
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      skippedPairs.push(`${pair.poolAddress}: ${msg}`);
+    }
+  }
+
+  if (!pairs.length) {
+    throw new Error(
+      `No quotable pairs left after filtering unsupported DEX pools`
+        + (skippedPairs.length ? `: ${skippedPairs.slice(0, 5).join("; ")}` : ""),
+    );
+  }
 
   return {
     quoteInput: {
@@ -307,5 +347,6 @@ export function stabsConfigToQuoteInput(
       pairs,
     },
     poolMetas,
+    skippedPairs,
   };
 }

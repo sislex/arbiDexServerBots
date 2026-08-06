@@ -239,7 +239,9 @@ export class TestBot implements ITestBot {
           } else {
             const error = createBotError({
               errorCode: `JOB: ${jobResult.error}`,
-              message: String(jobResult?.message),
+              message: String(
+                jobResult?.message ?? jobResult?.error ?? 'Job returned ok=false',
+              ),
               source: this.jobParams.jobType,
               details: this.jobParams,
               durationMs: this.botState.lastLatency,
