@@ -66,7 +66,7 @@ async function loadAbi(artifactRelativePath: string): Promise<InterfaceAbi> {
 }
 
 function buildExecutorSwapStep(pair: (typeof config.pairsToQuote)[number], amountIn: bigint, amountOutMin: bigint = 0n) {
-  const pairInput = configPairToInput(pair);
+  const pairInput = configPairToInput(pair, 'ARBITRUM');
   return {
     kind: pairInput.kind,
     router: pairInput.router,
@@ -153,6 +153,7 @@ async function main() {
   const { quoteInput: quoteInputOneUsdc } = stabsConfigToQuoteInput(quoteConfigOneUsdc, {
     amountInHuman: AMOUNT_IN_USDC_HUMAN,
     referenceDivisor,
+    networkEnvPrefix: 'ARBITRUM',
   });
 
   // Step 1: Run quoter for 1 USDC

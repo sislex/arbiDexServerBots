@@ -115,6 +115,7 @@ export async function runDeployedImpactQuoteTest(options: RunDeployedImpactQuote
     amountInHuman,
     amountOutHuman,
     referenceDivisor,
+    networkEnvPrefix: networkName.toUpperCase(),
   });
 
   contractCallsCount++;

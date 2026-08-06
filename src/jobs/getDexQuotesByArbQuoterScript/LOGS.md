@@ -55,3 +55,18 @@
 - Исправлено описание env: текущий quoter resolver читает
   `<NETWORK>_QUOTER_ADDRESS` напрямую и не читает generic `QUOTER_ADDRESS`.
 - Добавлено актуальное покрытие v2 router env, включая pancakeswap router keys.
+
+## 2026-08-06
+
+- Исправлено `Missing V2 router for dex=... on network=hardhat` для новых DEX.
+- Резолв V2 router теперь network-aware:
+  - берёт сеть из `networkEnvPrefix` (`source` → `OPTIMISM`/`BASE`/`BLAST`/`LINEA`/…)
+  - не зависит от `HARDHAT_NETWORK=hardhat`
+- Добавлены default routers:
+  - optimism: `velodrome`
+  - base: `aerodrome`, `quickswap`
+  - blast: `blaster`, `thruster`, `monoswap`
+  - linea: `syncswap`, `echodex`
+  - fallback: `nile`, `nuri`
+- Исправлены неверные адреса из черновика (blaster/thruster/aerodrome/syncswap/monoswap).
+- Dex вроде RogueX / HorizonDex / iZiSwap / Metavault для v3 не требуют V2 router.

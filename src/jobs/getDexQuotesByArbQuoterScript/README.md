@@ -64,8 +64,16 @@ single-pool вызовы, если весь batch reverted.
 - `extraSettings.referenceDivisor`: опциональное положительное число, default
   `100`.
 - `pairsToQuote[].version`: поддерживаются `v2`, `v3`, `v4`.
-- `pairsToQuote[].dex`: для v2 router resolution поддерживаются `uniswap`,
-  `sushi`, `camelot`, `pancake`.
+- `pairsToQuote[].dex`: для v2 router resolution поддерживаются:
+  - базовые: `uniswap`, `sushi`, `camelot`, `pancake`
+  - optimism: `velodrome`
+  - base: `aerodrome`, `quickswap`
+  - blast: `blaster`, `thruster`, `monoswap`
+  - linea: `syncswap`, `echodex`
+  - fallback: `nile`, `nuri`
+  Сеть берётся из `source` (`dex:optimism` → `OPTIMISM`), а не из hardhat env.
+  Dex вроде `roguex`, `horizondex`, `iziswap`, `metavault` обычно `v3` —
+  для них V2 router не нужен.
 
 ## Env
 
@@ -76,11 +84,16 @@ single-pool вызовы, если весь batch reverted.
   - `<NETWORK>_SUSHISWAP_V2_ROUTER`
   - `<NETWORK>_CAMELOT_V2_ROUTER`
   - `<NETWORK>_PANCAKESWAP_V2_ROUTER`
-- generic fallback для v2-роутеров:
-  - `UNISWAP_V2_ROUTER`
-  - `SUSHISWAP_V2_ROUTER`
-  - `CAMELOT_V2_ROUTER`
-  - `PANCAKESWAP_V2_ROUTER`
+  - `<NETWORK>_VELODROME_V2_ROUTER`
+  - `<NETWORK>_AERODROME_V2_ROUTER`
+  - `<NETWORK>_BLASTER_V2_ROUTER`
+  - `<NETWORK>_THRUSTER_V2_ROUTER`
+  - `<NETWORK>_MONOSWAP_V2_ROUTER`
+  - `<NETWORK>_SYNCSWAP_V2_ROUTER`
+  - `<NETWORK>_ECHODEX_V2_ROUTER`
+  - `<NETWORK>_QUICKSWAP_V2_ROUTER`
+- generic fallback для v2-роутеров: те же ключи без `<NETWORK>_` префикса
+  (`UNISWAP_V2_ROUTER`, `VELODROME_V2_ROUTER`, …)
 
 ## Ошибки и fallback
 
