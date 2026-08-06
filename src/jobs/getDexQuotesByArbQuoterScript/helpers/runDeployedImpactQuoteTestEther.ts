@@ -284,6 +284,7 @@ export async function runDeployedImpactQuoteTestEther(
     amountInHuman,
     amountOutHuman,
     referenceDivisor,
+    networkEnvPrefix,
   });
 
   const callBatchQuote = async (pairsOverride?: typeof quoteInput.pairs) => {

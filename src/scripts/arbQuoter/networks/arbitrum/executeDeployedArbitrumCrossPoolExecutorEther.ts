@@ -126,7 +126,7 @@ function buildSwapStep(
   amountIn: bigint,
   amountOutMin = 0n,
 ) {
-  const pairInput = configPairToInput(pair);
+  const pairInput = configPairToInput(pair, 'ARBITRUM');
   return {
     kind: pairInput.kind,
     router: pairInput.router,
@@ -145,6 +145,7 @@ async function findBestForwardQuote(quoter: Contract, amountInHuman: string) {
   const { quoteInput } = stabsConfigToQuoteInput(config, {
     amountInHuman,
     referenceDivisor: REFERENCE_DIVISOR,
+    networkEnvPrefix: 'ARBITRUM',
   });
 
   const result = await quoter.quoteConfigExactInWithImpact.staticCall(quoteInput) as QuoteResult;
@@ -179,6 +180,7 @@ async function findBestReverseQuoteForBoughtAmount(quoter: Contract, boughtAmoun
   const { quoteInput } = stabsConfigToQuoteInput(reverseConfig, {
     amountInHuman: reverseAmountInHuman,
     referenceDivisor: REFERENCE_DIVISOR,
+    networkEnvPrefix: 'ARBITRUM',
   });
 
   const result = await quoter.quoteConfigExactInWithImpact.staticCall(quoteInput) as QuoteResult;
